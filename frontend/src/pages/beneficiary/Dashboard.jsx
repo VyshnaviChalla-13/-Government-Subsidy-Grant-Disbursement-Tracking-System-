@@ -1,5 +1,5 @@
 import "./Dashboard.css";
-
+import { useNavigate } from "react-router-dom";
 function Dashboard() {
 
     const applications = [
@@ -25,6 +25,8 @@ function Dashboard() {
         "Upload documents for Student Scholarship.",
         "Affordable Housing application returned for correction."
     ];
+    
+     const navigate = useNavigate();
 
     return (
 
@@ -116,10 +118,11 @@ function Dashboard() {
 
                     <div className="col-lg-3 col-md-6 mb-3">
 
-                        <button className="btn btn-primary w-100">
-
-                            Browse Schemes
-
+                       <button
+                                className="btn btn-primary w-100"
+                                onClick={() => navigate("/beneficiary/schemes")}
+                        >
+                                Browse Schemes
                         </button>
 
                     </div>
