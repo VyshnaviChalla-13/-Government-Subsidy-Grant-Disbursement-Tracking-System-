@@ -1,6 +1,9 @@
 import "./SchemeDetails.css";
+import { useNavigate } from "react-router-dom";
 
 function SchemeDetails() {
+
+    const navigate = useNavigate();
 
     return (
 
@@ -112,10 +115,11 @@ function SchemeDetails() {
 
                 <div className="text-center mt-5">
 
-                    <button className="btn btn-primary btn-lg">
-
+                    <button
+                        className="btn btn-primary btn-lg"
+                        onClick={() => navigate("/beneficiary/apply")}
+                    >
                         Apply Now
-
                     </button>
 
                 </div>

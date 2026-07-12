@@ -139,10 +139,11 @@ function Dashboard() {
 
                     <div className="col-lg-3 col-md-6 mb-3">
 
-                        <button className="btn btn-warning w-100 text-white">
-
+                        <button
+                            className="btn btn-warning w-100 text-white"
+                            onClick={() => navigate("/beneficiary/my-applications")}
+                        >
                             My Applications
-
                         </button>
 
                     </div>

@@ -73,7 +73,10 @@ function BrowseSchemes() {
                                         View Details
                                     </button>
 
-                                    <button className="btn btn-primary">
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={() => navigate("/beneficiary/apply")}
+                                    >
                                         Apply
                                     </button>
 

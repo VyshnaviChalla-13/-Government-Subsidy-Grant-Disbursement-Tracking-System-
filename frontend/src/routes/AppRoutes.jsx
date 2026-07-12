@@ -5,9 +5,14 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 
+//member 2 imports
+
 import Dashboard from "../pages/beneficiary/Dashboard";
 import BrowseSchemes from "../pages/beneficiary/BrowseSchemes";
 import SchemeDetails from "../pages/beneficiary/SchemeDetails";
+import ApplyScheme from "../pages/beneficiary/ApplyScheme";
+import MyApplications from "../pages/beneficiary/MyApplications";
+import ApplicationTimeline from "../pages/beneficiary/ApplicationTimeline";
 
 function AppRoutes() {
     return (
@@ -33,8 +38,22 @@ function AppRoutes() {
                     path="/beneficiary/schemes/:id"
                     element={<SchemeDetails />}
                 />
+                <Route
+                    path="/beneficiary/apply"
+                    element={<ApplyScheme />}
+                />
+                <Route
+                    path="/beneficiary/my-applications"
+                    element={<MyApplications />}
+                />
+                <Route
+                    path="/beneficiary/timeline"
+                    element={<ApplicationTimeline />}
+                />
 
+                
             </Routes>
+            
         </BrowserRouter>
     );
 }
