@@ -129,10 +129,11 @@ function Dashboard() {
 
                     <div className="col-lg-3 col-md-6 mb-3">
 
-                        <button className="btn btn-success w-100">
-
+                        <button
+                            className="btn btn-success w-100"
+                            onClick={() => navigate("/beneficiary/apply")}
+                        >
                             Apply Scheme
-
                         </button>
 
                     </div>
