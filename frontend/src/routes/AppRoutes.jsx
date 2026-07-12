@@ -4,6 +4,7 @@ import Home from "../pages/auth/Home";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
+import Profile from "../pages/beneficiary/Profile";
 
 //member 2 imports
 
@@ -50,8 +51,12 @@ function AppRoutes() {
                     path="/beneficiary/timeline"
                     element={<ApplicationTimeline />}
                 />
+                <Route
+                    path="/beneficiary/profile"
+                    element={<Profile />}
+                />
 
-                
+
             </Routes>
             
         </BrowserRouter>

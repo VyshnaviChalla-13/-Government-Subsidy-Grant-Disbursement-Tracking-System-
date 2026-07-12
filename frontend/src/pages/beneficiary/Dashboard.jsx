@@ -150,12 +150,12 @@ function Dashboard() {
 
                     <div className="col-lg-3 col-md-6 mb-3">
 
-                        <button className="btn btn-info text-white w-100">
-
+                        <button
+                            className="btn btn-info text-white w-100"
+                            onClick={() => navigate("/beneficiary/profile")}
+                        >
                             View Profile
-
                         </button>
-
                     </div>
 
                 </div>
