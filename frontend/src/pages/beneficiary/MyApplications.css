@@ -1,0 +1,15 @@
+.applications-page{
+
+    background:#f4f8fc;
+    min-height:100vh;
+
+}
+
+.table{
+
+    background:white;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+
+}

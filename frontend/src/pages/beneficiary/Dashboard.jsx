@@ -1,135 +1,272 @@
 import "./Dashboard.css";
-
+import { useNavigate } from "react-router-dom";
 function Dashboard() {
 
+    const applications = [
+        {
+            scheme: "Farmer Assistance",
+            date: "10-Jul-2026",
+            status: "Approved"
+        },
+        {
+            scheme: "Student Scholarship",
+            date: "12-Jul-2026",
+            status: "Under Verification"
+        },
+        {
+            scheme: "Affordable Housing",
+            date: "15-Jul-2026",
+            status: "Returned"
+        }
+    ];
+
+    const notifications = [
+        "Your Farmer Assistance application has been approved.",
+        "Upload documents for Student Scholarship.",
+        "Affordable Housing application returned for correction."
+    ];
+    
+     const navigate = useNavigate();
+
     return (
+
         <div className="dashboard-page">
 
-            <div className="container">
+            <div className="container py-4">
 
-                <h2 className="dashboard-title">
-                    Welcome, Beneficiary 👋
-                </h2>
+                {/* Welcome */}
 
-                <p className="dashboard-subtitle">
-                    Manage your government scheme applications from one place.
-                </p>
+                <div className="welcome-banner">
 
-                {/* Statistics Cards */}
+                    <div>
+
+                        <h2>
+                            Welcome, Beneficiary 👋
+                        </h2>
+
+                        <p>
+                            Track your applications, explore schemes and manage your profile from one place.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                {/* Statistics */}
 
                 <div className="row mt-4">
 
                     <div className="col-lg-3 col-md-6 mb-4">
+
                         <div className="dashboard-card">
+
                             <h3>05</h3>
+
                             <p>Total Applications</p>
+
                         </div>
+
                     </div>
 
                     <div className="col-lg-3 col-md-6 mb-4">
+
                         <div className="dashboard-card approved">
+
                             <h3>02</h3>
+
                             <p>Approved</p>
+
                         </div>
+
                     </div>
 
                     <div className="col-lg-3 col-md-6 mb-4">
+
                         <div className="dashboard-card pending">
+
                             <h3>02</h3>
-                            <p>Pending</p>
+
+                            <p>Under Review</p>
+
                         </div>
+
                     </div>
 
                     <div className="col-lg-3 col-md-6 mb-4">
-                        <div className="dashboard-card rejected">
+
+                        <div className="dashboard-card returned">
+
                             <h3>01</h3>
-                            <p>Rejected</p>
+
+                            <p>Returned</p>
+
                         </div>
+
                     </div>
 
                 </div>
 
                 {/* Quick Actions */}
 
-                <h4 className="section-title">Quick Actions</h4>
+                <h4 className="section-title">
+
+                    Quick Actions
+
+                </h4>
 
                 <div className="row">
 
                     <div className="col-lg-3 col-md-6 mb-3">
-                        <button className="btn btn-primary w-100">
-                            View Schemes
+
+                       <button
+                                className="btn btn-primary w-100"
+                                onClick={() => navigate("/beneficiary/schemes")}
+                        >
+                                Browse Schemes
                         </button>
+
                     </div>
 
                     <div className="col-lg-3 col-md-6 mb-3">
-                        <button className="btn btn-success w-100">
+
+                        <button
+                            className="btn btn-success w-100"
+                            onClick={() => navigate("/beneficiary/apply")}
+                        >
                             Apply Scheme
                         </button>
+
                     </div>
 
                     <div className="col-lg-3 col-md-6 mb-3">
-                        <button className="btn btn-warning w-100">
+
+                        <button
+                            className="btn btn-warning w-100 text-white"
+                            onClick={() => navigate("/beneficiary/my-applications")}
+                        >
                             My Applications
                         </button>
+
                     </div>
 
                     <div className="col-lg-3 col-md-6 mb-3">
-                        <button className="btn btn-info w-100 text-white">
-                            Track Status
+
+                        <button
+                            className="btn btn-info text-white w-100"
+                            onClick={() => navigate("/beneficiary/profile")}
+                        >
+                            View Profile
                         </button>
                     </div>
 
                 </div>
 
-                {/* Recent Applications */}
+                <div className="row mt-5">
 
-                <h4 className="section-title mt-5">
-                    Recent Applications
-                </h4>
+                    {/* Recent Applications */}
 
-                <div className="table-responsive">
+                    <div className="col-lg-8">
 
-                    <table className="table table-bordered table-hover">
+                        <div className="content-card">
 
-                        <thead className="table-primary">
+                            <h4>
 
-                        <tr>
-                            <th>Scheme</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                        </tr>
+                                Recent Applications
 
-                        </thead>
+                            </h4>
 
-                        <tbody>
+                            <table className="table table-hover">
 
-                        <tr>
-                            <td>Farmer Assistance</td>
-                            <td>10-Jul-2026</td>
-                            <td>Approved</td>
-                        </tr>
+                                <thead className="table-primary">
 
-                        <tr>
-                            <td>Student Scholarship</td>
-                            <td>12-Jul-2026</td>
-                            <td>Pending</td>
-                        </tr>
+                                    <tr>
 
-                        <tr>
-                            <td>Affordable Housing</td>
-                            <td>15-Jul-2026</td>
-                            <td>Rejected</td>
-                        </tr>
+                                        <th>Scheme</th>
 
-                        </tbody>
+                                        <th>Date</th>
 
-                    </table>
+                                        <th>Status</th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    {
+
+                                        applications.map((app, index) => (
+
+                                            <tr key={index}>
+
+                                                <td>{app.scheme}</td>
+
+                                                <td>{app.date}</td>
+
+                                                <td>
+
+                                                    <span className={`status ${app.status.replace(/\s/g,"").toLowerCase()}`}>
+
+                                                        {app.status}
+
+                                                    </span>
+
+                                                </td>
+
+                                            </tr>
+
+                                        ))
+
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                    {/* Notifications */}
+
+                    <div className="col-lg-4">
+
+                        <div className="content-card">
+
+                            <h4>
+
+                                Notifications
+
+                            </h4>
+
+                            <ul className="notification-list">
+
+                                {
+
+                                    notifications.map((note,index)=>(
+
+                                        <li key={index}>
+
+                                            🔔 {note}
+
+                                        </li>
+
+                                    ))
+
+                                }
+
+                            </ul>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
             </div>
 
         </div>
+
     );
 
 }

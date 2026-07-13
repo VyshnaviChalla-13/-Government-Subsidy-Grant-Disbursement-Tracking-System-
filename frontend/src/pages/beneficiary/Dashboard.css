@@ -1,36 +1,50 @@
 .dashboard-page{
-    background:#F5F7FA;
+    background:#f4f8fc;
     min-height:100vh;
-    padding:40px 0;
+    padding:30px 0;
 }
 
-.dashboard-title{
-    color:#1F3A5F;
+.welcome-banner{
+    background:linear-gradient(135deg,#0d6efd,#4ea3ff);
+    color:white;
+    border-radius:18px;
+    padding:35px;
+    box-shadow:0 10px 25px rgba(0,0,0,.12);
+}
+
+.welcome-banner h2{
     font-weight:700;
 }
 
-.dashboard-subtitle{
-    color:#666;
-    margin-bottom:30px;
+.welcome-banner p{
+    margin-top:10px;
+    margin-bottom:0;
+    opacity:.95;
 }
 
 .dashboard-card{
     background:white;
-    border-radius:12px;
-    padding:25px;
+    border-radius:15px;
     text-align:center;
-    box-shadow:0 5px 15px rgba(0,0,0,.08);
+    padding:25px;
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.dashboard-card:hover{
+    transform:translateY(-6px);
 }
 
 .dashboard-card h3{
-    font-size:36px;
+    font-size:34px;
+    color:#0d6efd;
     font-weight:700;
-    color:#0D6EFD;
 }
 
 .dashboard-card p{
     margin-top:10px;
-    color:#555;
+    color:#666;
+    font-weight:500;
 }
 
 .approved h3{
@@ -38,19 +52,77 @@
 }
 
 .pending h3{
-    color:#FFC107;
+    color:#fd7e14;
 }
 
-.rejected h3{
-    color:#DC3545;
+.returned h3{
+    color:#dc3545;
 }
 
 .section-title{
-    color:#1F3A5F;
-    margin:35px 0 20px;
+    margin-top:40px;
+    margin-bottom:20px;
+    font-weight:700;
+    color:#0d6efd;
+}
+
+.content-card{
+    background:white;
+    border-radius:15px;
+    padding:25px;
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+}
+
+.notification-list{
+    list-style:none;
+    padding-left:0;
+    margin-top:20px;
+}
+
+.notification-list li{
+    background:#eef5ff;
+    margin-bottom:12px;
+    padding:12px 15px;
+    border-radius:10px;
+    font-size:15px;
+}
+
+.status{
+    padding:6px 14px;
+    border-radius:20px;
+    color:white;
+    font-size:13px;
     font-weight:600;
 }
 
+.status.approved{
+    background:#198754;
+}
+
+.status.underverification{
+    background:#fd7e14;
+}
+
+.status.returned{
+    background:#dc3545;
+}
+
 .table{
-    background:white;
+    margin-top:20px;
+}
+
+@media(max-width:768px){
+
+.welcome-banner{
+    padding:25px;
+}
+
+.dashboard-card{
+    margin-bottom:20px;
+}
+
+.section-title{
+    text-align:center;
+}
+
 }
