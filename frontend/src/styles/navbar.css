@@ -1,0 +1,26 @@
+.navbar{
+    min-height:80px;
+}
+
+.navbar-brand{
+    font-size:24px;
+    font-weight:700;
+}
+
+.navbar-brand i{
+    font-size:30px;
+}
+
+.nav-link{
+    color:white !important;
+    font-weight:500;
+    margin-left:10px;
+}
+
+.nav-link:hover{
+    color:#FFC107 !important;
+}
+
+.btn{
+    border-radius:8px;
+}
