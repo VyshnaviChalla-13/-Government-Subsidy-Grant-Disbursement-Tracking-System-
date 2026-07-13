@@ -1,0 +1,44 @@
+.footer{
+
+    background:#1F3A5F;
+
+    color:white;
+
+    padding:60px 0 20px;
+
+}
+
+.footer-links{
+
+    list-style:none;
+
+    padding:0;
+
+}
+
+.footer-links li{
+
+    margin-bottom:12px;
+
+    cursor:pointer;
+
+}
+
+.footer-links li:hover{
+
+    color:#FFC107;
+
+}
+
+.footer hr{
+
+    border-color:#ffffff40;
+
+}
+
+.footer h4,
+.footer h5{
+
+    margin-bottom:20px;
+
+}

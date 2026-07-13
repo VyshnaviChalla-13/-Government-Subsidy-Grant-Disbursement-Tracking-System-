@@ -1,0 +1,51 @@
+.quick-services{
+
+    padding:80px 0;
+
+    background:white;
+
+}
+
+.service-box{
+
+    padding:30px;
+
+    border-radius:15px;
+
+    background:white;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+
+    text-align:center;
+
+    transition:.3s;
+
+    height:100%;
+
+}
+
+.service-box:hover{
+
+    transform:translateY(-8px);
+
+}
+
+.service-box i{
+
+    font-size:45px;
+
+    color:#0D6EFD;
+
+}
+
+.service-box h4{
+
+    margin:20px 0;
+
+}
+
+.service-box p{
+
+    color:#666;
+
+}

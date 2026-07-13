@@ -1,0 +1,27 @@
+.featured-schemes{
+    padding:80px 0;
+    background:#ffffff;
+}
+
+.scheme-card{
+    height:100%;
+    padding:30px;
+    border-radius:12px;
+    background:#fff;
+    box-shadow:0 5px 15px rgba(0,0,0,.08);
+    transition:.3s;
+}
+
+.scheme-card:hover{
+    transform:translateY(-8px);
+}
+
+.scheme-card h4{
+    color:#0D6EFD;
+    margin-bottom:15px;
+}
+
+.scheme-card p{
+    color:#555;
+    min-height:80px;
+}
