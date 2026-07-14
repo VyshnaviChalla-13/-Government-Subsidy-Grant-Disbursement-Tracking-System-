@@ -1,7 +1,7 @@
 package com.example.Government.subsidy.Project.Service;
 
 
-import com.example.Government.subsidy.Project.Entity.userRegistration;
+import com.example.Government.subsidy.Project.Entity.User;
 import com.example.Government.subsidy.Project.Repository.UserRepository;
 import com.example.Government.subsidy.Project.Security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public String register(userRegistration user) {
+    public String register(User user) {
 
         if (userRepository.existsByEmail(user.getEmail())) {
             return "Email already exists";
@@ -46,11 +46,11 @@ public class UserService {
         return "Registration Successful";
     }
 
-    public List<userRegistration> getAllUsers() {
+    public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    public userRegistration getUser(Integer id) {
+    public User getUser(Integer id) {
         return userRepository.findById(id).orElse(null);
     }
 
@@ -65,9 +65,9 @@ public class UserService {
         return "User Deleted Successfully";
     }
 
-    public String updateUser(Integer id, userRegistration user) {
+    public String updateUser(Integer id, User user) {
 
-        userRegistration existing = userRepository.findById(id).orElse(null);
+        User existing = userRepository.findById(id).orElse(null);
 
         if (existing == null) {
             return "User Not Found";
@@ -94,7 +94,7 @@ public class UserService {
     }
     public String login(String mobileNumber, String password) {
 
-        userRegistration user = userRepository.findBymobileNumber(mobileNumber).orElse(null);
+        User user = userRepository.findBymobileNumber(mobileNumber).orElse(null);
 
         if (user == null) {
             return "Mobile number not registered";

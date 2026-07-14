@@ -1,18 +1,18 @@
 package com.example.Government.subsidy.Project.Repository;
-import com.example.Government.subsidy.Project.Entity.userRegistration;
+import com.example.Government.subsidy.Project.Entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<userRegistration, Integer> {
+public interface UserRepository extends JpaRepository<User, Integer> {
 
-    Optional<userRegistration> findByEmail(String email);
+    Optional<User> findByEmail(String email);
 
-    Optional<userRegistration> findBymobileNumber(String mobileNumber);
+    Optional<User> findBymobileNumber(String mobileNumber);
 
-    Optional<userRegistration> findByAadhaarNumber(String aadhaarNumber);
+    Optional<User> findByAadhaarNumber(String aadhaarNumber);
 
     boolean existsByEmail(String email);
 

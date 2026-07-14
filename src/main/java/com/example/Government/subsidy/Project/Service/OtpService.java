@@ -1,7 +1,7 @@
 package com.example.Government.subsidy.Project.Service;
 
 import com.example.Government.subsidy.Project.Entity.Otp;
-import com.example.Government.subsidy.Project.Entity.userRegistration;
+import com.example.Government.subsidy.Project.Entity.User;
 import com.example.Government.subsidy.Project.Repository.OtpRepository;
 import com.example.Government.subsidy.Project.Repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -28,7 +28,7 @@ public class OtpService {
 
     public String sendOtp(String mobileNumber) {
 
-        Optional<userRegistration> user =
+        Optional<User> user =
                 userRepository.findBymobileNumber(mobileNumber);
 
         if (user.isEmpty()) {
@@ -77,14 +77,14 @@ public class OtpService {
 
     public String resetPassword(String mobileNumber, String newPassword) {
 
-        Optional<userRegistration> optionalUser =
+        Optional<User> optionalUser =
                 userRepository.findBymobileNumber(mobileNumber);
 
         if (optionalUser.isEmpty()) {
             return "User not found";
         }
 
-        userRegistration user = optionalUser.get();
+        User user = optionalUser.get();
 
         user.setPassword(passwordEncoder.encode(newPassword));
 

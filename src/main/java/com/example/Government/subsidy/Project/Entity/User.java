@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Entity
 @NoArgsConstructor
 @Table(name="users")
-public class userRegistration {
+public class User {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +25,7 @@ public class userRegistration {
         @Column(nullable = false, unique = true)
         private String mobileNumber;
 
-        @Column(nullable = false)
+        @Column(nullable = false, length = 255)
         private String password;
 
         @Column(nullable = false, unique = true, length = 12)
@@ -82,7 +82,7 @@ public class userRegistration {
         @Column(nullable = false)
         private String ifscCode;
 
-        private String role = "BENEFICIARY";
+        private String role = "ROLE_BENEFICIARY";
 
 
         private String status = "PENDING";
@@ -98,7 +98,7 @@ public class userRegistration {
                 }
 
                 if (role == null) {
-                        role = "BENEFICIARY";
+                        role = "ROLE_BENEFICIARY";
                 }
 
                 createdAt = LocalDateTime.now();

@@ -1,5 +1,5 @@
 package com.example.Government.subsidy.Project.Controller;
-import com.example.Government.subsidy.Project.Entity.userRegistration;
+import com.example.Government.subsidy.Project.Entity.User;
 import com.example.Government.subsidy.Project.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,23 +15,23 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public String register(@RequestBody userRegistration user) {
+    public String register(@RequestBody User user) {
         return userService.register(user);
     }
 
     @GetMapping("/all")
-    public List<userRegistration> getAllUsers() {
+    public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    public userRegistration getUser(@PathVariable Integer id) {
+    public User getUser(@PathVariable Integer id) {
         return userService.getUser(id);
     }
 
     @PutMapping("/update/{id}")
     public String updateUser(@PathVariable Integer id,
-                             @RequestBody userRegistration user) {
+                             @RequestBody User user) {
         return userService.updateUser(id, user);
     }
 
@@ -40,7 +40,7 @@ public class UserController {
         return userService.deleteUser(id);
     }
     @PostMapping("/login")
-    public String login(@RequestBody userRegistration user) {
+    public String login(@RequestBody User user) {
         return userService.login(user.getMobileNumber(), user.getPassword());
     }
 }
