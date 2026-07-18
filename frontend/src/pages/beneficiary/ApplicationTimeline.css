@@ -1,0 +1,51 @@
+.timeline-page{
+
+    background:#f4f8fc;
+    min-height:100vh;
+
+}
+
+.timeline-item{
+
+    display:flex;
+    align-items:flex-start;
+    margin-bottom:35px;
+
+}
+
+.timeline-circle{
+
+    width:55px;
+    height:55px;
+
+    border-radius:50%;
+
+    background:#0d6efd;
+
+    color:white;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-weight:bold;
+
+    margin-right:25px;
+
+}
+
+.timeline-content{
+
+    background:white;
+
+    flex:1;
+
+    padding:20px;
+
+    border-radius:15px;
+
+    box-shadow:0 6px 18px rgba(0,0,0,.08);
+
+}
