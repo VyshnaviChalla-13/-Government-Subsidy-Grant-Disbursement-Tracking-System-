@@ -37,6 +37,7 @@ function FrontDeskDashboard() {
     const [search, setSearch] = useState("");
     const [schemeFilter, setSchemeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+    const [selectedApplication, setSelectedApplication] = useState(null);
 
     const filteredApplications = applications.filter((app) => {
 
@@ -273,7 +274,13 @@ function FrontDeskDashboard() {
 
                             <td>
 
-                                <button>
+                                <button
+                                    className="view-btn"
+                                    onClick={() => {
+                                        console.log(app);
+                                        setSelectedApplication(app);
+                                    }}
+                                >
                                     View
                                 </button>
 
@@ -308,6 +315,107 @@ function FrontDeskDashboard() {
                     </tbody>
 
                 </table>
+                {selectedApplication && (
+
+                    <div className="modal-overlay">
+
+                        <div className="modal">
+
+                            <h2>Application Details</h2>
+
+                            <div className="details-grid">
+
+                                <div>
+                                    <strong>Application ID</strong>
+                                    <p>{selectedApplication.id}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Beneficiary Name</strong>
+                                    <p>{selectedApplication.name}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Scheme</strong>
+                                    <p>{selectedApplication.scheme}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Date</strong>
+                                    <p>{selectedApplication.date}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Status</strong>
+                                    <p>{selectedApplication.status}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Mobile</strong>
+                                    <p>9876543210</p>
+                                </div>
+
+                                <div>
+                                    <strong>Email</strong>
+                                    <p>beneficiary@gmail.com</p>
+                                </div>
+
+                                <div>
+                                    <strong>Aadhaar</strong>
+                                    <p>XXXX XXXX 5678</p>
+                                </div>
+
+                                <div>
+                                    <strong>Address</strong>
+                                    <p>Tirupati, Andhra Pradesh</p>
+                                </div>
+
+                                <div>
+                                    <strong>Income</strong>
+                                    <p>₹2,40,000 / Year</p>
+                                </div>
+
+                                <div>
+                                    <strong>Bank</strong>
+                                    <p>State Bank of India</p>
+                                </div>
+
+                                <div>
+                                    <strong>Account Status</strong>
+                                    <p>Verified</p>
+                                </div>
+
+                            </div>
+
+                            <div className="document-section">
+
+                                <h3>Uploaded Documents</h3>
+
+                                <ul>
+                                    <li>✔ Aadhaar Card</li>
+                                    <li>✔ Income Certificate</li>
+                                    <li>✔ Bank Passbook</li>
+                                    <li>✔ Residence Certificate</li>
+                                </ul>
+
+                            </div>
+
+                            <div className="modal-buttons">
+
+                                <button
+                                    className="close-btn"
+                                    onClick={() => setSelectedApplication(null)}
+                                >
+                                    Close
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                )}
 
             </main>
 

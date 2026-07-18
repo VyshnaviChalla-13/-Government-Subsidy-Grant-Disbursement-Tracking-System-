@@ -6,6 +6,9 @@ import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import Dashboard from "../pages/beneficiary/Dashboard";
 import FrontDeskDashboard from "../pages/officer/FrontDeskDashboard";
+import VerificationDashboard from "../pages/officer/VerificationDashboard";
+import FinanceDashboard from "../pages/finance/FinanceDashboard";
+import PaymentPage from "../pages/finance/PaymentPage";
 function AppRoutes() {
     return (
         <BrowserRouter>
@@ -23,6 +26,9 @@ function AppRoutes() {
                     path="/officer/frontdesk"
                     element={<FrontDeskDashboard />}
                 />
+                <Route path="/verification" element={<VerificationDashboard />} />
+                <Route path="/finance" element={<FinanceDashboard />} />
+                <Route path="/payment/:id" element={<PaymentPage />} />
             </Routes>
         </BrowserRouter>
     );
