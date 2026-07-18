@@ -26,7 +26,10 @@ function AppRoutes() {
                     path="/officer/frontdesk"
                     element={<FrontDeskDashboard />}
                 />
-                <Route path="/verification" element={<VerificationDashboard />} />
+                <Route
+                    path="/officer/verification"
+                    element={<VerificationDashboard />}
+                />
                 <Route path="/finance" element={<FinanceDashboard />} />
                 <Route path="/payment/:id" element={<PaymentPage />} />
             </Routes>
