@@ -14,11 +14,16 @@ import ApplicationTimeline from "../pages/beneficiary/ApplicationTimeline";
 import Profile from "../pages/beneficiary/Profile";
 
 import FrontDeskDashboard from "../pages/officer/FrontDeskDashboard";
+import FrontDeskApplicationDetails from "../pages/officer/FrontDeskApplicationDetails";
 import VerificationDashboard from "../pages/officer/VerificationDashboard";
 
 import FinanceDashboard from "../pages/finance/FinanceDashboard";
 import PaymentPage from "../pages/finance/PaymentPage";
-
+import DepartmentAdminDashboard from "../pages/admin/DepartmentAdminDashboard";
+import CreateScheme from "../pages/admin/CreateScheme";
+import ManageSchemes from "../pages/admin/ManageSchemes";
+import ManageOfficers from "../pages/admin/ManageOfficers";
+import DepartmentReports from "../pages/admin/DepartmentReports";
 function AppRoutes() {
     return (
         <BrowserRouter>
@@ -68,6 +73,10 @@ function AppRoutes() {
                     path="/officer/frontdesk"
                     element={<FrontDeskDashboard />}
                 />
+                <Route
+                    path="/officer/frontdesk/application"
+                    element={<FrontDeskApplicationDetails />}
+                />
 
                 <Route
                     path="/officer/verification"
@@ -83,6 +92,27 @@ function AppRoutes() {
                 <Route
                     path="/payment/:id"
                     element={<PaymentPage />}
+                />
+                <Route
+                    path="/admin/dashboard"
+                    element={<DepartmentAdminDashboard />}
+                />
+
+                <Route
+                    path="/admin/create-scheme"
+                    element={<CreateScheme />}
+                />
+                <Route
+                    path="/admin/manage-schemes"
+                    element={<ManageSchemes />}
+                />
+                <Route
+                    path="/admin/manage-officers"
+                    element={<ManageOfficers />}
+                />
+                <Route
+                    path="/admin/reports"
+                    element={<DepartmentReports />}
                 />
 
             </Routes>
