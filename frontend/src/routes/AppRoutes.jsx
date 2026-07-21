@@ -12,9 +12,9 @@ import ApplyScheme from "../pages/beneficiary/ApplyScheme";
 import MyApplications from "../pages/beneficiary/MyApplications";
 import ApplicationTimeline from "../pages/beneficiary/ApplicationTimeline";
 import Profile from "../pages/beneficiary/Profile";
-
+import Contact from "../pages/Contact";
 import FrontDeskDashboard from "../pages/officer/FrontDeskDashboard";
-
+import About from "../pages/About";
 function AppRoutes() {
     return (
         <BrowserRouter>
@@ -67,6 +67,8 @@ function AppRoutes() {
                     path="/officer/frontdesk"
                     element={<FrontDeskDashboard />}
                 />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/about" element={<About />} />
 
             </Routes>
         </BrowserRouter>

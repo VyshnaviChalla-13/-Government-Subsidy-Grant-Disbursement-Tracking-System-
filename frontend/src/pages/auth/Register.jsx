@@ -1,150 +1,168 @@
-import { Link } from "react-router-dom";
-import "../../styles/login.css";
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "../../styles/register.css";
 
 function Register() {
+
+    const navigate = useNavigate();
+
+    const handleRegister = (e) => {
+        e.preventDefault();
+        navigate("/login");
+    };
+
     return (
-        <div className="login-page">
 
-            <div className="container">
+        <div className="register-page">
 
-                <div className="row align-items-center">
+            <div className="register-wrapper">
 
-                    {/* Left Side */}
+                <div className="register-card">
 
-                    <div className="col-lg-6 d-none d-lg-flex">
+                    <div className="register-header">
 
-                        <div className="login-info text-center">
+                        <h2>Create Your Account</h2>
 
-                            <img
-                                src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                                alt="Government Portal"
-                                className="img-fluid login-image"
-                            />
-
-                            <h2>Government Scheme Management System</h2>
-
-                            <p>
-                                Create your account to apply for government
-                                welfare schemes and track applications online.
-                            </p>
-
-                        </div>
+                        <p>
+                            Register to access Government Welfare Schemes.
+                        </p>
 
                     </div>
 
-                    {/* Right Side */}
+                    <form onSubmit={handleRegister}>
 
-                    <div className="col-lg-6">
+                        <div className="mb-3">
 
-                        <div className="login-card">
+                            <label className="form-label">
+                                Full Name
+                            </label>
 
-                            <h2 className="text-center mb-2">
-                                Create Account
-                            </h2>
+                            <div className="input-box">
 
-                            <p className="text-center mb-4">
-                                Register as a Beneficiary
-                            </p>
+                                <i className="fa-solid fa-user"></i>
 
-                            <form>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Enter your full name"
+                                    required
+                                />
 
-                                <div className="mb-3">
-
-                                    <label className="form-label">
-                                        Full Name
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        placeholder="Enter Full Name"
-                                    />
-
-                                </div>
-
-                                <div className="mb-3">
-
-                                    <label className="form-label">
-                                        Email Address
-                                    </label>
-
-                                    <input
-                                        type="email"
-                                        className="form-control"
-                                        placeholder="Enter Email"
-                                    />
-
-                                </div>
-
-                                <div className="mb-3">
-
-                                    <label className="form-label">
-                                        Mobile Number
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        placeholder="Enter Mobile Number"
-                                    />
-
-                                </div>
-
-                                <div className="mb-3">
-
-                                    <label className="form-label">
-                                        Password
-                                    </label>
-
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        placeholder="Create Password"
-                                    />
-
-                                </div>
-
-                                <div className="mb-4">
-
-                                    <label className="form-label">
-                                        Confirm Password
-                                    </label>
-
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        placeholder="Confirm Password"
-                                    />
-
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary w-100">
-
-                                    Register
-
-                                </button>
-
-                            </form>
-
-                            <hr />
-
-                            <p className="text-center">
-
-                                Already have an account?{" "}
-
-                                <Link
-                                    to="/login"
-                                    className="login-link">
-
-                                    Login
-
-                                </Link>
-
-                            </p>
+                            </div>
 
                         </div>
+
+                        <div className="mb-3">
+
+                            <label className="form-label">
+                                Email Address
+                            </label>
+
+                            <div className="input-box">
+
+                                <i className="fa-solid fa-envelope"></i>
+
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    placeholder="Enter your email"
+                                    required
+                                />
+
+                            </div>
+
+                        </div>
+
+                        <div className="mb-3">
+
+                            <label className="form-label">
+                                Mobile Number
+                            </label>
+
+                            <div className="input-box">
+
+                                <i className="fa-solid fa-phone"></i>
+
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="Enter your mobile number"
+                                    required
+                                />
+
+                            </div>
+
+                        </div>
+
+                        <div className="mb-3">
+
+                            <label className="form-label">
+                                Password
+                            </label>
+
+                            <div className="input-box">
+
+                                <i className="fa-solid fa-lock"></i>
+
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    placeholder="Create password"
+                                    required
+                                />
+
+                            </div>
+
+                        </div>
+
+                        <div className="mb-4">
+
+                            <label className="form-label">
+                                Confirm Password
+                            </label>
+
+                            <div className="input-box">
+
+                                <i className="fa-solid fa-lock"></i>
+
+                                <input
+                                    type="password"
+                                    className="form-control"
+                                    placeholder="Confirm password"
+                                    required
+                                />
+
+                            </div>
+
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="btn login-btn w-100">
+
+                            <i className="fa-solid fa-user-plus me-2"></i>
+
+                            Register
+
+                        </button>
+
+                    </form>
+
+                    <div className="register-footer">
+
+                        <p>
+
+                            Already have an account?
+
+                            <Link
+                                to="/login"
+                                className="login-link ms-2">
+
+                                Login
+
+                            </Link>
+
+                        </p>
 
                     </div>
 
@@ -153,7 +171,9 @@ function Register() {
             </div>
 
         </div>
+
     );
+
 }
 
 export default Register;
