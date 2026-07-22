@@ -1,4 +1,5 @@
 import "../../styles/footer.css";
+import { Link } from "react-router-dom";
 
 function Footer() {
     return (
@@ -6,41 +7,47 @@ function Footer() {
 
             <div className="container">
 
-                <div className="row">
+                <div className="footer-top">
 
-                    <div className="col-lg-4">
+                    <div className="footer-brand">
 
-                        <h4>Government Scheme Management System</h4>
+                        <h4>
+                            <i className="bi bi-bank2"></i>
+                            Government Scheme Portal
+                        </h4>
 
                         <p>
-                            A digital platform to discover, apply and track
-                            government welfare schemes securely.
+                            A unified platform for citizens to explore, apply and
+                            track government welfare schemes securely.
                         </p>
 
                     </div>
 
-                    <div className="col-lg-4">
+                    <div className="footer-links">
 
                         <h5>Quick Links</h5>
 
-                        <ul className="footer-links">
-
-                            <li>Home</li>
-                            <li>Login</li>
-                            <li>Register</li>
-                            <li>Contact</li>
-
-                        </ul>
+                        <Link to="/">Home</Link>
+                        <Link to="/schemes">Schemes</Link>
+                        <Link to="/track">Track Status</Link>
+                        <Link to="/about">About</Link>
+                        <Link to="/contact">Contact</Link>
 
                     </div>
 
-                    <div className="col-lg-4">
+                    <div className="footer-contact">
 
-                        <h5>Contact</h5>
+                        <h5>Support</h5>
 
-                        <p>Email : support@gsms.gov.in</p>
+                        <p>
+                            <i className="bi bi-envelope-fill"></i>
+                            support@govschemes.gov.in
+                        </p>
 
-                        <p>Phone : +91 9876543210</p>
+                        <p>
+                            <i className="bi bi-telephone-fill"></i>
+                            1800-123-4567
+                        </p>
 
                     </div>
 
@@ -48,11 +55,13 @@ function Footer() {
 
                 <hr />
 
-                <p className="text-center">
+                <div className="footer-bottom">
 
-                    © 2026 Government Scheme Management System
+                    <p>
+                        © 2026 Government Scheme Management System. All Rights Reserved.
+                    </p>
 
-                </p>
+                </div>
 
             </div>
 
