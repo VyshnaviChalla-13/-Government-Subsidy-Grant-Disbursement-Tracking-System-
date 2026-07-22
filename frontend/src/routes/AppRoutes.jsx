@@ -24,6 +24,11 @@ import CreateScheme from "../pages/admin/CreateScheme";
 import ManageSchemes from "../pages/admin/ManageSchemes";
 import ManageOfficers from "../pages/admin/ManageOfficers";
 import DepartmentReports from "../pages/admin/DepartmentReports";
+import SuperAdminDashboard from "../pages/superadmin/SuperAdminDashboard";
+import DepartmentManagement from "../pages/superadmin/DepartmentManagement";
+import ManageUsers from "../pages/superadmin/ManageUsers";
+import SystemReports from "../pages/superadmin/SystemReports";
+
 function AppRoutes() {
     return (
         <BrowserRouter>
@@ -114,6 +119,25 @@ function AppRoutes() {
                     path="/admin/reports"
                     element={<DepartmentReports />}
                 />
+                <Route
+                    path="/superadmin/dashboard"
+                    element={<SuperAdminDashboard />}
+                />
+                <Route
+                    path="/superadmin/departments"
+                    element={<DepartmentManagement />}
+                />
+
+                <Route
+                    path="/superadmin/users"
+                    element={<ManageUsers />}
+                />
+
+                <Route
+                    path="/superadmin/reports"
+                    element={<SystemReports />}
+                />
+
 
             </Routes>
         </BrowserRouter>
