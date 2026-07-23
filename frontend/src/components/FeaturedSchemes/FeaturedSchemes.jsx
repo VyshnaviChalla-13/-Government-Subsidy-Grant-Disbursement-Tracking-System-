@@ -8,6 +8,7 @@ function FeaturedSchemes() {
     const schemes = [
 
         {
+            id:1,
             icon: "bi bi-tree-fill",
             title: "Farmer Assistance",
             description: "Financial support for eligible farmers to improve agricultural productivity.",
@@ -15,6 +16,7 @@ function FeaturedSchemes() {
         },
 
         {
+            id:2,
             icon: "bi bi-mortarboard-fill",
             title: "Student Scholarship",
             description: "Scholarships for deserving students to support higher education.",
@@ -22,6 +24,7 @@ function FeaturedSchemes() {
         },
 
         {
+            id:3,
             icon: "bi bi-house-heart-fill",
             title: "Affordable Housing",
             description: "Housing assistance for economically weaker families.",
@@ -29,6 +32,7 @@ function FeaturedSchemes() {
         },
 
         {
+            id:4,
             icon: "bi bi-person-hearts",
             title: "Women Empowerment",
             description: "Government initiatives for women entrepreneurship and welfare.",
@@ -57,7 +61,11 @@ function FeaturedSchemes() {
 
                     <button
                         className="view-all-btn"
-                        onClick={() => navigate("/schemes")}
+                        onClick={() =>
+                            navigate("/beneficiary/schemes", {
+                                state: { fromPublic: true }
+                            })
+                        }
                     >
                         View All Schemes
                         <i className="bi bi-arrow-right ms-2"></i>
@@ -85,6 +93,11 @@ function FeaturedSchemes() {
 
                                 <button
                                     className={`details-btn ${scheme.color}`}
+                                    onClick={() =>
+                                        navigate(`/beneficiary/schemes/${scheme.id}`, {
+                                            state: { fromPublic: true }
+                                        })
+                                    }
                                 >
                                     View Details
                                 </button>

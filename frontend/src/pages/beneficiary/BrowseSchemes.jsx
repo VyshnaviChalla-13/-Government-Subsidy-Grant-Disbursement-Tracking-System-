@@ -1,9 +1,12 @@
 import "./BrowseSchemes.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
 
 function BrowseSchemes() {
 
-    const schemes = [
+    const navigate = useNavigate();
+    const location = useLocation();
+    const fromPublic = location.state?.fromPublic || false;
+    const schemes=[
         {
             id: 1,
             title: "Farmer Assistance",
@@ -33,9 +36,9 @@ function BrowseSchemes() {
             deadline: "10 Jan 2027"
         }
     ];
-    
-    const navigate = useNavigate();
-    
+
+
+
     return (
         <div className="browse-page">
             <div className="container py-5">
@@ -68,14 +71,33 @@ function BrowseSchemes() {
 
                                     <button
                                         className="btn btn-outline-primary"
-                                        onClick={() => navigate("/beneficiary/schemes/1")}
+                                        onClick={() =>
+                                            navigate(`/beneficiary/schemes/${scheme.id}`, {
+                                                state: { fromPublic }
+                                            })
+                                        }
                                     >
                                         View Details
                                     </button>
 
                                     <button
                                         className="btn btn-primary"
-                                        onClick={() => navigate("/beneficiary/apply")}
+                                        onClick={() => {
+                                            if (fromPublic) {
+                                                navigate("/login", {
+                                                    state: {
+                                                        fromApply: true,
+                                                        schemeId: scheme.id
+                                                    }
+                                                });
+                                            } else {
+                                                navigate("/beneficiary/apply", {
+                                                    state: {
+                                                        schemeId: scheme.id
+                                                    }
+                                                });
+                                            }
+                                        }}
                                     >
                                         Apply
                                     </button>

@@ -15,6 +15,7 @@ import Profile from "../pages/beneficiary/Profile";
 import Contact from "../pages/Contact";
 import FrontDeskDashboard from "../pages/officer/FrontDeskDashboard";
 import About from "../pages/About";
+import RoleSelection from "../pages/RoleSelection";
 function AppRoutes() {
     return (
         <BrowserRouter>
@@ -24,6 +25,7 @@ function AppRoutes() {
 
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/role-selection" element={<RoleSelection />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
 

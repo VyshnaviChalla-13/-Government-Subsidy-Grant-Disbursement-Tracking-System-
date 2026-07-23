@@ -1,14 +1,25 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate ,useLocation} from "react-router-dom";
 import "../../styles/login.css";
 
 function Login() {
 
     const navigate = useNavigate();
+    const location = useLocation();
+    console.log("Location State:",location.state);
 
     const handleLogin = (e) => {
         e.preventDefault();
-        navigate("/dashboard");
+
+        if (location.state?.fromApply) {
+            navigate("/beneficiary/apply", {
+                state: {
+                    schemeId: location.state?.schemeId
+                }
+            });
+        } else {
+            navigate("/role-selection");
+        }
     };
 
     return (
