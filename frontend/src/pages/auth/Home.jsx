@@ -6,13 +6,13 @@ import Footer from "../../components/Footer/Footer";
 function Home() {
     return (
         <>
-            <Navbar />
+        <Navbar/>
+        <div className="home-page">
             <Hero />
-            <QuickServices/>
-            <FeaturedSchemes/>
-            <Footer/>
-
-
+            <QuickServices />
+            <FeaturedSchemes />
+            <Footer />
+        </div>
         </>
     );
 }

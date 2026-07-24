@@ -12,8 +12,10 @@ import ApplyScheme from "../pages/beneficiary/ApplyScheme";
 import MyApplications from "../pages/beneficiary/MyApplications";
 import ApplicationTimeline from "../pages/beneficiary/ApplicationTimeline";
 import Profile from "../pages/beneficiary/Profile";
-
+import Contact from "../pages/Contact";
 import FrontDeskDashboard from "../pages/officer/FrontDeskDashboard";
+import About from "../pages/About";
+import RoleSelection from "../pages/RoleSelection";
 import FrontDeskApplicationDetails from "../pages/officer/FrontDeskApplicationDetails";
 import VerificationDashboard from "../pages/officer/VerificationDashboard";
 
@@ -37,6 +39,7 @@ function AppRoutes() {
                 {/* Authentication */}
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/role-selection" element={<RoleSelection />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
 
@@ -78,6 +81,8 @@ function AppRoutes() {
                     path="/officer/frontdesk"
                     element={<FrontDeskDashboard />}
                 />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/about" element={<About />} />
                 <Route
                     path="/officer/frontdesk/application"
                     element={<FrontDeskApplicationDetails />}
