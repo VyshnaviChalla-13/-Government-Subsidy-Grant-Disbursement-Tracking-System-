@@ -1,254 +1,136 @@
-/* =====================================
-   GOOGLE FONT
-===================================== */
-
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-
-/* =====================================
-   GLOBAL
-===================================== */
-
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Poppins',sans-serif;
-}
-
 body{
-    background:#eef4ff;
+    background:#f5f7fb;
+    font-family:'Segoe UI',sans-serif;
 }
 
-/* =====================================
-   REGISTER PAGE
-===================================== */
-
-.register-page{
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:30px;
-    background:linear-gradient(135deg,#eef4ff,#dce8ff);
+.container{
+    max-width:1100px;
+    margin:40px auto;
 }
 
-/* =====================================
-   WRAPPER
-===================================== */
-
-.register-wrapper{
-    width:100%;
-    max-width:560px;
+.card{
+    border:none;
+    border-radius:15px;
+    box-shadow:0 6px 18px rgba(0,0,0,.1);
+    padding:35px;
+    background:#fff;
 }
 
-/* =====================================
-   CARD
-===================================== */
-
-.register-card{
-    background:#ffffff;
-    border-radius:22px;
-    padding:40px;
-    box-shadow:0 20px 45px rgba(0,0,0,.12);
-}
-
-/* =====================================
-   HEADER
-===================================== */
-
-.register-header{
+h2{
     text-align:center;
-    margin-bottom:35px;
-}
-
-.register-header h2{
-    font-size:34px;
+    color:#0d6efd;
     font-weight:700;
-    color:#1f2937;
-    margin-bottom:10px;
+    margin-bottom:30px;
 }
 
-.register-header p{
-    color:#6b7280;
-    font-size:15px;
-}
-
-/* =====================================
-   LABELS
-===================================== */
-
-.form-label{
-    font-size:15px;
+h4{
+    color:#333;
+    font-size:22px;
     font-weight:600;
-    color:#374151;
-    margin-bottom:10px;
+    border-bottom:2px solid #0d6efd;
+    padding-bottom:8px;
+    margin:35px 0 25px;
 }
 
-/* =====================================
-   INPUT BOX
-===================================== */
-
-.input-box{
-    display:flex;
-    align-items:center;
-    background:#f8fafc;
-    border:1px solid #dbe3ef;
-    border-radius:14px;
-    padding:0 18px;
-    transition:.3s;
+label{
+    font-weight:600;
+    color:#444;
+    margin-bottom:6px;
 }
 
-.input-box:hover{
-    border-color:#2563eb;
-}
-
-.input-box:focus-within{
-    border-color:#2563eb;
-    box-shadow:0 0 0 4px rgba(37,99,235,.12);
-    background:#ffffff;
-}
-
-/* =====================================
-   ICONS
-===================================== */
-
-.input-box i{
-    color:#2563eb;
-    font-size:17px;
-    margin-right:12px;
-}
-
-/* =====================================
-   INPUT
-===================================== */
-
-.input-box .form-control{
-    border:none;
-    background:transparent;
-    box-shadow:none;
-    height:55px;
+.form-control{
+    border-radius:8px;
+    height:45px;
     font-size:15px;
 }
 
-.input-box .form-control:focus{
-    border:none;
-    box-shadow:none;
-    background:transparent;
+textarea.form-control{
+    height:90px;
+    resize:none;
 }
 
-.input-box .form-control::placeholder{
-    color:#9ca3af;
+.form-control:focus{
+    border-color:#0d6efd;
+    box-shadow:0 0 6px rgba(13,110,253,.25);
 }
 
-/* =====================================
-   REGISTER BUTTON
-===================================== */
+.text-danger{
+    font-size:13px;
+}
 
-.login-btn{
-    width:100%;
-    height:56px;
+.btn-primary{
+    background:#0d6efd;
     border:none;
-    border-radius:14px;
-    background:linear-gradient(135deg,#2563eb,#4338ca);
-    color:#ffffff !important;
+    border-radius:8px;
+    width:220px;
+    height:45px;
     font-size:17px;
-    font-weight:700;
-    transition:.3s;
-    box-shadow:0 10px 25px rgba(37,99,235,.25);
-}
-
-.login-btn:hover{
-    background:linear-gradient(135deg,#1d4ed8,#3730a3);
-    color:#ffffff;
-    transform:translateY(-3px);
-    box-shadow:0 15px 35px rgba(37,99,235,.35);
-}
-
-.login-btn:active{
-    transform:scale(.98);
-}
-
-/* =====================================
-   LOGIN LINK
-===================================== */
-
-.register-footer{
-    text-align:center;
-    margin-top:25px;
-}
-
-.register-footer p{
-    color:#6b7280;
-    margin:0;
-}
-
-.login-link{
-    text-decoration:none;
-    color:#2563eb;
     font-weight:600;
 }
 
-.login-link:hover{
-    color:#1d4ed8;
-    text-decoration:underline;
+.btn-primary:hover{
+    background:#0b5ed7;
 }
 
-/* =====================================
-   RESPONSIVE
-===================================== */
+.row{
+    margin-bottom:10px;
+}
+.gov-header{
 
-@media(max-width:768px){
+    background:#0d6efd;
 
-    .register-page{
-        padding:20px 15px;
-    }
+    color:white;
 
-    .register-card{
-        padding:30px 22px;
-    }
+    padding:20px;
 
-    .register-header h2{
-        font-size:28px;
-    }
+    border-radius:10px;
 
-    .register-header p{
-        font-size:14px;
-    }
+    text-align:center;
 
-    .input-box .form-control{
-        height:52px;
-        font-size:14px;
-    }
-
-    .login-btn{
-        height:52px;
-        font-size:16px;
-    }
+    margin-bottom:20px;
 
 }
 
-@media(max-width:480px){
+.gov-header h2{
 
-    .register-card{
-        padding:24px 18px;
-    }
+    color:white;
 
-    .register-header h2{
-        font-size:24px;
-    }
+    margin-bottom:5px;
 
-    .register-header p{
-        font-size:13px;
-    }
+}
 
-    .input-box{
-        border-radius:12px;
-    }
+.note-box{
 
-    .login-btn{
-        height:48px;
-        font-size:15px;
-        border-radius:12px;
-    }
+    background:#fff3cd;
+
+    border-left:5px solid orange;
+
+    padding:15px;
+
+    margin-bottom:25px;
+
+    border-radius:8px;
+
+}
+
+.section-card{
+
+    background:white;
+
+    padding:25px;
+
+    border-radius:10px;
+
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+
+    margin-bottom:25px;
+
+}
+
+.required{
+
+    color:red;
+
+    font-weight:bold;
 
 }

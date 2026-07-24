@@ -1,16 +1,47 @@
-import React from "react";
-import { Link, useNavigate ,useLocation} from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import "../../styles/login.css";
 
 function Login() {
 
     const navigate = useNavigate();
     const location = useLocation();
-    console.log("Location State:",location.state);
+
+    const [mobileNumber, setMobileNumber] = useState("");
+    const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState({});
+
+    console.log("Location State:", location.state);
 
     const handleLogin = (e) => {
         e.preventDefault();
 
+        let newErrors = {};
+
+        // Mobile Validation
+        if (!mobileNumber.trim()) {
+            newErrors.mobileNumber = "Mobile Number is required";
+        } else if (!/^[0-9]{10}$/.test(mobileNumber)) {
+            newErrors.mobileNumber = "Enter a valid 10-digit Mobile Number";
+        }
+
+        // Password Validation
+        if (!password.trim()) {
+            newErrors.password = "Password is required";
+        } else if (
+            !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)
+        ) {
+            newErrors.password =
+                "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character.";
+        }
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) {
+            return;
+        }
+
+        // Existing Navigation
         if (location.state?.fromApply) {
             navigate("/beneficiary/apply", {
                 state: {
@@ -32,9 +63,7 @@ function Login() {
 
                     <div className="row g-0">
 
-                        {/* ===========================
-                            LEFT SECTION
-                        =========================== */}
+                        {/* LEFT SECTION */}
 
                         <div className="col-lg-4 d-none d-lg-flex">
 
@@ -89,9 +118,7 @@ function Login() {
 
                         </div>
 
-                        {/* ===========================
-                            RIGHT SECTION
-                        =========================== */}
+                        {/* RIGHT SECTION */}
 
                         <div className="col-lg-8">
 
@@ -110,32 +137,39 @@ function Login() {
                                     </p>
 
                                 </div>
-                                {/* ===========================
-                                    LOGIN FORM
-                                =========================== */}
+
+                                {/* LOGIN FORM */}
 
                                 <form onSubmit={handleLogin}>
 
-                                    {/* EMAIL */}
+                                    {/* MOBILE NUMBER */}
 
                                     <div className="mb-4">
 
                                         <label className="form-label">
-                                            Email Address
+                                            Mobile Number
                                         </label>
 
                                         <div className="input-box">
 
-                                            <i className="fa-solid fa-envelope"></i>
+                                            <i className="fa-solid fa-mobile-screen-button"></i>
 
                                             <input
-                                                type="email"
+                                                type="text"
                                                 className="form-control"
-                                                placeholder="Enter your email address"
-                                                required
+                                                placeholder="Enter your Mobile Number"
+                                                value={mobileNumber}
+                                                onChange={(e) => setMobileNumber(e.target.value)}
+                                                maxLength={10}
                                             />
 
                                         </div>
+
+                                        {errors.mobileNumber && (
+                                            <small className="text-danger">
+                                                {errors.mobileNumber}
+                                            </small>
+                                        )}
 
                                     </div>
 
@@ -154,11 +188,18 @@ function Login() {
                                             <input
                                                 type="password"
                                                 className="form-control"
-                                                placeholder="Enter your password"
-                                                required
+                                                placeholder="Enter your Password"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
                                             />
 
                                         </div>
+
+                                        {errors.password && (
+                                            <small className="text-danger">
+                                                {errors.password}
+                                            </small>
+                                        )}
 
                                     </div>
 
@@ -205,11 +246,10 @@ function Login() {
                                         Login
 
                                     </button>
+
                                 </form>
 
-                                {/* ===========================
-                                    REGISTER SECTION
-                                =========================== */}
+                                {/* REGISTER */}
 
                                 <div className="register-box">
 
