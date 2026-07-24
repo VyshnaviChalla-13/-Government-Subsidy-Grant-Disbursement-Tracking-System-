@@ -24,25 +24,29 @@ const RoleSelection = () => {
             title: "Verification Module",
             icon: "✅",
             description: "Document verification and eligibility approval.",
-            available: false,
+            path: "/officer/verification",
+            available: true,
         },
         {
             title: "Finance Module",
             icon: "💰",
             description: "Manage fund disbursement for approved applications.",
-            available: false,
+            path: "/finance",
+            available: true,
         },
         {
             title: "Department Admin Module",
             icon: "🏢",
             description: "Manage schemes and departmental operations.",
-            available: false,
+            path: "/admin/dashboard",
+            available: true,
         },
         {
             title: "Super Admin Module",
             icon: "👑",
             description: "Portal administration, users and reports.",
-            available: false,
+            path: "/superadmin/dashboard",
+            available: true,
         },
     ];
 
