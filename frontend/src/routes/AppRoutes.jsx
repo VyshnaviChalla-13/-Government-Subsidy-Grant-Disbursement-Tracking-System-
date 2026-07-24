@@ -15,6 +15,7 @@ import Profile from "../pages/beneficiary/Profile";
 
 import Contact from "../pages/Contact";
 import About from "../pages/About";
+import RoleSelection from "../pages/RoleSelection";
 
 import FrontDeskDashboard from "../pages/officer/FrontDeskDashboard";
 import FrontDeskApplicationDetails from "../pages/officer/FrontDeskApplicationDetails";
@@ -42,115 +43,40 @@ function AppRoutes() {
                 {/* Authentication */}
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/role-selection" element={<RoleSelection />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
 
                 {/* Beneficiary */}
                 <Route path="/dashboard" element={<Dashboard />} />
-
-                <Route
-                    path="/beneficiary/schemes"
-                    element={<BrowseSchemes />}
-                />
-
-                <Route
-                    path="/beneficiary/schemes/:id"
-                    element={<SchemeDetails />}
-                />
-
-                <Route
-                    path="/beneficiary/apply"
-                    element={<ApplyScheme />}
-                />
-
-                <Route
-                    path="/beneficiary/my-applications"
-                    element={<MyApplications />}
-                />
-
-                <Route
-                    path="/beneficiary/timeline"
-                    element={<ApplicationTimeline />}
-                />
-
-                <Route
-                    path="/beneficiary/profile"
-                    element={<Profile />}
-                />
+                <Route path="/beneficiary/schemes" element={<BrowseSchemes />} />
+                <Route path="/beneficiary/schemes/:id" element={<SchemeDetails />} />
+                <Route path="/beneficiary/apply" element={<ApplyScheme />} />
+                <Route path="/beneficiary/my-applications" element={<MyApplications />} />
+                <Route path="/beneficiary/timeline" element={<ApplicationTimeline />} />
+                <Route path="/beneficiary/profile" element={<Profile />} />
 
                 {/* Officer */}
-                <Route
-                    path="/officer/frontdesk"
-                    element={<FrontDeskDashboard />}
-                />
-
-                <Route
-                    path="/officer/frontdesk/application"
-                    element={<FrontDeskApplicationDetails />}
-                />
-
-                <Route
-                    path="/officer/verification"
-                    element={<VerificationDashboard />}
-                />
+                <Route path="/officer/frontdesk" element={<FrontDeskDashboard />} />
+                <Route path="/officer/frontdesk/application" element={<FrontDeskApplicationDetails />} />
+                <Route path="/officer/verification" element={<VerificationDashboard />} />
 
                 {/* Finance */}
-                <Route
-                    path="/finance"
-                    element={<FinanceDashboard />}
-                />
-
-                <Route
-                    path="/payment/:id"
-                    element={<PaymentPage />}
-                />
+                <Route path="/finance" element={<FinanceDashboard />} />
+                <Route path="/payment/:id" element={<PaymentPage />} />
 
                 {/* Department Admin */}
-                <Route
-                    path="/admin/dashboard"
-                    element={<DepartmentAdminDashboard />}
-                />
-
-                <Route
-                    path="/admin/create-scheme"
-                    element={<CreateScheme />}
-                />
-
-                <Route
-                    path="/admin/manage-schemes"
-                    element={<ManageSchemes />}
-                />
-
-                <Route
-                    path="/admin/manage-officers"
-                    element={<ManageOfficers />}
-                />
-
-                <Route
-                    path="/admin/reports"
-                    element={<DepartmentReports />}
-                />
+                <Route path="/admin/dashboard" element={<DepartmentAdminDashboard />} />
+                <Route path="/admin/create-scheme" element={<CreateScheme />} />
+                <Route path="/admin/manage-schemes" element={<ManageSchemes />} />
+                <Route path="/admin/manage-officers" element={<ManageOfficers />} />
+                <Route path="/admin/reports" element={<DepartmentReports />} />
 
                 {/* Super Admin */}
-                <Route
-                    path="/superadmin/dashboard"
-                    element={<SuperAdminDashboard />}
-                />
-
-                <Route
-                    path="/superadmin/departments"
-                    element={<DepartmentManagement />}
-                />
-
-                <Route
-                    path="/superadmin/users"
-                    element={<ManageUsers />}
-                />
-
-                <Route
-                    path="/superadmin/reports"
-                    element={<SystemReports />}
-                />
+                <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
+                <Route path="/superadmin/departments" element={<DepartmentManagement />} />
+                <Route path="/superadmin/users" element={<ManageUsers />} />
+                <Route path="/superadmin/reports" element={<SystemReports />} />
 
                 {/* Common Pages */}
                 <Route path="/contact" element={<Contact />} />

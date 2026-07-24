@@ -49,13 +49,17 @@ function Navbar() {
                         </li>
 
                         <li className="nav-item">
-                            <Link className="nav-link" to="/schemes">
+                            <Link
+                                className="nav-link"
+                                to="/beneficiary/schemes"
+                                state={{ fromPublic: true }}
+                            >
                                 Schemes
                             </Link>
                         </li>
 
                         <li className="nav-item">
-                            <Link className="nav-link" to="/track">
+                            <Link className="nav-link" to="/login">
                                 Track Status
                             </Link>
                         </li>

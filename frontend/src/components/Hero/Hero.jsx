@@ -52,7 +52,11 @@ function Hero() {
 
                             <button
                                 className="hero-btn-outline"
-                                onClick={() => navigate("/schemes")}
+                                onClick={() =>
+                                    navigate("/beneficiary/schemes", {
+                                        state: { fromPublic: true }
+                                    })
+                                }
                             >
                                 <i className="bi bi-file-earmark-text-fill"></i>
 
