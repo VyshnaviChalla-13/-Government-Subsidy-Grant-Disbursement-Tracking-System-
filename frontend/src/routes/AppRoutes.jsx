@@ -16,13 +16,27 @@ import Contact from "../pages/Contact";
 import FrontDeskDashboard from "../pages/officer/FrontDeskDashboard";
 import About from "../pages/About";
 import RoleSelection from "../pages/RoleSelection";
+import FrontDeskApplicationDetails from "../pages/officer/FrontDeskApplicationDetails";
+import VerificationDashboard from "../pages/officer/VerificationDashboard";
+
+import FinanceDashboard from "../pages/finance/FinanceDashboard";
+import PaymentPage from "../pages/finance/PaymentPage";
+import DepartmentAdminDashboard from "../pages/admin/DepartmentAdminDashboard";
+import CreateScheme from "../pages/admin/CreateScheme";
+import ManageSchemes from "../pages/admin/ManageSchemes";
+import ManageOfficers from "../pages/admin/ManageOfficers";
+import DepartmentReports from "../pages/admin/DepartmentReports";
+import SuperAdminDashboard from "../pages/superadmin/SuperAdminDashboard";
+import DepartmentManagement from "../pages/superadmin/DepartmentManagement";
+import ManageUsers from "../pages/superadmin/ManageUsers";
+import SystemReports from "../pages/superadmin/SystemReports";
+
 function AppRoutes() {
     return (
         <BrowserRouter>
             <Routes>
 
                 {/* Authentication */}
-
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/role-selection" element={<RoleSelection />} />
@@ -30,7 +44,6 @@ function AppRoutes() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
 
                 {/* Beneficiary */}
-
                 <Route path="/dashboard" element={<Dashboard />} />
 
                 <Route
@@ -64,13 +77,72 @@ function AppRoutes() {
                 />
 
                 {/* Officer */}
-
                 <Route
                     path="/officer/frontdesk"
                     element={<FrontDeskDashboard />}
                 />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/about" element={<About />} />
+                <Route
+                    path="/officer/frontdesk/application"
+                    element={<FrontDeskApplicationDetails />}
+                />
+
+                <Route
+                    path="/officer/verification"
+                    element={<VerificationDashboard />}
+                />
+
+                {/* Finance */}
+                <Route
+                    path="/finance"
+                    element={<FinanceDashboard />}
+                />
+
+                <Route
+                    path="/payment/:id"
+                    element={<PaymentPage />}
+                />
+                <Route
+                    path="/admin/dashboard"
+                    element={<DepartmentAdminDashboard />}
+                />
+
+                <Route
+                    path="/admin/create-scheme"
+                    element={<CreateScheme />}
+                />
+                <Route
+                    path="/admin/manage-schemes"
+                    element={<ManageSchemes />}
+                />
+                <Route
+                    path="/admin/manage-officers"
+                    element={<ManageOfficers />}
+                />
+                <Route
+                    path="/admin/reports"
+                    element={<DepartmentReports />}
+                />
+                <Route
+                    path="/superadmin/dashboard"
+                    element={<SuperAdminDashboard />}
+                />
+                <Route
+                    path="/superadmin/departments"
+                    element={<DepartmentManagement />}
+                />
+
+                <Route
+                    path="/superadmin/users"
+                    element={<ManageUsers />}
+                />
+
+                <Route
+                    path="/superadmin/reports"
+                    element={<SystemReports />}
+                />
+
 
             </Routes>
         </BrowserRouter>
