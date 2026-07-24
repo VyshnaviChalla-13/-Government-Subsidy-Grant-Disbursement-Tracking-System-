@@ -33,6 +33,8 @@ public class SchemeController {
     @PutMapping("/{id}")
     public String updateScheme(@PathVariable Integer id,
                                @RequestBody Scheme scheme){
+        System.out.println("UPDATE API HIT");
+
         return schemeService.updateScheme(id,scheme);
     }
 
