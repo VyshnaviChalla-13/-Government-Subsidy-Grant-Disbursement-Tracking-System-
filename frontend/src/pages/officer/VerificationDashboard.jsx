@@ -1,32 +1,25 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+
+import {
+    getApplications,
+    saveApplications,
+} from "../../utils/applicationStorage";
+
 import "./VerificationDashboard.css";
 
 function VerificationDashboard() {
 
-    const [applications, setApplications] = useState([
-        {
-            id: "APP101",
-            name: "Rahul Kumar",
-            scheme: "Farmer Scheme",
-            date: "12-07-2026",
-            status: "Pending Verification"
-        },
-        {
-            id: "APP102",
-            name: "Anjali Sharma",
-            scheme: "Education Scheme",
-            date: "11-07-2026",
-            status: "Pending Verification"
-        },
-        {
-            id: "APP103",
-            name: "Suresh",
-            scheme: "Housing Scheme",
-            date: "10-07-2026",
-            status: "Approved"
-        }
-    ]);
+    const [applications, setApplications] = useState([]);
 
+    useEffect(() => {
+        const data = getApplications();
+
+        const verificationApplications = data.filter(
+            (app) => app.status === "Forwarded"
+        );
+
+        setApplications(verificationApplications);
+    }, []);
     const [search, setSearch] = useState("");
     const [schemeFilter, setSchemeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -49,11 +42,24 @@ function VerificationDashboard() {
 
     const updateStatus = (id, status) => {
 
-        const updated = applications.map((app) =>
-            app.id === id ? { ...app, status } : app
+        const allApplications = getApplications();
+
+        const updated = allApplications.map((app) =>
+            app.id === id
+                ? {
+                    ...app,
+                    status,
+                }
+                : app
         );
 
-        setApplications(updated);
+        saveApplications(updated);
+
+        setApplications(
+            updated.filter(
+                (app) => app.status === "Forwarded"
+            )
+        );
     };
 
     return (
@@ -137,9 +143,10 @@ function VerificationDashboard() {
                     onChange={(e) => setSchemeFilter(e.target.value)}
                 >
                     <option value="">All Schemes</option>
-                    <option>Farmer Scheme</option>
-                    <option>Education Scheme</option>
-                    <option>Housing Scheme</option>
+                    <option>Farmer Assistance Scheme</option>
+                    <option>Student Scholarship Scheme</option>
+                    <option>Affordable Housing Scheme</option>
+                    <option>Women Empowerment Scheme</option>
                 </select>
 
                 <select
