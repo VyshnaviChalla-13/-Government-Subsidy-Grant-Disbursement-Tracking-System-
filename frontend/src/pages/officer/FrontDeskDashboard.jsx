@@ -1,86 +1,23 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./FrontDeskDashboard.css";
-
+import defaultApplications from "../../data/applications";
+import {
+    getApplications,
+    saveApplications,
+} from "../../utils/applicationStorage";
 function FrontDeskDashboard() {
 
-    const [applications, setApplications] = useState([
-        {
-            id: "APP1001",
-            applicant: "Rahul Kumar",
-            scheme: "Farmer Assistance Scheme",
-            department: "Agriculture",
-            submittedDate: "10-Jul-2026",
-            aadhaar: "1234 5678 9012",
-            mobile: "9876543210",
-            income: "₹1,50,000",
-            occupation: "Farmer",
-            address: "Chittoor, Andhra Pradesh",
-            documents: {
-                aadhaar: true,
-                incomeCertificate: true,
-                bankPassbook: true,
-            },
-            status: "Pending",
-        },
+    const [applications, setApplications] = useState(() => {
+        const stored = getApplications();
 
-        {
-            id: "APP1002",
-            applicant: "Anjali Sharma",
-            scheme: "Student Scholarship Scheme",
-            department: "Education",
-            submittedDate: "12-Jul-2026",
-            aadhaar: "2345 6789 0123",
-            mobile: "9876501234",
-            income: "₹90,000",
-            occupation: "Student",
-            address: "Tirupati, Andhra Pradesh",
-            documents: {
-                aadhaar: true,
-                incomeCertificate: true,
-                bankPassbook: true,
-            },
-            status: "Pending",
-        },
+        if (stored.length > 0) {
+            return stored;
+        }
 
-        {
-            id: "APP1003",
-            applicant: "Suresh Reddy",
-            scheme: "Affordable Housing Scheme",
-            department: "Housing",
-            submittedDate: "15-Jul-2026",
-            aadhaar: "3456 7890 1234",
-            mobile: "9876512345",
-            income: "₹1,80,000",
-            occupation: "Construction Worker",
-            address: "Nellore, Andhra Pradesh",
-            documents: {
-                aadhaar: true,
-                incomeCertificate: false,
-                bankPassbook: true,
-            },
-            status: "Pending",
-        },
-
-        {
-            id: "APP1004",
-            applicant: "Priya Nair",
-            scheme: "Women Empowerment Scheme",
-            department: "Social Welfare",
-            submittedDate: "16-Jul-2026",
-            aadhaar: "4567 8901 2345",
-            mobile: "9876523456",
-            income: "₹1,20,000",
-            occupation: "Tailor",
-            address: "Salem, Tamil Nadu",
-            documents: {
-                aadhaar: true,
-                incomeCertificate: true,
-                bankPassbook: true,
-            },
-            status: "Pending",
-        },
-    ]);
+        saveApplications(defaultApplications);
+        return defaultApplications;
+    });
     const [search, setSearch] = useState("");
     const [schemeFilter, setSchemeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -103,12 +40,17 @@ function FrontDeskDashboard() {
     });
 
     const updateStatus = (id, status) => {
-
         const updated = applications.map((app) =>
-            app.id === id ? { ...app, status } : app
+            app.id === id
+                ? {
+                    ...app,
+                    status,
+                }
+                : app
         );
 
         setApplications(updated);
+        saveApplications(updated);
     };
 
     return (
