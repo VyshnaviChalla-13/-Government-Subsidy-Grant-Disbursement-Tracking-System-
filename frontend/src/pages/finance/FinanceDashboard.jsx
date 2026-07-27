@@ -47,6 +47,14 @@ function FinanceDashboard() {
 
     const handlePayment = (id) => {
 
+        const updatedApplications = getApplications(defaultApplications).map(app =>
+            app.id === id
+                ? { ...app, status: "Payment Completed" }
+                : app
+        );
+
+        saveApplications(updatedApplications);
+
         const updatedPayments = payments.map(payment =>
             payment.id === id
                 ? { ...payment, status: "Completed" }
@@ -54,16 +62,6 @@ function FinanceDashboard() {
         );
 
         setPayments(updatedPayments);
-
-        const applications = getApplications(defaultApplications);
-
-        const updatedApplications = applications.map(app =>
-            app.id === id
-                ? { ...app, status: "Payment Completed" }
-                : app
-        );
-
-        saveApplications(updatedApplications);
     };
     return (
         <div className="finance-dashboard">
@@ -212,11 +210,10 @@ function FinanceDashboard() {
                                     👁 View
                                 </button>
 
-                                <button
+                               <button
                                     className="pay-btn"
-                                    onClick={() => {
-                                        navigate(`/payment/${payment.id}`);
-                                    }}
+                                    disabled={payment.status === "Completed"}
+                                    onClick={() => setSelectedPayment(payment)}
                                 >
                                     💰 Pay
                                 </button>
