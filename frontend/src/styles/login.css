@@ -108,7 +108,7 @@ body{
     margin-top:20px;
 }
 
-.stat-card{
+.login-stat-card{
     flex:1;
     background:rgba(255,255,255,.15);
     border:1px solid rgba(255,255,255,.15);
@@ -120,20 +120,20 @@ body{
     cursor:pointer;
 }
 
-.stat-card:hover{
+.login-stat-card:hover{
     transform:translateY(-6px);
     background:rgba(255,255,255,.22);
     box-shadow:0 12px 25px rgba(0,0,0,.18);
 }
 
-.stat-card h3{
+.login-stat-card h3{
     color:#FFD54F;
     font-size:28px;
     font-weight:700;
     margin-bottom:8px;
 }
 
-.stat-card span{
+.login-stat-card span{
     font-size:14px;
     font-weight:500;
     color:#ffffff;

@@ -91,7 +91,7 @@ function Dashboard() {
 
             <div className="stat-card">
 
-              <div className="stat-icon blue">
+              <div className="stat-icon dashboard-blue">
                 <i className="bi bi-file-earmark-text-fill" aria-hidden="true"></i>
               </div>
 
@@ -111,7 +111,7 @@ function Dashboard() {
 
             <div className="stat-card">
 
-              <div className="stat-icon green">
+              <div className="stat-icon dashboard-green">
                 <i className="bi bi-check-circle-fill" aria-hidden="true"></i>
               </div>
 
@@ -131,7 +131,7 @@ function Dashboard() {
 
             <div className="stat-card">
 
-              <div className="stat-icon orange">
+              <div className="stat-icon dashboard-orange">
                 <i className="bi bi-hourglass-split" aria-hidden="true"></i>
               </div>
 
@@ -151,7 +151,7 @@ function Dashboard() {
 
             <div className="stat-card">
 
-              <div className="stat-icon red">
+              <div className="stat-icon dashboard-red">
                 <i className="bi bi-arrow-return-left" aria-hidden="true"></i>
               </div>
 

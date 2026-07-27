@@ -64,7 +64,7 @@
    CARD
 =========================== */
 
-.scheme-card{
+.featured-scheme-card{
     background:var(--white);
     border-radius:18px;
     padding:30px 25px;
@@ -74,7 +74,7 @@
     box-shadow:0 10px 25px rgba(0,0,0,.08);
 }
 
-.scheme-card:hover{
+.featured-scheme-card:hover{
     transform:translateY(-8px);
     box-shadow:0 18px 40px rgba(0,0,0,.12);
 }
@@ -83,7 +83,7 @@
    ICON
 =========================== */
 
-.scheme-icon{
+.featured-scheme-icon i{
     width:75px;
     height:75px;
     border-radius:50%;
@@ -93,7 +93,7 @@
     margin:0 auto 22px;
 }
 
-.scheme-icon i{
+.featured-scheme-icon {
     font-size:34px;
 }
 
@@ -101,7 +101,7 @@
    TITLE
 =========================== */
 
-.scheme-card h4{
+.featured-scheme-card h4{
     font-size:21px;
     font-weight:700;
     color:var(--heading);
@@ -112,7 +112,7 @@
    DESCRIPTION
 =========================== */
 
-.scheme-card p{
+.featured-scheme-card p{
     color:var(--text);
     font-size:15px;
     line-height:1.7;
@@ -141,64 +141,68 @@
    GREEN
 =========================== */
 
-.scheme-icon.green{
+.featured-scheme-icon.green{
     background:#ECFDF3;
 }
 
-.scheme-icon.green i{
+.featured-scheme-icon.green i{
     color:var(--success);
 }
 
 .details-btn.green{
-    background:var(--success);
+    background:#22C55E;
+    color:#fff;
 }
 
 /* ===========================
    BLUE
 =========================== */
 
-.scheme-icon.blue{
+.featured-scheme-icon.blue{
     background:#DBEAFE;
 }
 
-.scheme-icon.blue i{
+.featured-scheme-icon.blue i{
     color:var(--primary);
 }
 
 .details-btn.blue{
-    background:var(--primary);
+    background:#2563EB;
+    color:#fff;
 }
 
 /* ===========================
    ORANGE
 =========================== */
 
-.scheme-icon.orange{
+.featured-scheme-icon.orange{
     background:#FEF3C7;
 }
 
-.scheme-icon.orange i{
+.featured-scheme-icon.orange i{
     color:var(--warning);
 }
 
 .details-btn.orange{
-    background:var(--warning);
+    background:#F59E0B;
+    color:#fff;
 }
 
 /* ===========================
    PURPLE
 =========================== */
 
-.scheme-icon.purple{
+.featured-scheme-icon.purple{
     background:#F3E8FF;
 }
 
-.scheme-icon.purple i{
+.featured-scheme-icon.purple i{
     color:var(--purple);
 }
 
 .details-btn.purple{
-    background:var(--purple);
+    background:#7C3AED;
+    color:#fff;
 }
 
 /* ===========================
@@ -207,18 +211,22 @@
 
 .details-btn.green:hover{
     background:#16A34A;
+    color:#fff;
 }
 
 .details-btn.blue:hover{
     background:var(--primary-hover);
+    color:#fff;
 }
 
 .details-btn.orange:hover{
     background:#D97706;
+    color:#fff;
 }
 
 .details-btn.purple:hover{
     background:#6D28D9;
+    color:#fff;
 }
 
 /* ===========================

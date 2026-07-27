@@ -79,9 +79,9 @@ function FeaturedSchemes() {
 
                         <div className="col-lg-3 col-md-6" key={index}>
 
-                            <div className={`scheme-card ${scheme.color}`}>
+                            <div className={`featured-scheme-card ${scheme.color}`}>
 
-                                <div className={`scheme-icon ${scheme.color}`}>
+                                <div className={`featured-scheme-icon ${scheme.color}`}>
 
                                     <i className={scheme.icon}></i>
 

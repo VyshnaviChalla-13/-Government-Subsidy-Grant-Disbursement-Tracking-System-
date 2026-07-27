@@ -88,7 +88,7 @@ function Login() {
 
                                 <div className="portal-stats">
 
-                                    <div className="stat-card">
+                                    <div className="login-stat-card">
 
                                         <h3>100%</h3>
 
@@ -96,7 +96,7 @@ function Login() {
 
                                     </div>
 
-                                    <div className="stat-card">
+                                    <div className="login-stat-card">
 
                                         <h3>24×7</h3>
 
@@ -104,7 +104,7 @@ function Login() {
 
                                     </div>
 
-                                    <div className="stat-card">
+                                    <div className="login-stat-card">
 
                                         <h3>Easy</h3>
 
