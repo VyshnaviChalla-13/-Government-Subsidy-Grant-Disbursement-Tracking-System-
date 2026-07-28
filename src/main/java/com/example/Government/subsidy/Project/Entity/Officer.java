@@ -35,7 +35,7 @@ public class Officer {
     private String employeeCode;
 
     @Column(nullable = false, length = 100)
-    private String Designation;
+    private String designation;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
