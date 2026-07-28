@@ -1,0 +1,16 @@
+$kind: http-request
+description: ""
+url: http://localhost:8080/applications/submit?beneficiaryId=999&schemeId=1
+method: POST
+queryParams:
+  beneficiaryId: "999"
+  schemeId: "1"
+body:
+  type: json
+  content: "{\r\n    \"income\": 500000\r\n}"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfQURNSU4iLCJpYXQiOjE3ODQ5MjI2NzgsImV4cCI6MTc4NTAwOTA3OH0.OYua0WXA4J93NueGh5Qv7OAQyawXotRALS-JnLIuVSmZyc0cs68xfD__JUPwdD2h
+examples: .resources/Invalid benefiaciary can't submit the application.resources/examples
+order: 4499516788539163

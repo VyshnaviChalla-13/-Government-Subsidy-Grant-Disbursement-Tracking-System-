@@ -1,0 +1,59 @@
+$kind: http-request
+name: Update user by id
+description: ""
+url: http://localhost:8080/users/update/1
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"fullName\": \"Patel Krina\",\r
+
+    \    \"email\": \"krina@gmail.com\",\r
+
+    \    \"mobileNumber\": \"8488888888\",\r
+
+    \    \"password\": \"$2a$10$0XuTyPROdQC0lgcM4/MHNuhks2hNveh1BIA2uYOEEMNar/2NLMw1K\",\r
+
+    \    \"aadhaarNumber\": \"123456789012\",\r
+
+    \    \"dateOfBirth\": \"2004-01-01\",\r
+
+    \    \"gender\": \"FEMALE\",\r
+
+    \    \"address\": \"Ahmedabad\",\r
+
+    \    \"districtId\": \"1\",\r
+
+    \    \"stateId\": \"1\",\r
+
+    \    \"talukaId\": \"1\",\r
+
+    \    \"villageId\": \"1\",\r
+
+    \    \"pincode\": \"380001\",\r
+
+    \    \"occupation\": \"Student\",\r
+
+    \    \"disabilityStatus\": \"NO\",\r
+
+    \    \"maritalStatus\": \"SINGLE\",\r
+
+    \    \"annualIncome\": 50000.0,\r
+
+    \    \"category\": \"GENERAL\",\r
+
+    \    \"bankName\": \"State Bank of India\",\r
+
+    \    \"accountHolderName\": \"Krina Patel\",\r
+
+    \    \"accountNumber\": \"1234567890\",\r
+
+    \    \"ifscCode\": \"SBIN0001234\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfQURNSU4iLCJpYXQiOjE3ODQ5MTY1MjUsImV4cCI6MTc4NTAwMjkyNX0.HAEJM2U7Ean8cDwqSSizu3bk_-fx_AEY8LTCwoCMHPBOE1xsez5F4MaGmQuo7jof
+order: 4041509368504380

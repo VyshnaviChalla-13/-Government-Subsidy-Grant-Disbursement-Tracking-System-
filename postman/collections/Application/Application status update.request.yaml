@@ -1,0 +1,15 @@
+$kind: http-request
+name: Application status update
+description: ""
+url: http://localhost:8080/applications/1/status?status=APPROVED
+method: PATCH
+queryParams:
+  status: APPROVED
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfQURNSU4iLCJpYXQiOjE3ODQ5MTY1MjUsImV4cCI6MTc4NTAwMjkyNX0.HAEJM2U7Ean8cDwqSSizu3bk_-fx_AEY8LTCwoCMHPBOE1xsez5F4MaGmQuo7jof
+order: 4503595066846360

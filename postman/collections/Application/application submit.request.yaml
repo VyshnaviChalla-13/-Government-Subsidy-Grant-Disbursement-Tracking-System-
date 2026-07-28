@@ -1,0 +1,17 @@
+$kind: http-request
+description: ""
+url: http://localhost:8080/api/application/submit
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"landSize\": \"5 acres\",\r
+
+    \    \"income\": \"50000\",\r
+
+    \    \"occupation\": \"Farmer\"\r
+
+    }"
+examples: .resources/application submit.resources/examples
+order: 1784915335801

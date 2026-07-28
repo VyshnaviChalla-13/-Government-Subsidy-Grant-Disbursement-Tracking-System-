@@ -1,0 +1,25 @@
+$kind: http-request
+name: Update Officer
+description: ""
+url: http://localhost:8080/superadmin/officers/1
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"department\": {\r
+
+    \        \"departmentId\": 1\r
+
+    \    },\r
+
+    \    \"employeeCode\": \"001\",\r
+
+    \    \"designation\": \"District Officer\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfQURNSU4iLCJpYXQiOjE3ODQ5MjI2NzgsImV4cCI6MTc4NTAwOTA3OH0.OYua0WXA4J93NueGh5Qv7OAQyawXotRALS-JnLIuVSmZyc0cs68xfD__JUPwdD2h
+order: 4501362553965278
