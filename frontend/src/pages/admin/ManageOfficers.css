@@ -1,0 +1,13 @@
+.card{
+    border:none;
+    border-radius:12px;
+}
+
+table th,
+table td{
+    vertical-align:middle;
+}
+
+.btn{
+    border-radius:8px;
+}

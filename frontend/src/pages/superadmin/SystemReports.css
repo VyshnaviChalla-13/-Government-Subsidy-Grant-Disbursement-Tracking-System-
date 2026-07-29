@@ -1,0 +1,12 @@
+.card{
+    border-radius:12px;
+}
+
+.card h2{
+    font-weight:bold;
+}
+
+.table th,
+.table td{
+    vertical-align:middle;
+}

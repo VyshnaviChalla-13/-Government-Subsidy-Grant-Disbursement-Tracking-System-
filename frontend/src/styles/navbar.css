@@ -1,26 +1,258 @@
-.navbar{
-    min-height:80px;
+/* ==========================================
+   NAVBAR
+========================================== */
+
+.custom-navbar{
+    background:linear-gradient(135deg,#4F46E5,#4338CA);
+    padding:10px 0;
+    border-bottom:none;
+    box-shadow:0 6px 20px rgba(67,56,202,.25);
 }
 
-.navbar-brand{
-    font-size:24px;
+/* ==========================================
+   LOGO
+========================================== */
+
+.brand-section{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    text-decoration:none;
+}
+
+.brand-icon{
+
+    width:58px;
+    height:58px;
+
+    border-radius:16px;
+
+    background:linear-gradient(135deg,#2563EB,#4F46E5);
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    color:#fff;
+
+    font-size:26px;
+
+    box-shadow:0 10px 24px rgba(37,99,235,.30);
+
+}
+
+.brand-text h5{
+    margin:0;
+    font-size:20px;
     font-weight:700;
+    color:#FFFFFF;
 }
 
-.navbar-brand i{
-    font-size:30px;
+.brand-text small{
+    font-size:13px;
+    color:#E0E7FF;
+    opacity:0.9;
+}
+
+/* ==========================================
+   MENU
+========================================== */
+
+.navbar-nav{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.nav-item{
+
+    display:flex;
+
 }
 
 .nav-link{
-    color:white !important;
-    font-weight:500;
-    margin-left:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:12px 22px !important;
+
+    border-radius:40px;
+
+    color:#fff !important;
+
+    font-size:17px;
+    font-weight:600;
+
+    line-height:1;
+
+    transition:.35s;
 }
+
+/* Hover */
 
 .nav-link:hover{
-    color:#FFC107 !important;
+    background:rgba(255,255,255,0.15);
+    color:#FFFFFF !important;
+    transform:translateY(-2px);
 }
 
-.btn{
-    border-radius:8px;
+/* Active */
+
+.nav-link.active{
+    background:#FFFFFF;
+    color:#4338CA !important;
+
+    box-shadow:0 8px 20px rgba(255,255,255,.20);
+}
+
+/* ==========================================
+   RIGHT BUTTONS
+========================================== */
+
+.nav-buttons{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+}
+
+.login-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    width:145px;
+    height:48px;
+
+    border-radius:40px;
+
+    border:2px solid #fff;
+
+    color:#fff;
+    background:transparent;
+
+    text-decoration:none;
+
+    font-size:17px;
+    font-weight:700;
+
+    transition:.35s;
+}
+
+.login-btn:hover{
+    background:#ffffff;
+    color:#4338CA;
+    transform:translateY(-2px);
+}
+.register-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    width:160px;
+    height:48px;
+
+    border-radius:40px;
+
+    text-decoration:none;
+
+    background:linear-gradient(135deg,#FFC107,#F59E0B);
+
+    color:#1F2937;
+
+    font-size:17px;
+    font-weight:700;
+
+    transition:.35s;
+
+    box-shadow:0 10px 25px rgba(245,158,11,.35);
+}
+
+.register-btn:hover{
+
+    transform:translateY(-2px);
+
+    background:linear-gradient(135deg,#FFD54F,#F59E0B);
+
+    color:#111827;
+
+}
+
+/* ==========================================
+   TOGGLER
+========================================== */
+
+.navbar-toggler{
+
+    border:none;
+
+}
+
+.navbar-toggler:focus{
+
+    box-shadow:none;
+
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media(max-width:992px){
+
+    .navbar-nav{
+
+        margin-top:20px;
+
+        gap:10px;
+
+    }
+
+    .nav-link{
+
+        width:100%;
+
+        min-width:100%;
+
+        justify-content:flex-start;
+
+        padding-left:20px !important;
+
+    }
+
+    .nav-buttons{
+
+        margin-top:20px;
+
+        flex-direction:column;
+
+        width:100%;
+
+    }
+
+    .login-btn,
+    .register-btn{
+
+        width:100%;
+
+    }
+
+    .brand-text h5{
+
+        font-size:18px;
+
+    }
+
+    .brand-text small{
+
+        font-size:12px;
+
+    }
+
 }

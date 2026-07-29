@@ -1,0 +1,10 @@
+$kind: http-request
+name: Browse All Application
+description: ""
+url: http://localhost:8080/applications/all
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfQURNSU4iLCJpYXQiOjE3ODQ5MTY1MjUsImV4cCI6MTc4NTAwMjkyNX0.HAEJM2U7Ean8cDwqSSizu3bk_-fx_AEY8LTCwoCMHPBOE1xsez5F4MaGmQuo7jof
+order: 1651545014857505

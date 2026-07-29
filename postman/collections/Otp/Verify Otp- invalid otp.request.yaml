@@ -1,0 +1,12 @@
+$kind: http-request
+name: Verify Otp-> invalid otp
+description: ""
+url: http://localhost:8080/otp/verify?mobileNumber=9896543210&otp=184245
+method: POST
+queryParams:
+  mobileNumber: "9896543210"
+  otp: "184245"
+body:
+  type: json
+  content: ""
+order: 4197043912154693

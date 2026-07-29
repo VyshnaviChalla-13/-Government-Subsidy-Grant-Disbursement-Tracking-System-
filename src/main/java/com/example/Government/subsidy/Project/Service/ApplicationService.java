@@ -1,15 +1,18 @@
-﻿package com.example.Government.subsidy.Project.Service;
+package com.example.Government.subsidy.Project.Service;
 
 import com.example.Government.subsidy.Project.Entity.Application;
+import com.example.Government.subsidy.Project.Entity.Officer;
 import com.example.Government.subsidy.Project.Entity.Scheme;
 import com.example.Government.subsidy.Project.Entity.User;
 import com.example.Government.subsidy.Project.Repository.ApplicationRepository;
+import com.example.Government.subsidy.Project.Repository.OfficerRepository;
 import com.example.Government.subsidy.Project.Repository.SchemeRepository;
 import com.example.Government.subsidy.Project.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -24,67 +27,33 @@ public class ApplicationService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private OfficerRepository officerRepository;
+
     private String currentPrincipalMobile() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null ? auth.getName() : null;
     }
 
-    private boolean currentUserIsOfficer() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null) return false;
-        return auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("OFFICER"));
-    }
-
-    public Application getApplicationByIdForCurrentUser(Integer id) {
-        Application application = applicationRepository.findById(id).orElse(null);
-        if (application == null) return null;
-        if (currentUserIsOfficer()) return application;
-
+    private boolean isAssignedToCurrentOfficer(Application application) {
+        if (application.getAssignedOfficer() == null) return false;
+        String officerMobile = application.getAssignedOfficer().getUser().getMobileNumber();
         String callerMobile = currentPrincipalMobile();
-        String ownerMobile = application.getBeneficiary().getMobileNumber();
-        return (ownerMobile != null && ownerMobile.equals(callerMobile)) ? application : null;
-    }
-
-    public String resubmitApplicationForCurrentUser(Integer id, String customFields) {
-        Application application = applicationRepository.findById(id).orElse(null);
-        if (application == null) return "Application not found";
-
-        String callerMobile = currentPrincipalMobile();
-        String ownerMobile = application.getBeneficiary().getMobileNumber();
-        if (ownerMobile == null || !ownerMobile.equals(callerMobile)) {
-            return "You are not authorized to resubmit this application";
-        }
-        if (!"RETURNED".equalsIgnoreCase(application.getStatus())) {
-            return "Only returned applications can be resubmitted";
-        }
-        application.setCustomFields(customFields);
-        application.setStatus("RESUBMITTED");
-        applicationRepository.save(application);
-        return "Application resubmitted successfully";
+        return officerMobile != null && officerMobile.equals(callerMobile);
     }
 
     public String submitApplication(Integer beneficiaryId, Integer schemeId, String customFields) {
-
         User beneficiary = userRepository.findById(beneficiaryId).orElse(null);
-        if (beneficiary == null) {
-            return "Beneficiary not found";
-        }
+        if (beneficiary == null) return "Beneficiary not found";
 
         Scheme scheme = schemeRepository.findById(schemeId).orElse(null);
-        if (scheme == null) {
-            return "Scheme not found";
-        }
-
-        if (!"ACTIVE".equals(scheme.getStatus())) {
-            return "Scheme is not active";
-        }
+        if (scheme == null) return "Scheme not found";
+        if (!"ACTIVE".equals(scheme.getStatus())) return "Scheme is not active";
 
         Application application = new Application();
         application.setBeneficiary(beneficiary);
         application.setScheme(scheme);
         application.setCustomFields(customFields);
-
         applicationRepository.save(application);
 
         return "Application submitted successfully with number " + application.getApplicationNumber();
@@ -100,34 +69,97 @@ public class ApplicationService {
 
     public List<Application> searchApplications(String keyword) {
         List<Application> byName = applicationRepository.findByBeneficiary_FullNameContainingIgnoreCase(keyword);
-        if (!byName.isEmpty()) {
-            return byName;
-        }
+        if (!byName.isEmpty()) return byName;
         return applicationRepository.findByBeneficiary_AadhaarNumberContaining(keyword);
     }
 
     public String resubmitApplication(Integer id, String customFields) {
         Application application = applicationRepository.findById(id).orElse(null);
-        if (application == null) {
-            return "Application not found";
-        }
-        if (!"RETURNED".equalsIgnoreCase(application.getStatus())) {
+        if (application == null) return "Application not found";
+        if (!"RETURNED".equalsIgnoreCase(application.getStatus()))
             return "Only returned applications can be resubmitted";
-        }
         application.setCustomFields(customFields);
         application.setStatus("RESUBMITTED");
         applicationRepository.save(application);
         return "Application resubmitted successfully";
     }
 
-    public String updateStatus(Integer id, String newStatus, String remarks) {
+    public String assignOfficer(Integer applicationId, Integer officerId) {
+        Application application = applicationRepository.findById(applicationId).orElse(null);
+        if (application == null) return "Application not found";
+        Officer officer = officerRepository.findById(officerId).orElse(null);
+        if (officer == null) return "Officer not found";
+        application.setAssignedOfficer(officer);
+        applicationRepository.save(application);
+        return "Application assigned to officer successfully";
+    }
+
+    public String fieldApprove(Integer id, String remarks) {
         Application application = applicationRepository.findById(id).orElse(null);
-        if (application == null) {
-            return "Application not found";
-        }
-        application.setStatus(newStatus);
+        if (application == null) return "Application not found";
+        if (!isAssignedToCurrentOfficer(application)) return "You are not assigned to this application";
+        if (!"SUBMITTED".equalsIgnoreCase(application.getStatus())
+                && !"RESUBMITTED".equalsIgnoreCase(application.getStatus()))
+            return "Application is not awaiting field review";
+        application.setStatus("FIELD_APPROVED");
         application.setRemarks(remarks);
         applicationRepository.save(application);
-        return "Application status updated to " + newStatus;
+        return "Application approved at field level";
+    }
+
+    public String fieldReturn(Integer id, String remarks) {
+        Application application = applicationRepository.findById(id).orElse(null);
+        if (application == null) return "Application not found";
+        if (!isAssignedToCurrentOfficer(application)) return "You are not assigned to this application";
+        if (remarks == null || remarks.isBlank()) return "Remarks are mandatory when returning an application";
+        application.setStatus("RETURNED");
+        application.setRemarks(remarks);
+        applicationRepository.save(application);
+        return "Application returned to beneficiary for correction";
+    }
+
+    public String fieldReject(Integer id, String remarks) {
+        Application application = applicationRepository.findById(id).orElse(null);
+        if (application == null) return "Application not found";
+        if (!isAssignedToCurrentOfficer(application)) return "You are not assigned to this application";
+        if (remarks == null || remarks.isBlank()) return "Remarks are mandatory when rejecting an application";
+        application.setStatus("REJECTED");
+        application.setRemarks(remarks);
+        applicationRepository.save(application);
+        return "Application rejected";
+    }
+
+    public String verifyApprove(Integer id, String remarks) {
+        Application application = applicationRepository.findById(id).orElse(null);
+        if (application == null) return "Application not found";
+        if (!isAssignedToCurrentOfficer(application)) return "You are not assigned to this application";
+        if (!"FIELD_APPROVED".equalsIgnoreCase(application.getStatus()))
+            return "Application has not passed field review yet";
+        application.setStatus("VERIFICATION_APPROVED");
+        application.setRemarks(remarks);
+        applicationRepository.save(application);
+        return "Application approved by verification officer";
+    }
+
+    public String verifyReturn(Integer id, String remarks) {
+        Application application = applicationRepository.findById(id).orElse(null);
+        if (application == null) return "Application not found";
+        if (!isAssignedToCurrentOfficer(application)) return "You are not assigned to this application";
+        if (remarks == null || remarks.isBlank()) return "Remarks are mandatory when returning an application";
+        application.setStatus("RETURNED");
+        application.setRemarks(remarks);
+        applicationRepository.save(application);
+        return "Application returned by verification officer";
+    }
+
+    public String verifyReject(Integer id, String remarks) {
+        Application application = applicationRepository.findById(id).orElse(null);
+        if (application == null) return "Application not found";
+        if (!isAssignedToCurrentOfficer(application)) return "You are not assigned to this application";
+        if (remarks == null || remarks.isBlank()) return "Remarks are mandatory when rejecting an application";
+        application.setStatus("REJECTED");
+        application.setRemarks(remarks);
+        applicationRepository.save(application);
+        return "Application rejected by verification officer";
     }
 }

@@ -1,4 +1,4 @@
-﻿package com.example.Government.subsidy.Project.Entity;
+package com.example.Government.subsidy.Project.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -32,6 +32,11 @@ public class Application {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Scheme scheme;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_officer_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Officer assignedOfficer;
+
     @Column(name = "custom_fields", columnDefinition = "TEXT")
     private String customFields;
 
@@ -51,12 +56,8 @@ public class Application {
     public void prePersist() {
         submittedAt = LocalDateTime.now();
         lastUpdated = LocalDateTime.now();
-        if (status == null) {
-            status = "SUBMITTED";
-        }
-        if (applicationNumber == null) {
-            applicationNumber = "APP-" + System.currentTimeMillis();
-        }
+        if (status == null) status = "SUBMITTED";
+        if (applicationNumber == null) applicationNumber = "APP-" + System.currentTimeMillis();
     }
 
     @PreUpdate

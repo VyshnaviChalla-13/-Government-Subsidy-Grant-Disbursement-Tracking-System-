@@ -1,0 +1,33 @@
+$kind: http-request
+name: Update scheme Invalid Id -> Scheme not found
+description: ""
+url: http://localhost:8080/superadmin/schemes/99
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"schemeName\":\"PM Kisan Updated\",\r
+
+    \    \"description\":\"Updated description\",\r
+
+    \    \"totalBudget\":15000000,\r
+
+    \    \"minGrant\":2000,\r
+
+    \    \"maxGrant\":60000,\r
+
+    \    \"applicationStartDate\":\"2026-08-01\",\r
+
+    \    \"applicationEndDate\":\"2027-01-01\",\r
+
+    \    \"eligibilityScore\":90,\r
+
+    \    \"status\":\"INACTIVE\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfQURNSU4iLCJpYXQiOjE3ODQ5MjI2NzgsImV4cCI6MTc4NTAwOTA3OH0.OYua0WXA4J93NueGh5Qv7OAQyawXotRALS-JnLIuVSmZyc0cs68xfD__JUPwdD2h
+order: 4487934775048676
