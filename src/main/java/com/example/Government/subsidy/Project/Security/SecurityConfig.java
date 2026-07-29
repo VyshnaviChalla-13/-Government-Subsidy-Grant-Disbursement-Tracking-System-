@@ -37,7 +37,7 @@ public class SecurityConfig {
                                 "/otp/**"
                         ).permitAll()
                         .requestMatchers("/superadmin/**")
-                        .hasRole("SUPER_ADMIN")
+                        .hasRole("ADMIN")
 
                         .anyRequest().authenticated()
                 )
