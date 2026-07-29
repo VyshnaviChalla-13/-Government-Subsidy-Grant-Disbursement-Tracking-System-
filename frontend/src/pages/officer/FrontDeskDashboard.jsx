@@ -22,6 +22,8 @@ function FrontDeskDashboard() {
     const [schemeFilter, setSchemeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [selectedApplication, setSelectedApplication] = useState(null);
+    const [actionType, setActionType] = useState("");
+    const [reason, setReason] = useState("");
     const navigate = useNavigate();
 
     const filteredApplications = applications.filter((app) => {
@@ -52,32 +54,37 @@ function FrontDeskDashboard() {
         setApplications(updated);
         saveApplications(updated);
     };
+    const openReasonPopup = (application, action) => {
+        setSelectedApplication(application);
+        setActionType(action);
+        setReason("");
+    };
+    const submitReason = () => {
+
+        const updated = applications.map((app) =>
+            app.id === selectedApplication.id
+                ? {
+                    ...app,
+                    status: actionType,
+                    reason: reason
+                }
+                : app
+        );
+
+        setApplications(updated);
+        saveApplications(updated);
+
+        setSelectedApplication(null);
+        setReason("");
+        setActionType("");
+    };
 
     return (
 
         <div className="dashboard-layout">
 
-            {/* Sidebar */}
 
-            <aside className="sidebar">
 
-                <h2>Gov Portal</h2>
-
-                <ul>
-
-                    <li>🏠 Dashboard</li>
-
-                    <li>📄 Applications</li>
-
-                    <li>📋 Schemes</li>
-
-                    <li>👤 Profile</li>
-
-                    <li>🚪 Logout</li>
-
-                </ul>
-
-            </aside>
 
 
 
@@ -203,6 +210,7 @@ function FrontDeskDashboard() {
                         <option>Pending</option>
 
                         <option>Forwarded</option>
+                        <option>Returned</option>
 
                         <option>Rejected</option>
 
@@ -274,27 +282,24 @@ function FrontDeskDashboard() {
                                 </button>
 
                                 <button
-                                    onClick={() =>
-                                        updateStatus(
-                                            app.id,
-                                            "Forwarded"
-                                        )
-                                    }
+                                    onClick={() => updateStatus(app.id, "Forwarded")}
                                 >
                                     Forward
                                 </button>
 
                                 <button
-                                    onClick={() =>
-                                        updateStatus(
-                                            app.id,
-                                            "Rejected"
-                                        )
-                                    }
+                                    className="return-btn"
+                                    onClick={() => openReasonPopup(app, "Returned")}
                                 >
-                                    Reject
+                                    ↩ Return
                                 </button>
 
+                                <button
+                                    className="reject-btn"
+                                    onClick={() => openReasonPopup(app, "Rejected")}
+                                >
+                                    ❌ Reject
+                                </button>
                             </td>
 
                         </tr>
@@ -405,6 +410,54 @@ function FrontDeskDashboard() {
                     </div>
 
                 )}
+                {selectedApplication &&
+                    (actionType === "Returned" || actionType === "Rejected") && (
+
+                        <div className="modal-overlay">
+
+                            <div className="reason-modal">
+
+                                <h2>{actionType} Application</h2>
+
+                                <p>
+                                    Please provide the reason before continuing.
+                                </p>
+
+                                <textarea
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                    placeholder="Enter reason..."
+                                    rows="5"
+                                />
+
+                                <div className="reason-buttons">
+
+                                    <button
+                                        className="submit-btn"
+                                        disabled={reason.trim() === ""}
+                                        onClick={submitReason}
+                                    >
+                                        Submit
+                                    </button>
+
+                                    <button
+                                        className="cancel-btn"
+                                        onClick={() => {
+                                            setSelectedApplication(null);
+                                            setReason("");
+                                            setActionType("");
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    )}
 
             </main>
 
