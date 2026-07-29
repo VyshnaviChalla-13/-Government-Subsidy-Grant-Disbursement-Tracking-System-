@@ -1,19 +1,32 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/login.css";
+
+// Maps backend role strings to the dashboard each role should land on.
+const ROLE_HOME = {
+    ROLE_SUPER_ADMIN: "/superadmin/dashboard",
+    ROLE_DEPT_ADMIN: "/admin/dashboard",
+    ROLE_FRONT_DESK_OFFICER: "/officer/frontdesk",
+    ROLE_VERIFICATION_OFFICER: "/officer/verification",
+    ROLE_FINANCE_OFFICER: "/finance",
+    ROLE_BENEFICIARY: "/dashboard",
+};
 
 function Login() {
 
     const navigate = useNavigate();
     const location = useLocation();
+    const { login } = useAuth();
 
     const [mobileNumber, setMobileNumber] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({});
+    const [submitting, setSubmitting] = useState(false);
 
     console.log("Location State:", location.state);
 
-    const handleLogin = (e) => {
+    const handleLogin =  async (e) => {
         e.preventDefault();
 
         let newErrors = {};
@@ -41,17 +54,40 @@ function Login() {
             return;
         }
 
-        // Existing Navigation
-        if (location.state?.fromApply) {
-            navigate("/beneficiary/apply", {
-                state: {
-                    schemeId: location.state?.schemeId
+//         // Existing Navigation
+//         if (location.state?.fromApply) {
+//             navigate("/beneficiary/apply", {
+//                 state: {
+//                     schemeId: location.state?.schemeId
+//                 }
+//             });
+//         } else {
+//             navigate("/role-selection");
+//         }
+//     };
+
+        setSubmitting(true);
+
+        try {
+                    const user = await login(mobileNumber, password);
+
+                    if (location.state?.fromApply) {
+                        navigate("/beneficiary/apply", {
+                            state: {
+                                schemeId: location.state?.schemeId
+                            }
+                        });
+                    } else if (location.state?.from) {
+                        navigate(location.state.from);
+                    } else {
+                        navigate(ROLE_HOME[user.role] || "/role-selection");
+                    }
+                } catch (err) {
+                    setErrors({ form: err.message || "Login failed. Please try again." });
+                } finally {
+                    setSubmitting(false);
                 }
-            });
-        } else {
-            navigate("/role-selection");
-        }
-    };
+            };
 
     return (
 
@@ -141,6 +177,12 @@ function Login() {
                                 {/* LOGIN FORM */}
 
                                 <form onSubmit={handleLogin}>
+
+                                    {errors.form && (
+                                        <div className="alert alert-danger py-2">
+                                            {errors.form}
+                                        </div>
+                                    )}
 
                                     {/* MOBILE NUMBER */}
 
@@ -239,11 +281,12 @@ function Login() {
 
                                     <button
                                         type="submit"
-                                        className="btn login-btn w-100">
+                                        className="btn login-btn w-100"
+                                        disabled={submitting}>
 
                                         <i className="fa-solid fa-right-to-bracket me-2"></i>
 
-                                        Login
+                                        {submitting? "Signing in..." : "Login"}
 
                                     </button>
 
