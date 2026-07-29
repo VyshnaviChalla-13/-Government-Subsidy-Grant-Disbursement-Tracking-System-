@@ -1,7 +1,13 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { registerRequest } from "../../api/authApi";
 import "../../styles/register.css";
 
 const Register = () => {
+
+    const navigate = useNavigate();
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState("");
 
     const [formData, setFormData] = useState({
         fullName: "",
@@ -136,13 +142,52 @@ const Register = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
 
         e.preventDefault();
 
-        if (validateForm()) {
-            alert("Registration Successful");
-            console.log(formData);
+        setSubmitError("");
+
+        if (!validateForm()) {
+            return;
+        }
+
+        // Map the form state 1:1 onto the backend User entity. confirmPassword
+        // is UI-only and never sent.
+        const payload = {
+            fullName: formData.fullName,
+            email: formData.email,
+            mobileNumber: formData.mobileNumber,
+            password: formData.password,
+            aadhaarNumber: formData.aadhaarNumber,
+            dateOfBirth: formData.dateOfBirth,
+            gender: formData.gender,
+            address: formData.address,
+            stateId: formData.stateId,
+            districtId: formData.districtId,
+            talukaId: formData.talukaId,
+            villageId: formData.villageId,
+            pincode: formData.pincode,
+            occupation: formData.occupation,
+            disabilityStatus: formData.disabilityStatus,
+            maritalStatus: formData.maritalStatus,
+            annualIncome: Number(formData.annualIncome),
+            category: formData.category,
+            bankName: formData.bankName,
+            accountHolderName: formData.accountHolderName,
+            accountNumber: formData.accountNumber,
+            ifscCode: formData.ifscCode,
+        };
+
+        setSubmitting(true);
+
+        try {
+            await registerRequest(payload);
+            navigate("/login", { state: { registered: true } });
+        } catch (err) {
+            setSubmitError(err.message || "Registration failed. Please try again.");
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -650,13 +695,20 @@ const Register = () => {
                         </div>
 
                     </div>
+                    {submitError && (
+                        <div className="alert alert-danger text-center">
+                            {submitError}
+                        </div>
+                    )}
+
                     <div className="text-center mt-4">
 
                         <button
                             type="submit"
                             className="btn btn-success btn-lg px-5"
+                            disabled={submitting}
                         >
-                            Submit Application
+                            {submitting ? "Submitting..." : "Submit Application"}
                         </button>
 
                     </div>
