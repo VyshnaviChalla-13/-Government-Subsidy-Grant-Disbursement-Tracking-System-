@@ -1,12 +1,11 @@
 /* Dashboard Layout */
 
 .dashboard-layout {
-    display: flex;
+    width: 100%;
     min-height: 100vh;
     background: #f5f7fb;
     font-family: Arial, Helvetica, sans-serif;
 }
-
 
 /* Sidebar */
 
@@ -43,10 +42,11 @@
 /* Main Content */
 
 .main-content {
-    flex: 1;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
     padding: 30px;
 }
-
 
 /* Topbar */
 
@@ -339,4 +339,70 @@
 
 .view-btn:hover{
     background:#1d4ed8;
+}
+.return-btn {
+    background: #ff9800;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    margin-left: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.return-btn:hover {
+    background: #e68900;
+}
+.reason-modal{
+    width:450px;
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 5px 20px rgba(0,0,0,.2);
+}
+
+.reason-modal h2{
+    margin-bottom:10px;
+}
+
+.reason-modal p{
+    margin-bottom:15px;
+}
+
+.reason-modal textarea{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    resize:none;
+    margin-bottom:20px;
+}
+
+.reason-buttons{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+}
+
+.submit-btn{
+    background:#1e88e5;
+    color:white;
+    border:none;
+    padding:8px 18px;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.submit-btn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+.cancel-btn{
+    background:#e53935;
+    color:white;
+    border:none;
+    padding:8px 18px;
+    border-radius:5px;
+    cursor:pointer;
 }
