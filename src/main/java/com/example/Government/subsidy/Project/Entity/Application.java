@@ -1,4 +1,4 @@
-﻿package com.example.Government.subsidy.Project.Entity;
+package com.example.Government.subsidy.Project.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
