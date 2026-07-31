@@ -406,3 +406,9 @@
     border-radius:5px;
     cursor:pointer;
 }
+.reason-text{
+    margin-top:5px;
+    color:#c62828;
+    font-size:12px;
+    font-style:italic;
+}
