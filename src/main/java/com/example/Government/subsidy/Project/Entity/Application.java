@@ -39,7 +39,14 @@ public class Application {
 
     @Column(name = "custom_fields", columnDefinition = "TEXT")
     private String customFields;
+    @Column(name = "eligibility_score")
+    private Integer eligibilityScore;
 
+    @Column(name = "eligibility_status")
+    private String eligibilityStatus;
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
     @Column(nullable = false, length = 40)
     private String status = "SUBMITTED";
 
