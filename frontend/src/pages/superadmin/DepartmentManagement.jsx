@@ -39,6 +39,13 @@ function DepartmentManagement() {
     ]);
 
     const [search, setSearch] = useState("");
+    const [showForm, setShowForm] = useState(false);
+
+    const [departmentName, setDepartmentName] = useState("");
+
+    const [departmentDescription, setDepartmentDescription] = useState("");
+
+    const [departmentStatus, setDepartmentStatus] = useState("Active");
 
     const filteredDepartments = departments.filter(
         (dept) =>
@@ -48,23 +55,27 @@ function DepartmentManagement() {
 
     const addDepartment = () => {
 
-        const name = prompt("Department Name");
-        if (!name) return;
-
-        const admin = prompt("Department Admin");
-        if (!admin) return;
+        if (!departmentName.trim()) {
+            alert("Please enter Department Name.");
+            return;
+        }
 
         const newDepartment = {
             id: `DEP00${departments.length + 1}`,
-            name,
-            admin,
+            name: departmentName,
+            admin: departmentDescription,
             officers: 0,
             schemes: 0,
-            status: "Active",
+            status: departmentStatus,
         };
 
         setDepartments([...departments, newDepartment]);
 
+        setDepartmentName("");
+        setDepartmentDescription("");
+        setDepartmentStatus("Active");
+
+        setShowForm(false);
     };
 
     const toggleStatus = (id) => {
@@ -133,7 +144,7 @@ function DepartmentManagement() {
 
                     <button
                         className="btn btn-primary"
-                        onClick={addDepartment}
+                        onClick={() => setShowForm(true)}
                     >
                         + Add Department
                     </button>
@@ -235,6 +246,59 @@ function DepartmentManagement() {
                 </table>
 
             </div>
+            {showForm && (
+
+                <div className="modal-overlay">
+
+                    <div className="department-modal">
+
+                        <h3>Create Department</h3>
+
+                        <input
+                            type="text"
+                            placeholder="Department Name"
+                            value={departmentName}
+                            onChange={(e) => setDepartmentName(e.target.value)}
+                        />
+
+                        <textarea
+                            placeholder="Department Description"
+                            value={departmentDescription}
+                            onChange={(e) => setDepartmentDescription(e.target.value)}
+                            rows="4"
+                        />
+
+                        <select
+                            value={departmentStatus}
+                            onChange={(e) => setDepartmentStatus(e.target.value)}
+                        >
+                            <option>Active</option>
+                            <option>Inactive</option>
+                        </select>
+
+                        <div className="modal-buttons">
+
+                            <button
+                                className="btn btn-success"
+                                onClick={addDepartment}
+                            >
+                                Save
+                            </button>
+
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => setShowForm(false)}
+                            >
+                                Cancel
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            )}
 
         </div>
 

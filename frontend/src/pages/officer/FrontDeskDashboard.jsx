@@ -259,13 +259,16 @@ function FrontDeskDashboard() {
                             <td>{app.submittedDate}</td>
 
                             <td>
+    <span className={app.status.toLowerCase().replace(/\s+/g, "-")}>
+        {app.status}
+    </span>
 
-                                    <span
-                                        className={app.status.toLowerCase()}
-                                    >
-                                        {app.status}
-                                    </span>
-
+                                {(app.status === "Returned" || app.status === "Rejected") &&
+                                    app.reason && (
+                                        <div className="reason-text">
+                                            Reason: {app.reason}
+                                        </div>
+                                    )}
                             </td>
 
                             <td>
