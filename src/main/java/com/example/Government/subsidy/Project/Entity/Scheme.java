@@ -48,6 +48,14 @@ public class Scheme {
 
     @Column(name = "max_grant", nullable = false)
     private BigDecimal maxGrant;
+    @Column(name = "eligibility_score")
+    private Integer eligibilityScore;
+
+    @Column(name = "eligibility_status")
+    private String eligibilityStatus;
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
 
     @Column(name = "application_start_date", nullable = false)
     private LocalDate applicationStartDate;
