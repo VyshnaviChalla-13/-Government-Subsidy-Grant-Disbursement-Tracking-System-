@@ -1,0 +1,17 @@
+$kind: http-request
+name: Login User
+description: ""
+url: http://localhost:8080/users/login
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"mobileNumber\":9999999999,\r
+
+    \    \"password\":\"admin123\" \r
+
+    }"
+auth:
+  type: bearer
+order: 359163430890297

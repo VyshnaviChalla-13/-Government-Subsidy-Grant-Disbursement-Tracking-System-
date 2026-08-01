@@ -1,59 +1,67 @@
 import "./FinanceDashboard.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import defaultApplications from "../../data/applications";
+
+import {
+    getApplications,
+    saveApplications,
+} from "../../utils/applicationStorage";
 function FinanceDashboard() {
 
-    const [payments, setPayments] = useState([
-        {
-            id: "APP101",
-            beneficiary: "Rahul Kumar",
-            scheme: "Farmer Scheme",
-            amount: "₹25,000",
-            status: "Pending",
-            bank: "State Bank of India",
-            account: "XXXX1234",
-            ifsc: "SBIN0001234",
-            date: "12-07-2026"
-        },
-        {
-            id: "APP102",
-            beneficiary: "Anjali Sharma",
-            scheme: "Education Scheme",
-            amount: "₹15,000",
-            status: "Completed",
-            bank: "Canara Bank",
-            account: "XXXX5678",
-            ifsc: "CNRB0005678",
-            date: "11-07-2026"
-        },
-        {
-            id: "APP103",
-            beneficiary: "Suresh",
-            scheme: "Housing Scheme",
-            amount: "₹1,50,000",
-            status: "Pending",
-            bank: "Indian Bank",
-            account: "XXXX9012",
-            ifsc: "IDIB0009012",
-            date: "10-07-2026"
-        }
-    ]);
-
+    const [payments, setPayments] = useState([]);
     const [search, setSearch] = useState("");
     const [schemeFilter, setSchemeFilter] = useState("All");
     const [statusFilter, setStatusFilter] = useState("All");
     const [selectedPayment, setSelectedPayment] = useState(null);
     const navigate = useNavigate();
+    useEffect(() => {
+        const allApplications = getApplications(defaultApplications);
+
+        const approvedApplications = allApplications
+            .filter(
+                app =>
+                    app.status === "Approved" ||
+                    app.status === "Payment Completed"
+            )
+            .map(app => ({
+                id: app.id,
+                beneficiary: app.applicant,
+                scheme: app.scheme,
+                amount: app.amount || "₹25,000",
+
+                status:
+                    app.status === "Payment Completed"
+                        ? "Completed"
+                        : "Pending",
+
+                bank: "State Bank of India",
+                account: "XXXX1234",
+                ifsc: "SBIN0001234",
+                date: app.submittedDate
+            }));
+
+        setPayments(approvedApplications);
+    }, []);
 
     const handlePayment = (id) => {
-        setPayments(
-            payments.map((payment) =>
-                payment.id === id
-                    ? { ...payment, status: "Completed" }
-                    : payment
-            )
+
+        const updatedApplications = getApplications(defaultApplications).map(app =>
+            app.id === id
+                ? { ...app, status: "Payment Completed" }
+                : app
         );
+
+        saveApplications(updatedApplications);
+
+        const updatedPayments = payments.map(payment =>
+            payment.id === id
+                ? { ...payment, status: "Completed" }
+                : payment
+        );
+
+        setPayments(updatedPayments);
     };
     return (
         <div className="finance-dashboard">
@@ -117,9 +125,10 @@ function FinanceDashboard() {
                     onChange={(e) => setSchemeFilter(e.target.value)}
                 >
                     <option value="All">All Schemes</option>
-                    <option value="Farmer Scheme">Farmer Scheme</option>
-                    <option value="Education Scheme">Education Scheme</option>
-                    <option value="Housing Scheme">Housing Scheme</option>
+                    <option value="Farmer Assistance Scheme">Farmer Assistance Scheme</option>
+                    <option value="Student Scholarship Scheme">Student Scholarship Scheme</option>
+                    <option value="Affordable Housing Scheme">Affordable Housing Scheme</option>
+                    <option value="Women Empowerment Scheme">Women Empowerment Scheme</option>
                 </select>
 
                 <select
@@ -201,11 +210,10 @@ function FinanceDashboard() {
                                     👁 View
                                 </button>
 
-                                <button
+                               <button
                                     className="pay-btn"
-                                    onClick={() => {
-                                        navigate(`/payment/${payment.id}`);
-                                    }}
+                                    disabled={payment.status === "Completed"}
+                                    onClick={() => setSelectedPayment(payment)}
                                 >
                                     💰 Pay
                                 </button>

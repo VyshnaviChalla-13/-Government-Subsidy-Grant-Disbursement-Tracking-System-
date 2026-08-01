@@ -1,17 +1,10 @@
 package com.example.Government.subsidy.Project.Repository;
 
-
 import com.example.Government.subsidy.Project.Entity.Scheme;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-
-public interface SchemeRepository extends JpaRepository<Scheme,Integer> {
-
-    Optional<Scheme> findBySchemeName(String schemeName);
-
+@Repository
+public interface SchemeRepository extends JpaRepository<Scheme, Integer> {
     boolean existsBySchemeName(String schemeName);
-
-    List<Scheme> findByStatus(String status);
 }

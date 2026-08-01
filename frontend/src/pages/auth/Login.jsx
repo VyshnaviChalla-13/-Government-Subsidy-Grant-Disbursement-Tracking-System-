@@ -1,26 +1,93 @@
-import React from "react";
-import { Link, useNavigate ,useLocation} from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/login.css";
+
+// Maps backend role strings to the dashboard each role should land on.
+const ROLE_HOME = {
+    ROLE_SUPER_ADMIN: "/superadmin/dashboard",
+    ROLE_DEPT_ADMIN: "/admin/dashboard",
+    ROLE_FRONT_DESK_OFFICER: "/officer/frontdesk",
+    ROLE_VERIFICATION_OFFICER: "/officer/verification",
+    ROLE_FINANCE_OFFICER: "/finance",
+    ROLE_BENEFICIARY: "/dashboard",
+};
 
 function Login() {
 
     const navigate = useNavigate();
     const location = useLocation();
-    console.log("Location State:",location.state);
+    const { login } = useAuth();
 
-    const handleLogin = (e) => {
+    const [mobileNumber, setMobileNumber] = useState("");
+    const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState({});
+    const [submitting, setSubmitting] = useState(false);
+
+    console.log("Location State:", location.state);
+
+    const handleLogin =  async (e) => {
         e.preventDefault();
 
-        if (location.state?.fromApply) {
-            navigate("/beneficiary/apply", {
-                state: {
-                    schemeId: location.state?.schemeId
-                }
-            });
-        } else {
-            navigate("/role-selection");
+        let newErrors = {};
+
+        // Mobile Validation
+        if (!mobileNumber.trim()) {
+            newErrors.mobileNumber = "Mobile Number is required";
+        } else if (!/^[0-9]{10}$/.test(mobileNumber)) {
+            newErrors.mobileNumber = "Enter a valid 10-digit Mobile Number";
         }
-    };
+
+        // Password Validation
+        if (!password.trim()) {
+            newErrors.password = "Password is required";
+        } else if (
+            !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)
+        ) {
+            newErrors.password =
+                "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character.";
+        }
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) {
+            return;
+        }
+
+//         // Existing Navigation
+//         if (location.state?.fromApply) {
+//             navigate("/beneficiary/apply", {
+//                 state: {
+//                     schemeId: location.state?.schemeId
+//                 }
+//             });
+//         } else {
+//             navigate("/role-selection");
+//         }
+//     };
+
+        setSubmitting(true);
+
+        try {
+                    const user = await login(mobileNumber, password);
+
+                    if (location.state?.fromApply) {
+                        navigate("/beneficiary/apply", {
+                            state: {
+                                schemeId: location.state?.schemeId
+                            }
+                        });
+                    } else if (location.state?.from) {
+                        navigate(location.state.from);
+                    } else {
+                        navigate(ROLE_HOME[user.role] || "/role-selection");
+                    }
+                } catch (err) {
+                    setErrors({ form: err.message || "Login failed. Please try again." });
+                } finally {
+                    setSubmitting(false);
+                }
+            };
 
     return (
 
@@ -32,9 +99,7 @@ function Login() {
 
                     <div className="row g-0">
 
-                        {/* ===========================
-                            LEFT SECTION
-                        =========================== */}
+                        {/* LEFT SECTION */}
 
                         <div className="col-lg-4 d-none d-lg-flex">
 
@@ -59,7 +124,7 @@ function Login() {
 
                                 <div className="portal-stats">
 
-                                    <div className="stat-card">
+                                    <div className="login-stat-card">
 
                                         <h3>100%</h3>
 
@@ -67,7 +132,7 @@ function Login() {
 
                                     </div>
 
-                                    <div className="stat-card">
+                                    <div className="login-stat-card">
 
                                         <h3>24×7</h3>
 
@@ -75,7 +140,7 @@ function Login() {
 
                                     </div>
 
-                                    <div className="stat-card">
+                                    <div className="login-stat-card">
 
                                         <h3>Easy</h3>
 
@@ -89,9 +154,7 @@ function Login() {
 
                         </div>
 
-                        {/* ===========================
-                            RIGHT SECTION
-                        =========================== */}
+                        {/* RIGHT SECTION */}
 
                         <div className="col-lg-8">
 
@@ -110,32 +173,45 @@ function Login() {
                                     </p>
 
                                 </div>
-                                {/* ===========================
-                                    LOGIN FORM
-                                =========================== */}
+
+                                {/* LOGIN FORM */}
 
                                 <form onSubmit={handleLogin}>
 
-                                    {/* EMAIL */}
+                                    {errors.form && (
+                                        <div className="alert alert-danger py-2">
+                                            {errors.form}
+                                        </div>
+                                    )}
+
+                                    {/* MOBILE NUMBER */}
 
                                     <div className="mb-4">
 
                                         <label className="form-label">
-                                            Email Address
+                                            Mobile Number
                                         </label>
 
                                         <div className="input-box">
 
-                                            <i className="fa-solid fa-envelope"></i>
+                                            <i className="fa-solid fa-mobile-screen-button"></i>
 
                                             <input
-                                                type="email"
+                                                type="text"
                                                 className="form-control"
-                                                placeholder="Enter your email address"
-                                                required
+                                                placeholder="Enter your Mobile Number"
+                                                value={mobileNumber}
+                                                onChange={(e) => setMobileNumber(e.target.value)}
+                                                maxLength={10}
                                             />
 
                                         </div>
+
+                                        {errors.mobileNumber && (
+                                            <small className="text-danger">
+                                                {errors.mobileNumber}
+                                            </small>
+                                        )}
 
                                     </div>
 
@@ -154,11 +230,18 @@ function Login() {
                                             <input
                                                 type="password"
                                                 className="form-control"
-                                                placeholder="Enter your password"
-                                                required
+                                                placeholder="Enter your Password"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
                                             />
 
                                         </div>
+
+                                        {errors.password && (
+                                            <small className="text-danger">
+                                                {errors.password}
+                                            </small>
+                                        )}
 
                                     </div>
 
@@ -198,18 +281,18 @@ function Login() {
 
                                     <button
                                         type="submit"
-                                        className="btn login-btn w-100">
+                                        className="btn login-btn w-100"
+                                        disabled={submitting}>
 
                                         <i className="fa-solid fa-right-to-bracket me-2"></i>
 
-                                        Login
+                                        {submitting? "Signing in..." : "Login"}
 
                                     </button>
+
                                 </form>
 
-                                {/* ===========================
-                                    REGISTER SECTION
-                                =========================== */}
+                                {/* REGISTER */}
 
                                 <div className="register-box">
 

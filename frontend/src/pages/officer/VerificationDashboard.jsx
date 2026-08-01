@@ -1,36 +1,31 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import "./VerificationDashboard.css";
 
+import defaultApplications from "../../data/applications";
+
+import {
+    getApplications,
+    saveApplications,
+} from "../../utils/applicationStorage";
 function VerificationDashboard() {
 
-    const [applications, setApplications] = useState([
-        {
-            id: "APP101",
-            name: "Rahul Kumar",
-            scheme: "Farmer Scheme",
-            date: "12-07-2026",
-            status: "Pending Verification"
-        },
-        {
-            id: "APP102",
-            name: "Anjali Sharma",
-            scheme: "Education Scheme",
-            date: "11-07-2026",
-            status: "Pending Verification"
-        },
-        {
-            id: "APP103",
-            name: "Suresh",
-            scheme: "Housing Scheme",
-            date: "10-07-2026",
-            status: "Approved"
+    const [applications, setApplications] = useState(() => {
+        const stored = getApplications();
+
+        if (stored.length > 0) {
+            return stored;
         }
-    ]);
+
+        saveApplications(defaultApplications);
+        return defaultApplications;
+    });
 
     const [search, setSearch] = useState("");
     const [schemeFilter, setSchemeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [selectedApplication, setSelectedApplication] = useState(null);
+    const [actionType, setActionType] = useState("");
+    const [reason, setReason] = useState("");
 
     const filteredApplications = applications.filter((app) => {
 
@@ -42,20 +37,56 @@ function VerificationDashboard() {
             schemeFilter === "" || app.scheme === schemeFilter;
 
         const matchesStatus =
-            statusFilter === "" || app.status === statusFilter;
+            statusFilter === "" ||
+            (statusFilter === "Pending Verification"
+                ? app.status === "Forwarded"
+                : app.status === statusFilter);
 
         return matchesSearch && matchesScheme && matchesStatus;
+
     });
 
     const updateStatus = (id, status) => {
 
         const updated = applications.map((app) =>
-            app.id === id ? { ...app, status } : app
+            app.id === id
+                ? {
+                    ...app,
+                    status,
+                }
+                : app
         );
 
         setApplications(updated);
+
+        saveApplications(updated);
+
+    };
+    const openReasonPopup = (application, action) => {
+        setSelectedApplication(application);
+        setActionType(action);
+        setReason("");
     };
 
+    const submitReason = () => {
+
+        const updated = applications.map((app) =>
+            app.id === selectedApplication.id
+                ? {
+                    ...app,
+                    status: actionType,
+                    reason: reason
+                }
+                : app
+        );
+
+        setApplications(updated);
+        saveApplications(updated);
+
+        setSelectedApplication(null);
+        setReason("");
+        setActionType("");
+    };
     return (
 
         <div className="verification-dashboard">
@@ -76,11 +107,16 @@ function VerificationDashboard() {
             <div className="dashboard-cards">
 
                 <div className="card">
+                    <h3>Total Applications</h3>
+                    <p>{applications.length}</p>
+                </div>
+
+                <div className="card">
                     <h3>Pending Verification</h3>
                     <p>
                         {
                             applications.filter(
-                                a => a.status === "Pending Verification"
+                                a => a.status === "Forwarded"
                             ).length
                         }
                     </p>
@@ -120,7 +156,6 @@ function VerificationDashboard() {
                 </div>
 
             </div>
-
             {/* Search & Filters */}
 
             <div className="filter-section">
@@ -137,9 +172,10 @@ function VerificationDashboard() {
                     onChange={(e) => setSchemeFilter(e.target.value)}
                 >
                     <option value="">All Schemes</option>
-                    <option>Farmer Scheme</option>
-                    <option>Education Scheme</option>
-                    <option>Housing Scheme</option>
+                    <option>Farmer Assistance Scheme</option>
+                    <option>Student Scholarship Scheme</option>
+                    <option>Affordable Housing Scheme</option>
+                    <option>Women Empowerment Scheme</option>
                 </select>
 
                 <select
@@ -179,9 +215,9 @@ function VerificationDashboard() {
                     <tr key={app.id}>
 
                         <td>{app.id}</td>
-                        <td>{app.name}</td>
+                        <td>{app.applicant}</td>
                         <td>{app.scheme}</td>
-                        <td>{app.date}</td>
+                        <td>{app.submittedDate}</td>
                         <td>
     <span
         className={
@@ -194,7 +230,9 @@ function VerificationDashboard() {
                         : "status pending"
         }
     >
-        {app.status}
+        {app.status === "Forwarded"
+            ? "Pending Verification"
+            : app.status}
     </span>
                         </td>
 
@@ -216,13 +254,13 @@ function VerificationDashboard() {
 
                             <button
                                 className="return-btn"
-                                onClick={() => updateStatus(app.id, "Returned")}
+                                onClick={() => openReasonPopup(app, "Returned")}
                             >
                                 ↩ Return
                             </button>
                             <button
                                 className="reject-btn"
-                                onClick={() => updateStatus(app.id, "Rejected")}
+                                onClick={() => openReasonPopup(app, "Rejected")}
                             >
                                 ❌ Reject
                             </button>
@@ -256,7 +294,7 @@ function VerificationDashboard() {
 
                             <div>
                                 <strong>Beneficiary Name</strong>
-                                <p>{selectedApplication.name}</p>
+                                <p>{selectedApplication.applicant}</p>
                             </div>
 
                             <div>
@@ -375,6 +413,54 @@ function VerificationDashboard() {
                 </div>
 
             )}
+            {selectedApplication &&
+                (actionType === "Returned" || actionType === "Rejected") && (
+
+                    <div className="modal-overlay">
+
+                        <div className="reason-modal">
+
+                            <h2>{actionType} Application</h2>
+
+                            <p>
+                                Please provide the reason before continuing.
+                            </p>
+
+                            <textarea
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
+                                placeholder="Enter reason..."
+                                rows="5"
+                            />
+
+                            <div className="reason-buttons">
+
+                                <button
+                                    className="submit-btn"
+                                    disabled={reason.trim() === ""}
+                                    onClick={submitReason}
+                                >
+                                    Submit
+                                </button>
+
+                                <button
+                                    className="cancel-btn"
+                                    onClick={() => {
+                                        setSelectedApplication(null);
+                                        setReason("");
+                                        setActionType("");
+                                    }}
+                                >
+                                    Cancel
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                )}
         </div>
 
     );
