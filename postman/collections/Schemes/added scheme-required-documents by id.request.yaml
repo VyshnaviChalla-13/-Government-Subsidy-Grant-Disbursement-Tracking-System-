@@ -1,31 +1,21 @@
 $kind: http-request
-name: officer creation
+name: "added scheme-required-documents by id "
 description: ""
-url: http://localhost:8080/superadmin/officers
+url: http://localhost:8080/schemes/scheme-required-documents/2
 method: POST
 body:
   type: json
   content: "{\r
 
-    \    \"user\": {\r
+    \    \"documentName\": \"Aadhaar Card\",\r
 
-    \        \"userId\": 2\r
+    \    \"mandatory\": true,\r
 
-    \    },\r
-
-    \    \"department\": {\r
-
-    \        \"departmentId\": 1\r
-
-    \    },\r
-
-    \    \"employeeCode\": \"008\",\r
-
-    \    \"designation\": \"finance officer\"\r
+    \    \"points\": 10\r
 
     }"
 auth:
   type: bearer
   credentials:
     token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfU1VQRVJfQURNSU4iLCJpYXQiOjE3ODU1NzY2NDIsImV4cCI6MTc4NTY2MzA0Mn0.4JTuv7qVbJdEFO8K-ImP0QZhqqqQP9p9hUz4JItmAAVz_OQ9_2zG6vXmHQGup7Mr
-order: 1784923171815
+order: 4498997867386855

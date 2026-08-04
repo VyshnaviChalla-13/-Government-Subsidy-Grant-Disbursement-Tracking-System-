@@ -1,0 +1,15 @@
+$kind: http-request
+name: You are not assigned to this application
+description: ""
+url: http://localhost:8080/applications/1/field-approve?remarks=Verified on site
+method: PATCH
+queryParams:
+  remarks: Verified on site
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI4NDg4ODg4ODg4Iiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTc4NTU4MDUyNSwiZXhwIjoxNzg1NjY2OTI1fQ.hiAjxGtyp4taMFSt3Irz3lHLJjLVidLj5hMGAAF4Eg9NsAgndRBlGuecDIUfi9ao
+order: 4503599625832664
