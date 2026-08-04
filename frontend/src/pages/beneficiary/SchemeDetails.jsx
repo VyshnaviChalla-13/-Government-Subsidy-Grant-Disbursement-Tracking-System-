@@ -1,5 +1,6 @@
 import "./SchemeDetails.css";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import {
     ArrowLeft,
     BadgeCheck,
@@ -18,6 +19,7 @@ function SchemeDetails() {
 
     const navigate = useNavigate();
     const location = useLocation();
+    const { isAuthenticated } = useAuth();
     const fromPublic = location.state?.fromPublic || false;
     const { id } = useParams();
     const schemes = {
@@ -151,10 +153,17 @@ function SchemeDetails() {
                     <button
                         className="apply-details-btn"
                         onClick={() => {
-                            if (fromPublic) {
-                                navigate("/login", { state: { fromApply: true, schemeId: id } });
+                            if (isAuthenticated) {
+                                navigate("/beneficiary/apply", {
+                                    state: { schemeId: id }
+                                });
                             } else {
-                                navigate("/beneficiary/apply", { state: { schemeId: id } });
+                                navigate("/login", {
+                                    state: {
+                                        fromApply: true,
+                                        schemeId: id
+                                    }
+                                });
                             }
                         }}
                     >
