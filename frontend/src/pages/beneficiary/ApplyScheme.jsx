@@ -1,5 +1,7 @@
 import "./ApplyScheme.css";
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { submitApplication } from "../../api/applicationApi";
 import {
     AlertTriangle,
     Building2,
@@ -87,6 +89,7 @@ const validateDocument = (file) => {
 };
 
 function ApplyScheme() {
+    const location = useLocation();
     const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
     const [documents, setDocuments] = useState({ aadhaarCard: null, incomeCertificate: null, bankPassbook: null });
     const [declaration, setDeclaration] = useState(false);
@@ -94,6 +97,7 @@ function ApplyScheme() {
     const [touched, setTouched] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submissionSuccess, setSubmissionSuccess] = useState(false);
+    const [submissionError, setSubmissionError] = useState("");
 
     const schemeDetails = [
         { label: "Department", value: "Agriculture", icon: Building2 },
@@ -108,6 +112,7 @@ function ApplyScheme() {
         setTouched((currentTouched) => ({ ...currentTouched, [name]: true }));
         setErrors((currentErrors) => ({ ...currentErrors, [name]: validateField(name, value) }));
         setSubmissionSuccess(false);
+        setSubmissionError("");
     };
 
     const handleDocumentChange = ({ target }) => {
@@ -117,6 +122,7 @@ function ApplyScheme() {
         setTouched((currentTouched) => ({ ...currentTouched, [name]: true }));
         setErrors((currentErrors) => ({ ...currentErrors, [name]: validateDocument(file) }));
         setSubmissionSuccess(false);
+        setSubmissionError("");
     };
 
     const handleDeclarationChange = ({ target }) => {
@@ -125,6 +131,7 @@ function ApplyScheme() {
         setTouched((currentTouched) => ({ ...currentTouched, declaration: true }));
         setErrors((currentErrors) => ({ ...currentErrors, declaration: isAccepted ? "" : "You must accept the declaration before submitting." }));
         setSubmissionSuccess(false);
+        setSubmissionError("");
     };
 
     const validateForm = () => {
@@ -143,13 +150,14 @@ function ApplyScheme() {
         field?.focus({ preventScroll: true });
     };
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         const validationErrors = validateForm();
         const hasValidationErrors = Object.values(validationErrors).some(Boolean);
         setErrors(validationErrors);
         setTouched(Object.fromEntries(FIELD_ORDER.map((name) => [name, true])));
         setSubmissionSuccess(false);
+        setSubmissionError("");
 
         if (hasValidationErrors) {
             focusFirstInvalidField(validationErrors);
@@ -157,10 +165,34 @@ function ApplyScheme() {
         }
 
         setIsSubmitting(true);
-        window.setTimeout(() => {
-            setIsSubmitting(false);
+        try {
+            const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+            const beneficiaryId =
+                storedUser?.userId ??
+                storedUser?.id ??
+                localStorage.getItem("userId");
+            const schemeId = location.state?.schemeId;
+
+            if (!beneficiaryId || !schemeId) {
+                throw new Error("Unable to identify the beneficiary or selected scheme.");
+            }
+
+            const documentNames = Object.fromEntries(
+                Object.entries(documents).map(([name, file]) => [name, file?.name])
+            );
+
+            await submitApplication(beneficiaryId, schemeId, {
+                ...formValues,
+                documents: documentNames,
+                declaration,
+            });
+
             setSubmissionSuccess(true);
-        }, 400);
+        } catch (err) {
+            setSubmissionError(err.message || "Unable to submit your application.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const getValidationClass = (name) => {
@@ -179,7 +211,8 @@ function ApplyScheme() {
                 <section className="apply-scheme-card"><div className="apply-card-heading"><div className="apply-heading-icon"><ClipboardCheck size={21} aria-hidden="true" /></div><div><span className="apply-section-kicker">Selected scheme</span><h2>Farmer Assistance Scheme</h2></div><span className="apply-open-badge"><CheckCircle2 size={16} aria-hidden="true" /> Open for applications</span></div><div className="apply-scheme-details">{schemeDetails.map(({ label, value, icon: Icon }) => <div className="apply-scheme-detail" key={label}><Icon size={20} aria-hidden="true" /><div><span>{label}</span><strong>{value}</strong></div></div>)}</div></section>
 
                 <form noValidate onSubmit={handleSubmit}>
-                    {submissionSuccess && <div className="alert alert-success apply-success-alert" role="alert"><CheckCircle2 size={19} aria-hidden="true" /> Your application details have passed validation and are ready to submit.</div>}
+                    {submissionSuccess && <div className="alert alert-success apply-success-alert" role="alert"><CheckCircle2 size={19} aria-hidden="true" /> Your application has been submitted successfully.</div>}
+                    {submissionError && <div className="alert alert-danger" role="alert">{submissionError}</div>}
                     <div className="apply-form-layout">
                         <section className="apply-card applicant-card">
                             <div className="apply-card-heading"><div className="apply-heading-icon"><UserRound size={21} aria-hidden="true" /></div><div><span className="apply-section-kicker">Applicant details</span><h2>Applicant Information</h2></div></div>
@@ -206,7 +239,7 @@ function ApplyScheme() {
 
                     <section className="apply-declaration-card"><div className="declaration-icon"><AlertTriangle size={21} aria-hidden="true" /></div><div><h2>Declaration</h2><p>I confirm that the information provided in this application is accurate and that the documents submitted are valid.</p></div><div className="form-check"><input className={`form-check-input ${getValidationClass("declaration")}`} type="checkbox" id="application-declaration" checked={declaration} onChange={handleDeclarationChange} aria-invalid={Boolean(errors.declaration)} aria-describedby={errors.declaration ? "declaration-error" : undefined} /><label className="form-check-label" htmlFor="application-declaration">I agree to the declaration</label>{errors.declaration && touched.declaration && <div id="declaration-error" className="invalid-feedback d-block">{errors.declaration}</div>}</div></section>
 
-                    <div className="apply-form-actions"><button type="button" className="save-draft-btn"><Save size={18} aria-hidden="true" /> Save Draft</button><button type="submit" className="submit-application-btn" disabled={isSubmitting}>{isSubmitting ? "Validating Application..." : <><Send size={18} aria-hidden="true" /> Submit Application</>}</button></div>
+                    <div className="apply-form-actions"><button type="button" className="save-draft-btn"><Save size={18} aria-hidden="true" /> Save Draft</button><button type="submit" className="submit-application-btn" disabled={isSubmitting}>{isSubmitting ? "Submitting Application..." : <><Send size={18} aria-hidden="true" /> Submit Application</>}</button></div>
                 </form>
             </div>
         </div>

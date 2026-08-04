@@ -1,36 +1,92 @@
 import "./Dashboard.css";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAllApplications } from "../../api/applicationApi";
+import { getAllUsers } from "../../api/userApi";
+
+function formatDate(date) {
+  if (!date) return "-";
+
+  const parsedDate = new Date(date);
+
+  return Number.isNaN(parsedDate.getTime())
+    ? date
+    : parsedDate.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+}
+
+function getDisplayStatus(status) {
+  if (["APPROVED", "DISBURSED"].includes(status)) return "Approved";
+  if (["RETURNED", "REJECTED"].includes(status)) return "Returned";
+  return "Under Review";
+}
 
 function Dashboard() {
   const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+  const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const applications = [
-    {
-      scheme: "Farmer Assistance",
-      date: "10-Jul-2026",
-      status: "Approved",
-    },
-    {
-      scheme: "Student Scholarship",
-      date: "12-Jul-2026",
-      status: "Under Verification",
-    },
-    {
-      scheme: "Affordable Housing",
-      date: "15-Jul-2026",
-      status: "Returned",
-    },
-  ];
+  useEffect(() => {
+    async function loadDashboard() {
+      try {
+        const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+        const [allApplications, allUsers] = await Promise.all([
+          getAllApplications(),
+          getAllUsers(),
+        ]);
+        const currentUser = allUsers.find((item) =>
+          item.userId === storedUser?.userId ||
+          item.userId === storedUser?.id ||
+          item.mobileNumber === storedUser?.mobileNumber
+        );
 
-  const notifications = [
-    "Your Farmer Assistance application has been approved.",
-    "Upload documents for Student Scholarship.",
-    "Affordable Housing application returned for correction.",
-  ];
+        if (!currentUser) {
+          throw new Error("Unable to load the logged-in user's dashboard data.");
+        }
+
+        const userApplications = allApplications
+          .filter((application) => application.beneficiary?.userId === currentUser.userId)
+          .map((application) => ({
+            id: application.applicationId,
+            scheme: application.scheme?.schemeName,
+            date: formatDate(application.submittedAt),
+            status: getDisplayStatus(application.status),
+            remarks: application.remarks,
+          }));
+
+        setUser(currentUser);
+        setApplications(userApplications);
+      } catch (err) {
+        setError(err.message || "Unable to load dashboard data.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDashboard();
+  }, []);
+
+  const statistics = {
+    total: applications.length,
+    approved: applications.filter((application) => application.status === "Approved").length,
+    underReview: applications.filter((application) => application.status === "Under Review").length,
+    returned: applications.filter((application) => application.status === "Returned").length,
+  };
+
+  const notifications = applications.slice(0, 3).map((application) =>
+    application.remarks || `Your ${application.scheme} application is ${application.status.toLowerCase()}.`
+  );
 
   return (
     <div className="dashboard-page">
       <div className="container py-4">
+
+        {error && <div className="alert alert-danger" role="alert">{error}</div>}
 
         {/* ================= HERO ================= */}
 
@@ -43,7 +99,7 @@ function Dashboard() {
             </span>
 
             <h1>
-              Welcome Back
+              Welcome Back{user?.fullName ? `, ${user.fullName}` : ""}
             </h1>
 
             <p>
@@ -97,7 +153,7 @@ function Dashboard() {
 
               <div>
 
-                <h3>05</h3>
+                <h3>{loading ? "..." : String(statistics.total).padStart(2, "0")}</h3>
 
                 <p>Total Applications</p>
 
@@ -117,7 +173,7 @@ function Dashboard() {
 
               <div>
 
-                <h3>02</h3>
+                <h3>{loading ? "..." : String(statistics.approved).padStart(2, "0")}</h3>
 
                 <p>Approved</p>
 
@@ -137,7 +193,7 @@ function Dashboard() {
 
               <div>
 
-                <h3>02</h3>
+                <h3>{loading ? "..." : String(statistics.underReview).padStart(2, "0")}</h3>
 
                 <p>Under Review</p>
 
@@ -157,7 +213,7 @@ function Dashboard() {
 
               <div>
 
-                <h3>01</h3>
+                <h3>{loading ? "..." : String(statistics.returned).padStart(2, "0")}</h3>
 
                 <p>Returned</p>
 
@@ -314,9 +370,11 @@ function Dashboard() {
 
                 <tbody>
 
-                  {applications.map((app, index) => (
+                  {loading ? (
+                    <tr><td colSpan="3">Loading applications...</td></tr>
+                  ) : applications.length > 0 ? applications.map((app) => (
 
-                    <tr key={index}>
+                    <tr key={app.id}>
 
                       <td>{app.scheme}</td>
 
@@ -336,7 +394,9 @@ function Dashboard() {
 
                     </tr>
 
-                  ))}
+                  )) : (
+                    <tr><td colSpan="3">No applications found.</td></tr>
+                  )}
 
                 </tbody>
 
@@ -358,7 +418,9 @@ function Dashboard() {
 
               <div className="notification-wrapper">
 
-                {notifications.map((note, index) => (
+                {loading ? (
+                  <p>Loading notifications...</p>
+                ) : notifications.length > 0 ? notifications.map((note, index) => (
 
                   <div
                     className="notification-card"
@@ -373,13 +435,15 @@ function Dashboard() {
 
                       <p>{note}</p>
 
-                      <span>Just Now</span>
+                      <span>Recent</span>
 
                     </div>
 
                   </div>
 
-                ))}
+                )) : (
+                  <p>No notifications available.</p>
+                )}
 
               </div>
 

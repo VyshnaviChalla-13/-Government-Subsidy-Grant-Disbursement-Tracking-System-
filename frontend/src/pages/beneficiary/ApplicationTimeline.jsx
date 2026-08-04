@@ -1,5 +1,7 @@
 import "./ApplicationTimeline.css";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { getApplicationById } from "../../api/applicationApi";
 import {
     Activity,
     ArrowLeft,
@@ -19,28 +21,128 @@ import {
     UserCheck,
 } from "lucide-react";
 
+const STAGES = [
+    { title: "Application Submitted", status: "SUBMITTED" },
+    { title: "Front Desk Review", status: "FIELD_APPROVED" },
+    { title: "Verification Officer Review", status: "VERIFICATION_APPROVED" },
+    { title: "Final Approval", status: "APPROVED" },
+    { title: "Grant Disbursed", status: "DISBURSED" },
+];
+
+const STATUS_RANK = {
+    SUBMITTED: 0,
+    RESUBMITTED: 0,
+    FIELD_APPROVED: 1,
+    VERIFICATION_APPROVED: 2,
+    APPROVED: 3,
+    DISBURSED: 4,
+};
+
+function formatDate(date) {
+    if (!date) return "-";
+
+    const parsedDate = new Date(date);
+    return Number.isNaN(parsedDate.getTime())
+        ? date
+        : parsedDate.toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        });
+}
+
+function formatStatus(status) {
+    return (status || "SUBMITTED")
+        .toLowerCase()
+        .split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+}
+
+function buildTimeline(application) {
+    const currentStatus = application.status || "SUBMITTED";
+    const currentRank = STATUS_RANK[currentStatus] ?? 0;
+    const isReturnedOrRejected = ["RETURNED", "REJECTED"].includes(currentStatus);
+
+    return STAGES.map((stage, index) => {
+        let status = "Pending";
+
+        if (index < currentRank) status = "Completed";
+        if (index === currentRank && !isReturnedOrRejected) status = "In Progress";
+        if (currentStatus === "DISBURSED") status = "Completed";
+
+        return {
+            title: stage.title,
+            status,
+            date: index === 0
+                ? formatDate(application.submittedAt)
+                : status === "Completed" || status === "In Progress"
+                    ? formatDate(application.lastUpdated)
+                    : "-",
+        };
+    });
+}
+
 function ApplicationTimeline() {
     const navigate = useNavigate();
+    const { id } = useParams();
+    const [application, setApplication] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    const timeline = [
-        { title: "Application Submitted", date: "10 Jul 2026", status: "Completed" },
-        { title: "Front Desk Approved", date: "11 Jul 2026", status: "Completed" },
-        { title: "Verification Officer Review", date: "12 Jul 2026", status: "Completed" },
-        { title: "Waiting for Finance Approval", date: "Pending", status: "In Progress" },
-        { title: "Grant Disbursed", date: "-", status: "Pending" },
-    ];
+    useEffect(() => {
+        async function fetchApplication() {
+            try {
+                if (!id) {
+                    throw new Error("Application ID is missing.");
+                }
 
-    const application = {
-        id: "APP1001",
-        scheme: "Farmer Assistance",
-        applicant: "Beneficiary Name",
-        department: "Department of Agriculture",
-        submittedDate: "10 Jul 2026",
-        currentStatus: "In Progress",
-    };
+                const applicationData = await getApplicationById(id);
 
+                if (!applicationData) {
+                    throw new Error("Application not found.");
+                }
+
+                setApplication(applicationData);
+            } catch (err) {
+                setError(err.message || "Unable to load the application timeline.");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchApplication();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="timeline-page">
+                <div className="container py-4 py-md-5">Loading application timeline...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="timeline-page">
+                <div className="container py-4 py-md-5">
+                    <div className="alert alert-danger" role="alert">{error}</div>
+                </div>
+            </div>
+        );
+    }
+
+    const timeline = buildTimeline(application);
     const completedSteps = timeline.filter((step) => step.status === "Completed").length;
     const progress = Math.round((completedSteps / timeline.length) * 100);
+    const currentStatus = formatStatus(application.status);
+    const applicationSummary = {
+        id: application.applicationNumber ?? application.applicationId,
+        scheme: application.scheme?.schemeName,
+        applicant: application.beneficiary?.fullName,
+        department: application.scheme?.department?.departmentName,
+        submittedDate: formatDate(application.submittedAt),
+    };
 
     const getStepIcon = (status) => {
         if (status === "Completed") return <CheckCircle2 size={21} aria-hidden="true" />;
@@ -72,14 +174,14 @@ function ApplicationTimeline() {
                             <span className="timeline-section-kicker">Application overview</span>
                             <h2>Application Summary</h2>
                         </div>
-                        <span className="timeline-current-status"><Clock3 size={16} aria-hidden="true" /> {application.currentStatus}</span>
+                        <span className="timeline-current-status"><Clock3 size={16} aria-hidden="true" /> {currentStatus}</span>
                     </div>
                     <div className="timeline-summary-grid">
-                        <div className="timeline-info-card"><FileText size={20} aria-hidden="true" /><div><span>Application ID</span><strong>{application.id}</strong></div></div>
-                        <div className="timeline-info-card"><BadgeCheck size={20} aria-hidden="true" /><div><span>Scheme Name</span><strong>{application.scheme}</strong></div></div>
-                        <div className="timeline-info-card"><UserCheck size={20} aria-hidden="true" /><div><span>Applicant Name</span><strong>{application.applicant}</strong></div></div>
-                        <div className="timeline-info-card"><Building2 size={20} aria-hidden="true" /><div><span>Department</span><strong>{application.department}</strong></div></div>
-                        <div className="timeline-info-card"><CalendarDays size={20} aria-hidden="true" /><div><span>Submitted Date</span><strong>{application.submittedDate}</strong></div></div>
+                        <div className="timeline-info-card"><FileText size={20} aria-hidden="true" /><div><span>Application ID</span><strong>{applicationSummary.id}</strong></div></div>
+                        <div className="timeline-info-card"><BadgeCheck size={20} aria-hidden="true" /><div><span>Scheme Name</span><strong>{applicationSummary.scheme}</strong></div></div>
+                        <div className="timeline-info-card"><UserCheck size={20} aria-hidden="true" /><div><span>Applicant Name</span><strong>{applicationSummary.applicant}</strong></div></div>
+                        <div className="timeline-info-card"><Building2 size={20} aria-hidden="true" /><div><span>Department</span><strong>{applicationSummary.department}</strong></div></div>
+                        <div className="timeline-info-card"><CalendarDays size={20} aria-hidden="true" /><div><span>Submitted Date</span><strong>{applicationSummary.submittedDate}</strong></div></div>
                     </div>
                 </section>
 
@@ -89,9 +191,9 @@ function ApplicationTimeline() {
                         <strong>{progress}% Complete</strong>
                     </div>
                     <div className="timeline-progress-bar" role="progressbar" aria-label="Application progress" aria-valuenow={progress} aria-valuemin="0" aria-valuemax="100">
-                        <span className={`timeline-progress-fill progress-${progress}`}></span>
+                        <span className={`timeline-progress-fill progress-${progress}`} style={{ width: `${progress}%` }}></span>
                     </div>
-                    <p>{completedSteps} of {timeline.length} review stages have been completed. Your application is currently awaiting finance approval.</p>
+                    <p>{completedSteps} of {timeline.length} review stages have been completed. Your application is currently {currentStatus.toLowerCase()}.</p>
                 </section>
 
                 <div className="timeline-main-grid">
@@ -121,10 +223,10 @@ function ApplicationTimeline() {
                         <section className="timeline-card timeline-status-card">
                             <div className="timeline-card-heading"><div className="timeline-heading-icon"><ShieldCheck size={21} aria-hidden="true" /></div><div><span className="timeline-section-kicker">Status information</span><h2>What Happens Next</h2></div></div>
                             <dl className="status-information-list">
-                                <div><dt>Current Status</dt><dd><span className="timeline-status in-progress">{application.currentStatus}</span></dd></div>
-                                <div><dt>Estimated Next Step</dt><dd>Finance approval review</dd></div>
+                                <div><dt>Current Status</dt><dd><span className="timeline-status in-progress">{currentStatus}</span></dd></div>
+                                <div><dt>Estimated Next Step</dt><dd>{application.remarks || "Department review"}</dd></div>
                                 <div><dt>Expected Completion</dt><dd>Subject to department review</dd></div>
-                                <div><dt>Officer Responsible</dt><dd>Finance Approval Team</dd></div>
+                                <div><dt>Officer Responsible</dt><dd>{application.assignedOfficer?.user?.fullName || "Not assigned"}</dd></div>
                             </dl>
                         </section>
 
