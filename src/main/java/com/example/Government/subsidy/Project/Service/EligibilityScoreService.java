@@ -68,28 +68,32 @@ public class EligibilityScoreService {
      */
     public int calculateDocumentScore(Application application) {
 
-        List<SchemeRequiredDocument> requiredDocuments =
-                requiredDocumentRepository.findByScheme(application.getScheme());
+    List<SchemeRequiredDocument> requiredDocuments =
+            requiredDocumentRepository.findByScheme(application.getScheme());
 
-        List<Document> uploadedDocuments =
-                documentRepository.findByApplication(application);
+    List<Document> uploadedDocuments =
+            documentRepository.findByApplication(application);
 
-        int score = 0;
+    int verifiedCount = 0;
 
-        for (SchemeRequiredDocument required : requiredDocuments) {
+    for (SchemeRequiredDocument required : requiredDocuments) {
 
-            boolean verified = uploadedDocuments.stream()
-                    .anyMatch(document ->
-                            document.getDocumentType().equalsIgnoreCase(required.getDocumentName())
-                                    && Boolean.TRUE.equals(document.getVerified()));
+        boolean verified = uploadedDocuments.stream()
+                .anyMatch(document ->
+                        document.getDocumentType().equalsIgnoreCase(required.getDocumentName())
+                        && Boolean.TRUE.equals(document.getVerified()));
 
-            if (verified) {
-                score += required.getPoints();
-            }
+        if (verified) {
+            verifiedCount++;
         }
-
-        return score;
     }
+
+    if (requiredDocuments.isEmpty()) {
+        return 0;
+    }
+
+    return (verifiedCount * 30) / requiredDocuments.size();
+}
 
     /**
      * Total Score
