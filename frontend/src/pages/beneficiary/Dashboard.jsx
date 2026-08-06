@@ -325,6 +325,29 @@ function Dashboard() {
 
           </div>
 
+          <div className="col-lg-3 col-md-6 mb-4">
+
+            <div
+              className="service-card"
+              onClick={() =>
+                navigate("/beneficiary/notifications")
+              }
+            >
+
+              <div className="service-icon">
+                <i className="bi bi-bell-fill" aria-hidden="true"></i>
+              </div>
+
+              <h5>Notifications</h5>
+
+              <p>
+                View reminders, payment updates, and application alerts.
+              </p>
+
+            </div>
+
+          </div>
+
         </div>
 
         {/* ================= Applications ================= */}

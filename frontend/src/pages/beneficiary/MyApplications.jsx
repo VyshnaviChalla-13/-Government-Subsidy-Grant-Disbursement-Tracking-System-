@@ -160,6 +160,13 @@ function MyApplications() {
                                             View Timeline
                                             <ArrowRight size={16} aria-hidden="true" />
                                         </button>
+                                        {app.status === "Approved" && (
+                                            <button className="application-timeline-btn" onClick={() => navigate("/beneficiary/disbursement")}>
+                                                <CheckCircle2 size={17} aria-hidden="true" />
+                                                Track Disbursement
+                                                <ArrowRight size={16} aria-hidden="true" />
+                                            </button>
+                                        )}
                                     </div>
                                 </article>
                             ))}

@@ -12,6 +12,9 @@ import ApplyScheme from "../pages/beneficiary/ApplyScheme";
 import MyApplications from "../pages/beneficiary/MyApplications";
 import ApplicationTimeline from "../pages/beneficiary/ApplicationTimeline";
 import Profile from "../pages/beneficiary/Profile";
+import DisbursementTracker from "../pages/beneficiary/DisbursementTracker";
+import Notifications from "../pages/beneficiary/Notifications";
+
 
 import Contact from "../pages/Contact";
 import About from "../pages/About";
@@ -55,6 +58,8 @@ function AppRoutes() {
                 <Route path="/beneficiary/my-applications" element={<MyApplications />} />
                 <Route path="/beneficiary/timeline" element={<ApplicationTimeline />} />
                 <Route path="/beneficiary/profile" element={<Profile />} />
+                <Route path="/beneficiary/disbursement"element={<DisbursementTracker />}/>
+                <Route path="/beneficiary/notifications"element={<Notifications />}/>
 
                 {/* Officer */}
                 <Route path="/officer/frontdesk" element={<FrontDeskDashboard />} />
