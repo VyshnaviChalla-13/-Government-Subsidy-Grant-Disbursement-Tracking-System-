@@ -1,23 +1,17 @@
+import {
+    getApplications,
+    forwardApplication,
+    returnApplication,
+    rejectApplication
+} from "../../api/frontDeskApi";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./FrontDeskDashboard.css";
-import defaultApplications from "../../data/applications";
-import {
-    getApplications,
-    saveApplications,
-} from "../../utils/applicationStorage";
+import { useEffect } from "react";
+
 function FrontDeskDashboard() {
 
-    const [applications, setApplications] = useState(() => {
-        const stored = getApplications();
-
-        if (stored.length > 0) {
-            return stored;
-        }
-
-        saveApplications(defaultApplications);
-        return defaultApplications;
-    });
+    const [applications, setApplications] = useState([]);
     const [search, setSearch] = useState("");
     const [schemeFilter, setSchemeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -25,60 +19,80 @@ function FrontDeskDashboard() {
     const [actionType, setActionType] = useState("");
     const [reason, setReason] = useState("");
     const navigate = useNavigate();
+    useEffect(() => {
+        fetchApplications();
+    }, []);
+
+    const fetchApplications = async () => {
+        try {
+            const data = await getApplications();
+
+            console.log("Applications received:", data); // <-- ADD THIS
+
+            setApplications(data);
+        } catch (error) {
+            console.error("Failed to fetch applications:", error);
+
+            if (error.response) {
+                console.log("Status:", error.response.status);
+                console.log("Response:", error.response.data);
+            }
+        }
+    };
 
     const filteredApplications = applications.filter((app) => {
 
         const matchesSearch =
-            app.id.toLowerCase().includes(search.toLowerCase()) ||
-            app.name.toLowerCase().includes(search.toLowerCase());
+            app.applicationNumber?.toLowerCase().includes(search.toLowerCase()) ||
+            app.beneficiary?.fullName?.toLowerCase().includes(search.toLowerCase());
 
         const matchesScheme =
-            schemeFilter === "" || app.scheme === schemeFilter;
+            schemeFilter === "" ||
+            app.scheme?.schemeName === schemeFilter;
 
         const matchesStatus =
             statusFilter === "" || app.status === statusFilter;
 
         return matchesSearch && matchesScheme && matchesStatus;
     });
+    const schemes = [
+        ...new Set(
+            applications
+                .map(app => app.scheme?.schemeName)
+                .filter(Boolean)
+        ),
+    ];
 
-    const updateStatus = (id, status) => {
-        const updated = applications.map((app) =>
-            app.id === id
-                ? {
-                    ...app,
-                    status,
-                }
-                : app
-        );
 
-        setApplications(updated);
-        saveApplications(updated);
-    };
     const openReasonPopup = (application, action) => {
         setSelectedApplication(application);
         setActionType(action);
         setReason("");
     };
-    const submitReason = () => {
+    const submitReason = async () => {
+        try {
 
-        const updated = applications.map((app) =>
-            app.id === selectedApplication.id
-                ? {
-                    ...app,
-                    status: actionType,
-                    reason: reason
-                }
-                : app
-        );
+            if (actionType === "RETURNED") {
+                await returnApplication(selectedApplication.applicationId, reason);
+            }
 
-        setApplications(updated);
-        saveApplications(updated);
+            if (actionType === "REJECTED") {
+                await rejectApplication(selectedApplication.applicationId, reason);
+            }
 
-        setSelectedApplication(null);
-        setReason("");
-        setActionType("");
+            await fetchApplications();
+
+            setSelectedApplication(null);
+            setReason("");
+            setActionType("");
+
+            alert(`Application ${actionType.toLowerCase()} successfully`);
+
+        } catch (err) {
+            console.error(err);
+            alert("Operation failed");
+        }
     };
-
     return (
 
         <div className="dashboard-layout">
@@ -135,7 +149,8 @@ function FrontDeskDashboard() {
                         <p>
                             {
                                 applications.filter(
-                                    (a) => a.status === "Pending"
+                                    (a) => a.status === "SUBMITTED" ||
+                                        a.status === "RESUBMITTED"
                                 ).length
                             }
                         </p>
@@ -149,7 +164,7 @@ function FrontDeskDashboard() {
                         <p>
                             {
                                 applications.filter(
-                                    (a) => a.status === "Forwarded"
+                                    (a) => a.status === "FIELD_APPROVED"
                                 ).length
                             }
                         </p>
@@ -163,7 +178,7 @@ function FrontDeskDashboard() {
                         <p>
                             {
                                 applications.filter(
-                                    (a) => a.status === "Rejected"
+                                    (a) => a.status === "REJECTED"
                                 ).length
                             }
                         </p>
@@ -189,13 +204,13 @@ function FrontDeskDashboard() {
                         value={schemeFilter}
                         onChange={(e) => setSchemeFilter(e.target.value)}
                     >
-
                         <option value="">All Schemes</option>
-                        <option value="Farmer Assistance Scheme">Farmer Assistance Scheme</option>
-                        <option value="Student Scholarship Scheme">Student Scholarship Scheme</option>
-                        <option value="Affordable Housing Scheme">Affordable Housing Scheme</option>
-                        <option value="Women Empowerment Scheme">Women Empowerment Scheme</option>
 
+                        {schemes.map((scheme) => (
+                            <option key={scheme} value={scheme}>
+                                {scheme}
+                            </option>
+                        ))}
                     </select>
 
 
@@ -207,12 +222,11 @@ function FrontDeskDashboard() {
 
                         <option value="">All Status</option>
 
-                        <option>Pending</option>
-
-                        <option>Forwarded</option>
-                        <option>Returned</option>
-
-                        <option>Rejected</option>
+                        <option value="SUBMITTED">Submitted</option>
+                        <option value="RESUBMITTED">Resubmitted</option>
+                        <option value="FIELD_APPROVED">Field Approved</option>
+                        <option value="RETURNED">Returned</option>
+                        <option value="REJECTED">Rejected</option>
 
                     </select>
 
@@ -248,25 +262,25 @@ function FrontDeskDashboard() {
 
                     {filteredApplications.map((app) => (
 
-                        <tr key={app.id}>
+                        <tr key={app.applicationId}>
 
-                            <td>{app.id}</td>
+                            <td>{app.applicationNumber}</td>
 
-                            <td>{app.applicant}</td>
+                            <td>{app.beneficiary?.fullName}</td>
 
-                            <td>{app.scheme}</td>
+                            <td>{app.scheme?.schemeName}</td>
 
-                            <td>{app.submittedDate}</td>
+                            <td>{new Date(app.submittedAt).toLocaleDateString()}</td>
 
                             <td>
     <span className={app.status.toLowerCase().replace(/\s+/g, "-")}>
         {app.status}
     </span>
 
-                                {(app.status === "Returned" || app.status === "Rejected") &&
-                                    app.reason && (
+                                {(app.status === "RETURNED" || app.status === "REJECTED") &&
+                                    app.remarks && (
                                         <div className="reason-text">
-                                            Reason: {app.reason}
+                                            Reason: {app.remarks}
                                         </div>
                                     )}
                             </td>
@@ -275,31 +289,36 @@ function FrontDeskDashboard() {
 
                                 <button
                                     className="view-btn"
-                                    onClick={() =>
-                                        navigate("/officer/frontdesk/application", {
-                                            state: app,
-                                        })
-                                    }
+                                    onClick={() => setSelectedApplication(app)}
                                 >
                                     View
                                 </button>
 
                                 <button
-                                    onClick={() => updateStatus(app.id, "Forwarded")}
+                                    onClick={async () => {
+                                        try {
+                                            await forwardApplication(app.applicationId);
+                                            await fetchApplications();
+                                            alert("Application forwarded successfully");
+                                        } catch (err) {
+                                            console.error(err);
+                                            alert("Failed to forward application");
+                                        }
+                                    }}
                                 >
                                     Forward
                                 </button>
 
                                 <button
                                     className="return-btn"
-                                    onClick={() => openReasonPopup(app, "Returned")}
+                                    onClick={() => openReasonPopup(app, "RETURNED")}
                                 >
                                     ↩ Return
                                 </button>
 
                                 <button
                                     className="reject-btn"
-                                    onClick={() => openReasonPopup(app, "Rejected")}
+                                    onClick={() => openReasonPopup(app, "REJECTED")}
                                 >
                                     ❌ Reject
                                 </button>
@@ -324,22 +343,22 @@ function FrontDeskDashboard() {
 
                                 <div>
                                     <strong>Application ID</strong>
-                                    <p>{selectedApplication.id}</p>
+                                    <p>{selectedApplication.applicationId}</p>
                                 </div>
 
                                 <div>
                                     <strong>Beneficiary Name</strong>
-                                    <p>{selectedApplication.name}</p>
+                                    <p>{selectedApplication.beneficiary?.fullName}</p>
                                 </div>
 
                                 <div>
                                     <strong>Scheme</strong>
-                                    <p>{selectedApplication.scheme}</p>
+                                    <p>{selectedApplication.scheme?.schemeName}</p>
                                 </div>
 
                                 <div>
                                     <strong>Date</strong>
-                                    <p>{selectedApplication.date}</p>
+                                    <p>{new Date(selectedApplication.submittedAt).toLocaleDateString()}</p>
                                 </div>
 
                                 <div>
@@ -349,32 +368,32 @@ function FrontDeskDashboard() {
 
                                 <div>
                                     <strong>Mobile</strong>
-                                    <p>9876543210</p>
+                                    <p>{selectedApplication.beneficiary?.mobileNumber}</p>
                                 </div>
 
                                 <div>
                                     <strong>Email</strong>
-                                    <p>beneficiary@gmail.com</p>
+                                    <p>{selectedApplication.beneficiary?.email}</p>
                                 </div>
 
                                 <div>
                                     <strong>Aadhaar</strong>
-                                    <p>XXXX XXXX 5678</p>
+                                    <p>{selectedApplication.beneficiary?.aadhaarNumber}</p>
                                 </div>
 
                                 <div>
                                     <strong>Address</strong>
-                                    <p>Tirupati, Andhra Pradesh</p>
+                                    <p>{selectedApplication.beneficiary?.address}</p>
                                 </div>
 
                                 <div>
                                     <strong>Income</strong>
-                                    <p>₹2,40,000 / Year</p>
+                                    <p>{selectedApplication.beneficiary?.annualIncome}</p>
                                 </div>
 
                                 <div>
                                     <strong>Bank</strong>
-                                    <p>State Bank of India</p>
+                                    <p>{selectedApplication.beneficiary?.bankName}</p>
                                 </div>
 
                                 <div>
@@ -414,7 +433,7 @@ function FrontDeskDashboard() {
 
                 )}
                 {selectedApplication &&
-                    (actionType === "Returned" || actionType === "Rejected") && (
+                    (actionType === "RETURNED" || actionType === "REJECTED") && (
 
                         <div className="modal-overlay">
 
