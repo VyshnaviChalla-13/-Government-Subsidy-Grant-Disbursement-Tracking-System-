@@ -34,7 +34,7 @@ import SuperAdminDashboard from "../pages/superadmin/SuperAdminDashboard";
 import DepartmentManagement from "../pages/superadmin/DepartmentManagement";
 import ManageUsers from "../pages/superadmin/ManageUsers";
 import SystemReports from "../pages/superadmin/SystemReports";
-
+import FinanceDisbursementConsole from "../pages/finance/FinanceDisbursementConsole";
 function AppRoutes() {
     return (
         <BrowserRouter>
@@ -81,6 +81,10 @@ function AppRoutes() {
                 {/* Common Pages */}
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/about" element={<About />} />
+                <Route
+                    path="/finance/disbursement/:id"
+                    element={<FinanceDisbursementConsole />}
+                />
 
             </Routes>
         </BrowserRouter>
