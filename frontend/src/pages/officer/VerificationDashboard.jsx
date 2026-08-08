@@ -1,4 +1,5 @@
-import React, {useEffect, useState} from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./VerificationDashboard.css";
 
 import defaultApplications from "../../data/applications";
@@ -8,6 +9,7 @@ import {
     saveApplications,
 } from "../../utils/applicationStorage";
 function VerificationDashboard() {
+    const navigate = useNavigate();
 
     const [applications, setApplications] = useState(() => {
         const stored = getApplications();
@@ -240,7 +242,11 @@ function VerificationDashboard() {
 
                             <button
                                 className="view-btn"
-                                onClick={() => setSelectedApplication(app)}
+                                onClick={() =>
+                                    navigate("/officer/verification/milestone", {
+                                        state: app,
+                                    })
+                                }
                             >
                                 👁 View
                             </button>

@@ -1,237 +1,466 @@
-import "./DepartmentAdminDashboard.css";
+import React from "react";
 import { useNavigate } from "react-router-dom";
+import "./DepartmentAdminDashboard.css";
+
 function DepartmentAdminDashboard() {
+
     const navigate = useNavigate();
-    const schemes = [
-
-        {
-            id: 1,
-            name: "Farmer Assistance Scheme",
-            department: "Agriculture",
-            applications: 120,
-            status: "Active"
-        },
-
-        {
-            id: 2,
-            name: "Student Scholarship Scheme",
-            department: "Education",
-            applications: 95,
-            status: "Active"
-        },
-
-        {
-            id: 3,
-            name: "Affordable Housing Scheme",
-            department: "Housing",
-            applications: 80,
-            status: "Active"
-        },
-
-        {
-            id: 4,
-            name: "Women Empowerment Scheme",
-            department: "Social Welfare",
-            applications: 60,
-            status: "Active"
-        }
-
-    ];
 
     return (
+        <div className="admin-dashboard">
 
-        <div className="department-dashboard">
+            {/* ================= HEADER ================= */}
+            <div className="admin-header">
 
-            <div className="container py-4">
+                <div>
+                    <p className="admin-subtitle">
+                        Department Administration
+                    </p>
 
-                {/* Welcome */}
+                    <h1>
+                        Welcome back, Department Admin 👋
+                    </h1>
 
-                <div className="welcome-banner">
+                    <p className="admin-description">
+                        Manage schemes, officers and monitor department activities.
+                    </p>
+                </div>
+
+                <div className="admin-profile">
+
+                    <div className="profile-icon">
+                        A
+                    </div>
+
+                    <div>
+                        <strong>Department Admin</strong>
+                        <span>Administrator</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {/* ================= STATISTICS ================= */}
+            <div className="admin-stats">
+
+                <div className="stat-card blue">
+
+                    <div className="stat-icon">
+                        📁
+                    </div>
+
+                    <div>
+                        <h2>4</h2>
+                        <p>Total Schemes</p>
+                        <span>All department schemes</span>
+                    </div>
+
+                </div>
+
+
+                <div className="stat-card green">
+
+                    <div className="stat-icon">
+                        ✓
+                    </div>
+
+                    <div>
+                        <h2>4</h2>
+                        <p>Active Schemes</p>
+                        <span>Currently active schemes</span>
+                    </div>
+
+                </div>
+
+
+                <div className="stat-card purple">
+
+                    <div className="stat-icon">
+                        👥
+                    </div>
+
+                    <div>
+                        <h2>12</h2>
+                        <p>Total Officers</p>
+                        <span>Registered officers</span>
+                    </div>
+
+                </div>
+
+
+                <div className="stat-card orange">
+
+                    <div className="stat-icon">
+                        📄
+                    </div>
+
+                    <div>
+                        <h2>355</h2>
+                        <p>Applications</p>
+                        <span>Total applications received</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {/* ================= QUICK ACTIONS ================= */}
+            <section className="quick-actions">
+
+                <div className="section-heading">
+
+                    <div>
+                        <h2>Quick Actions</h2>
+
+                        <p>
+                            Access frequently used department functions
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div className="action-grid">
+
+                    {/* Create Scheme */}
+                    <button
+                        type="button"
+                        className="admin-action create"
+                        onClick={() => navigate("/admin/create-scheme")}
+                    >
+
+                        <span className="action-icon">
+                            📄+
+                        </span>
+
+                        <div>
+                            <strong>Create Scheme</strong>
+
+                            <small>
+                                Create a new government scheme
+                            </small>
+                        </div>
+
+                        <span className="arrow">
+                            →
+                        </span>
+
+                    </button>
+
+
+                    {/* Manage Schemes */}
+                    <button
+                        type="button"
+                        className="admin-action manage"
+                        onClick={() => navigate("/admin/manage-schemes")}
+                    >
+
+                        <span className="action-icon">
+                            ☷
+                        </span>
+
+                        <div>
+                            <strong>Manage Schemes</strong>
+
+                            <small>
+                                View and manage all schemes
+                            </small>
+                        </div>
+
+                        <span className="arrow">
+                            →
+                        </span>
+
+                    </button>
+
+
+                    {/* Manage Officers */}
+                    <button
+                        type="button"
+                        className="admin-action officers"
+                        onClick={() => navigate("/admin/manage-officers")}
+                    >
+
+                        <span className="action-icon">
+                            👤
+                        </span>
+
+                        <div>
+                            <strong>Manage Officers</strong>
+
+                            <small>
+                                Add, update and manage officers
+                            </small>
+                        </div>
+
+                        <span className="arrow">
+                            →
+                        </span>
+
+                    </button>
+
+
+                    {/* Department Reports */}
+                    <button
+                        type="button"
+                        className="admin-action reports"
+                        onClick={() => navigate("/admin/reports")}
+                    >
+
+                        <span className="action-icon">
+                            📊
+                        </span>
+
+                        <div>
+                            <strong>Department Reports</strong>
+
+                            <small>
+                                View analytics and reports
+                            </small>
+                        </div>
+
+                        <span className="arrow">
+                            →
+                        </span>
+
+                    </button>
+
+
+                    {/* Overdue Resolution */}
+                    <button
+                        type="button"
+                        className="admin-action overdue"
+                        onClick={() =>
+                            navigate("/admin/overdue-resolution")
+                        }
+                    >
+
+                        <span className="action-icon">
+                            ⏰
+                        </span>
+
+                        <div>
+                            <strong>Overdue Resolution</strong>
+
+                            <small>
+                                Resolve overdue applications
+                            </small>
+                        </div>
+
+                        <span className="arrow">
+                            →
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            {/* ================= DEPARTMENT SCHEMES ================= */}
+            <section className="schemes-section">
+
+                <div className="section-heading schemes-heading">
 
                     <div>
 
                         <h2>
-                            Welcome, Department Admin 👋
+                            Department Schemes
                         </h2>
 
                         <p>
-                            Configure schemes, manage officers and monitor department activities.
+                            Overview of schemes managed by your department
                         </p>
 
                     </div>
 
-                </div>
 
-                {/* Statistics */}
-
-                <div className="row mt-4">
-
-                    <div className="col-lg-3 col-md-6 mb-4">
-
-                        <div className="dashboard-card">
-
-                            <h3>4</h3>
-
-                            <p>Total Schemes</p>
-
-                        </div>
-
-                    </div>
-
-                    <div className="col-lg-3 col-md-6 mb-4">
-
-                        <div className="dashboard-card active">
-
-                            <h3>4</h3>
-
-                            <p>Active Schemes</p>
-
-                        </div>
-
-                    </div>
-
-                    <div className="col-lg-3 col-md-6 mb-4">
-
-                        <div className="dashboard-card officers">
-
-                            <h3>12</h3>
-
-                            <p>Total Officers</p>
-
-                        </div>
-
-                    </div>
-
-                    <div className="col-lg-3 col-md-6 mb-4">
-
-                        <div className="dashboard-card applications">
-
-                            <h3>355</h3>
-
-                            <p>Applications</p>
-
-                        </div>
-
-                    </div>
+                    <button
+                        type="button"
+                        className="view-all-btn"
+                        onClick={() =>
+                            navigate("/admin/manage-schemes")
+                        }
+                    >
+                        View All Schemes →
+                    </button>
 
                 </div>
 
-                {/* Quick Actions */}
 
-                <h4 className="section-title">
+                <div className="table-wrapper">
 
-                    Quick Actions
+                    <table className="admin-table">
 
-                </h4>
-
-                <div className="row">
-
-                    <div className="col-lg-3 col-md-6 mb-3">
-
-                        <button
-                            className="btn btn-primary w-100"
-                            onClick={() => navigate("/admin/create-scheme")}
-                        >
-                            Create Scheme
-                        </button>
-
-                    </div>
-
-                    <div className="col-lg-3 col-md-6 mb-3">
-
-                        <button
-                            className="btn btn-success w-100"
-                            onClick={() => navigate("/admin/manage-schemes")}
-                        >
-                            Manage Schemes
-                        </button>
-
-                    </div>
-
-                    <div className="col-lg-3 col-md-6 mb-3">
-
-                        <button
-                            className="btn btn-warning text-white w-100"
-                            onClick={() => navigate("/admin/manage-officers")}
-                        >
-                            Manage Officers
-                        </button>
-
-                    </div>
-
-                    <div className="col-lg-3 col-md-6 mb-3">
-
-                        <button
-                            className="btn btn-info text-white w-100"
-                            onClick={() => navigate("/admin/reports")}
-                        >
-                            Department Reports
-                        </button>
-                    </div>
-
-                </div>
-
-                {/* Recent Schemes */}
-
-                <div className="content-card mt-5">
-
-                    <h4>
-
-                        Department Schemes
-
-                    </h4>
-
-                    <table className="table table-hover">
-
-                        <thead className="table-primary">
+                        <thead>
 
                         <tr>
-
                             <th>Scheme</th>
-
                             <th>Department</th>
-
                             <th>Applications</th>
-
                             <th>Status</th>
-
                             <th>Action</th>
-
                         </tr>
 
                         </thead>
 
+
                         <tbody>
 
-                        {
+                        {/* Farmer */}
+                        <tr>
 
-                            schemes.map((scheme) => (
+                            <td>
+                                <strong>
+                                    🌱 Farmer Assistance Scheme
+                                </strong>
+                            </td>
 
-                                <tr key={scheme.id}>
+                            <td>
+                                Agriculture
+                            </td>
 
-                                    <td>{scheme.name}</td>
+                            <td>
+                                120
+                            </td>
 
-                                    <td>{scheme.department}</td>
+                            <td>
+                                    <span className="active-badge">
+                                        Active
+                                    </span>
+                            </td>
 
-                                    <td>{scheme.applications}</td>
+                            <td>
+                                <button
+                                    type="button"
+                                    className="manage-btn"
+                                    onClick={() =>
+                                        navigate("/admin/manage-schemes")
+                                    }
+                                >
+                                    Manage
+                                </button>
+                            </td>
 
-                                    <td>{scheme.status}</td>
+                        </tr>
 
-                                    <td>
 
-                                        <button className="btn btn-sm btn-outline-primary">
+                        {/* Student */}
+                        <tr>
 
-                                            Manage
+                            <td>
+                                <strong>
+                                    🎓 Student Scholarship Scheme
+                                </strong>
+                            </td>
 
-                                        </button>
+                            <td>
+                                Education
+                            </td>
 
-                                    </td>
+                            <td>
+                                95
+                            </td>
 
-                                </tr>
+                            <td>
+                                    <span className="active-badge">
+                                        Active
+                                    </span>
+                            </td>
 
-                            ))
+                            <td>
+                                <button
+                                    type="button"
+                                    className="manage-btn"
+                                    onClick={() =>
+                                        navigate("/admin/manage-schemes")
+                                    }
+                                >
+                                    Manage
+                                </button>
+                            </td>
 
-                        }
+                        </tr>
+
+
+                        {/* Housing */}
+                        <tr>
+
+                            <td>
+                                <strong>
+                                    🏠 Affordable Housing Scheme
+                                </strong>
+                            </td>
+
+                            <td>
+                                Housing
+                            </td>
+
+                            <td>
+                                80
+                            </td>
+
+                            <td>
+                                    <span className="active-badge">
+                                        Active
+                                    </span>
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    className="manage-btn"
+                                    onClick={() =>
+                                        navigate("/admin/manage-schemes")
+                                    }
+                                >
+                                    Manage
+                                </button>
+                            </td>
+
+                        </tr>
+
+
+                        {/* Women */}
+                        <tr>
+
+                            <td>
+                                <strong>
+                                    ♀ Women Empowerment Scheme
+                                </strong>
+                            </td>
+
+                            <td>
+                                Women & Child Welfare
+                            </td>
+
+                            <td>
+                                60
+                            </td>
+
+                            <td>
+                                    <span className="active-badge">
+                                        Active
+                                    </span>
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    className="manage-btn"
+                                    onClick={() =>
+                                        navigate("/admin/manage-schemes")
+                                    }
+                                >
+                                    Manage
+                                </button>
+                            </td>
+
+                        </tr>
 
                         </tbody>
 
@@ -239,36 +468,10 @@ function DepartmentAdminDashboard() {
 
                 </div>
 
-                {/* Recent Activities */}
-
-                <div className="content-card mt-4">
-
-                    <h4>
-
-                        Recent Activities
-
-                    </h4>
-
-                    <ul className="activity-list">
-
-                        <li>Farmer Assistance Scheme published successfully.</li>
-
-                        <li>New Field Officer assigned to Agriculture Department.</li>
-
-                        <li>Housing Scheme budget updated.</li>
-
-                        <li>Student Scholarship eligibility rules modified.</li>
-
-                    </ul>
-
-                </div>
-
-            </div>
+            </section>
 
         </div>
-
     );
-
 }
 
 export default DepartmentAdminDashboard;

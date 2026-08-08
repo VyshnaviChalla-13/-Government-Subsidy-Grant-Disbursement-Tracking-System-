@@ -35,6 +35,8 @@ import DepartmentManagement from "../pages/superadmin/DepartmentManagement";
 import ManageUsers from "../pages/superadmin/ManageUsers";
 import SystemReports from "../pages/superadmin/SystemReports";
 import FinanceDisbursementConsole from "../pages/finance/FinanceDisbursementConsole";
+import OfficerMilestoneVerification from "../pages/officer/OfficerMilestoneVerification";
+import AdminOverdueResolution from "../pages/admin/AdminOverdueResolution";
 function AppRoutes() {
     return (
         <BrowserRouter>
@@ -85,7 +87,15 @@ function AppRoutes() {
                     path="/finance/disbursement/:id"
                     element={<FinanceDisbursementConsole />}
                 />
+                <Route
+                    path="/officer/verification/milestone"
+                    element={<OfficerMilestoneVerification />}
+                />
 
+                <Route
+                    path="/admin/overdue-resolution"
+                    element={<AdminOverdueResolution />}
+                />
             </Routes>
         </BrowserRouter>
     );
