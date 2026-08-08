@@ -2,144 +2,378 @@ import "./SuperAdminDashboard.css";
 import { useNavigate } from "react-router-dom";
 
 function SuperAdminDashboard() {
-
     const navigate = useNavigate();
 
     return (
+        <div className="superadmin-dashboard">
 
-        <div className="container py-5">
+            {/* ================= HEADER ================= */}
+            <div className="superadmin-header">
 
-            <h2 className="text-primary mb-2">
-                Super Admin Dashboard
-            </h2>
+                <div>
+                    <p className="superadmin-subtitle">
+                        System Administration
+                    </p>
 
-            <p className="text-muted mb-5">
-                Monitor and manage the complete Government Subsidy & Grant Disbursement System.
-            </p>
+                    <h1>
+                        Welcome back, Super Admin 👋
+                    </h1>
 
-            <div className="row">
+                    <p className="superadmin-description">
+                        Monitor and manage the complete Government Subsidy & Grant
+                        Disbursement System.
+                    </p>
+                </div>
 
-                <div className="col-md-3 mb-4">
+                <div className="superadmin-profile">
+                    <div className="superadmin-profile-icon">
+                        SA
+                    </div>
 
-                    <div className="summary-card">
+                    <div>
+                        <strong>Super Admin</strong>
+                        <span>System Administrator</span>
+                    </div>
+                </div>
 
-                        <h3>4</h3>
+            </div>
 
+
+            {/* ================= STATISTICS ================= */}
+            <div className="superadmin-stats">
+
+                <div className="superadmin-stat-card blue">
+                    <div className="superadmin-stat-icon">
+                        🏢
+                    </div>
+
+                    <div>
+                        <h2>4</h2>
                         <p>Departments</p>
-
+                        <span>Registered departments</span>
                     </div>
-
                 </div>
 
-                <div className="col-md-3 mb-4">
 
-                    <div className="summary-card">
+                <div className="superadmin-stat-card green">
+                    <div className="superadmin-stat-icon">
+                        👥
+                    </div>
 
-                        <h3>16</h3>
-
+                    <div>
+                        <h2>16</h2>
                         <p>Officers</p>
-
+                        <span>Registered officers</span>
                     </div>
-
                 </div>
 
-                <div className="col-md-3 mb-4">
 
-                    <div className="summary-card">
+                <div className="superadmin-stat-card purple">
+                    <div className="superadmin-stat-icon">
+                        📄
+                    </div>
 
-                        <h3>1,245</h3>
-
+                    <div>
+                        <h2>1,245</h2>
                         <p>Total Applications</p>
-
+                        <span>Applications received</span>
                     </div>
-
                 </div>
 
-                <div className="col-md-3 mb-4">
 
-                    <div className="summary-card">
+                <div className="superadmin-stat-card orange">
+                    <div className="superadmin-stat-icon">
+                        ₹
+                    </div>
 
-                        <h3>₹4.8 Cr</h3>
-
+                    <div>
+                        <h2>₹4.8 Cr</h2>
                         <p>Total Grants</p>
-
+                        <span>Grants processed</span>
                     </div>
-
                 </div>
 
             </div>
 
-            <div className="row mt-3">
 
-                <div className="col-md-4 mb-4">
+            {/* ================= QUICK ACTIONS ================= */}
+            <section className="superadmin-actions">
 
-                    <div className="feature-card">
-
-                        <h4>Manage Departments</h4>
+                <div className="superadmin-section-heading">
+                    <div>
+                        <h2>Quick Actions</h2>
 
                         <p>
-                            Create, update and monitor government departments.
+                            Access frequently used system administration functions
                         </p>
-
-                        <button
-                            className="btn btn-primary w-100"
-                            onClick={() => navigate("/superadmin/departments")}
-                        >
-                            Open
-                        </button>
-
                     </div>
+                </div>
+
+
+                <div className="superadmin-action-grid">
+
+                    {/* Manage Departments */}
+                    <button
+                        type="button"
+                        className="superadmin-action departments"
+                        onClick={() =>
+                            navigate("/superadmin/departments")
+                        }
+                    >
+                        <span className="superadmin-action-icon">
+                            🏢
+                        </span>
+
+                        <div>
+                            <strong>Manage Departments</strong>
+
+                            <small>
+                                Create, update and monitor departments
+                            </small>
+                        </div>
+
+                        <span className="superadmin-arrow">
+                            →
+                        </span>
+                    </button>
+
+
+                    {/* Manage Users */}
+                    <button
+                        type="button"
+                        className="superadmin-action users"
+                        onClick={() =>
+                            navigate("/superadmin/users")
+                        }
+                    >
+                        <span className="superadmin-action-icon">
+                            👥
+                        </span>
+
+                        <div>
+                            <strong>Manage Users</strong>
+
+                            <small>
+                                Manage officers and beneficiary accounts
+                            </small>
+                        </div>
+
+                        <span className="superadmin-arrow">
+                            →
+                        </span>
+                    </button>
+
+
+                    {/* System Reports */}
+                    <button
+                        type="button"
+                        className="superadmin-action reports"
+                        onClick={() =>
+                            navigate("/superadmin/reports")
+                        }
+                    >
+                        <span className="superadmin-action-icon">
+                            📊
+                        </span>
+
+                        <div>
+                            <strong>System Reports</strong>
+
+                            <small>
+                                View system-wide analytics and reports
+                            </small>
+                        </div>
+
+                        <span className="superadmin-arrow">
+                            →
+                        </span>
+                    </button>
 
                 </div>
 
-                <div className="col-md-4 mb-4">
+            </section>
 
-                    <div className="feature-card">
 
-                        <h4>Manage Users</h4>
+            {/* ================= SYSTEM OVERVIEW ================= */}
+            <section className="superadmin-overview">
+
+                <div className="superadmin-section-heading">
+                    <div>
+                        <h2>System Overview</h2>
 
                         <p>
-                            View and manage officers and beneficiary accounts.
+                            Current government schemes and application activity
                         </p>
-
-                        <button
-                            className="btn btn-success w-100"
-                            onClick={() => navigate("/superadmin/users")}
-                        >
-                            Open
-                        </button>
-
                     </div>
+                </div>
+
+
+                <div className="superadmin-table-wrapper">
+
+                    <table className="superadmin-table">
+
+                        <thead>
+                        <tr>
+                            <th>Scheme</th>
+                            <th>Department</th>
+                            <th>Applications</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+
+
+                        <tbody>
+
+                        <tr>
+                            <td>
+                                <strong>
+                                    🌱 Farmer Assistance Scheme
+                                </strong>
+                            </td>
+
+                            <td>
+                                Agriculture
+                            </td>
+
+                            <td>
+                                120
+                            </td>
+
+                            <td>
+                                <span className="superadmin-active-badge">
+                                    Active
+                                </span>
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    className="superadmin-view-btn"
+                                    onClick={() =>
+                                        navigate("/superadmin/reports")
+                                    }
+                                >
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>
+                                <strong>
+                                    🎓 Student Scholarship Scheme
+                                </strong>
+                            </td>
+
+                            <td>
+                                Education
+                            </td>
+
+                            <td>
+                                95
+                            </td>
+
+                            <td>
+                                <span className="superadmin-active-badge">
+                                    Active
+                                </span>
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    className="superadmin-view-btn"
+                                    onClick={() =>
+                                        navigate("/superadmin/reports")
+                                    }
+                                >
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>
+                                <strong>
+                                    🏠 Affordable Housing Scheme
+                                </strong>
+                            </td>
+
+                            <td>
+                                Housing
+                            </td>
+
+                            <td>
+                                80
+                            </td>
+
+                            <td>
+                                <span className="superadmin-active-badge">
+                                    Active
+                                </span>
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    className="superadmin-view-btn"
+                                    onClick={() =>
+                                        navigate("/superadmin/reports")
+                                    }
+                                >
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+
+
+                        <tr>
+                            <td>
+                                <strong>
+                                    ♀ Women Empowerment Scheme
+                                </strong>
+                            </td>
+
+                            <td>
+                                Social Welfare
+                            </td>
+
+                            <td>
+                                60
+                            </td>
+
+                            <td>
+                                <span className="superadmin-active-badge">
+                                    Active
+                                </span>
+                            </td>
+
+                            <td>
+                                <button
+                                    type="button"
+                                    className="superadmin-view-btn"
+                                    onClick={() =>
+                                        navigate("/superadmin/reports")
+                                    }
+                                >
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+
+                        </tbody>
+
+                    </table>
 
                 </div>
 
-                <div className="col-md-4 mb-4">
-
-                    <div className="feature-card">
-
-                        <h4>System Reports</h4>
-
-                        <p>
-                            View overall system analytics and reports.
-                        </p>
-
-                        <button
-                            className="btn btn-warning text-white w-100"
-                            onClick={() => navigate("/superadmin/reports")}
-                        >
-                            Open
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
+            </section>
 
         </div>
-
     );
-
 }
 
 export default SuperAdminDashboard;
