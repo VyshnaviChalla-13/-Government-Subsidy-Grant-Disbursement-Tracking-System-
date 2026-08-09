@@ -33,7 +33,8 @@ import DepartmentReports from "../pages/admin/DepartmentReports";
 import SuperAdminDashboard from "../pages/superadmin/SuperAdminDashboard";
 import DepartmentManagement from "../pages/superadmin/DepartmentManagement";
 import ManageUsers from "../pages/superadmin/ManageUsers";
-import SystemReports from "../pages/superadmin/SystemReports";
+import AnalyticsDashboard from "../pages/superadmin/analytics dashboard.jsx";
+import AuditLogViewer from "../pages/superadmin/AuditLogViewer";
 
 function AppRoutes() {
     return (
@@ -76,11 +77,17 @@ function AppRoutes() {
                 <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
                 <Route path="/superadmin/departments" element={<DepartmentManagement />} />
                 <Route path="/superadmin/users" element={<ManageUsers />} />
-                <Route path="/superadmin/reports" element={<SystemReports />} />
+                <Route path="/superadmin/reports" element={<AnalyticsDashboard />} />
 
                 {/* Common Pages */}
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/about" element={<About />} />
+                {/* Super Admin */}
+                <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
+                <Route path="/superadmin/departments" element={<DepartmentManagement />} />
+                <Route path="/superadmin/users" element={<ManageUsers />} />
+                <Route path="/superadmin/reports" element={<AnalyticsDashboard />} />
+                <Route path="/superadmin/audit-logs" element={<AuditLogViewer />} />
 
             </Routes>
         </BrowserRouter>

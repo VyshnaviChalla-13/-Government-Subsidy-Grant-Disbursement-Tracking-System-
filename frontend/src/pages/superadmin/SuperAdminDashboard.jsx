@@ -1,10 +1,7 @@
 import "./SuperAdminDashboard.css";
 import { useNavigate } from "react-router-dom";
-
 function SuperAdminDashboard() {
-
     const navigate = useNavigate();
-
     return (
 
         <div className="container py-5">
@@ -117,7 +114,7 @@ function SuperAdminDashboard() {
 
                     <div className="feature-card">
 
-                        <h4>System Reports</h4>
+                        <h4>analytics dashboard</h4>
 
                         <p>
                             View overall system analytics and reports.
@@ -134,12 +131,34 @@ function SuperAdminDashboard() {
 
                 </div>
 
+                {/* Audit Logs */}
+
+                <div className="col-md-4 mb-4">
+
+                    <div className="feature-card">
+
+                        <h4>Audit Logs</h4>
+
+                        <p>
+                            View and monitor important activities performed across the system.
+                        </p>
+
+                        <button
+                            className="btn btn-dark w-100"
+                            onClick={() => navigate("/superadmin/audit-logs")}
+                        >
+                            Open
+                        </button>
+
+                    </div>
+
+                </div>
+
             </div>
 
         </div>
 
     );
-
 }
 
 export default SuperAdminDashboard;
