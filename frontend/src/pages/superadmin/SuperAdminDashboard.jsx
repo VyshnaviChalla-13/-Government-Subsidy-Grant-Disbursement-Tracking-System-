@@ -175,7 +175,7 @@ function SuperAdminDashboard() {
                         </span>
 
                         <div>
-                            <strong>System Reports</strong>
+                            <strong>Analytics Dashboard</strong>
 
                             <small>
                                 View system-wide analytics and reports
@@ -185,6 +185,30 @@ function SuperAdminDashboard() {
                         <span className="superadmin-arrow">
                             →
                         </span>
+                    </button>
+                    {/* Audit Logs */}
+                    <button
+                        type="button"
+                        className="superadmin-action reports"
+                        onClick={() =>
+                            navigate("/superadmin/audit-logs")
+                        }
+                    >
+    <span className="superadmin-action-icon">
+        📋
+    </span>
+
+                        <div>
+                            <strong>Audit Logs</strong>
+
+                            <small>
+                                View and monitor important system activities
+                            </small>
+                        </div>
+
+                        <span className="superadmin-arrow">
+        →
+    </span>
                     </button>
 
                 </div>
@@ -368,30 +392,10 @@ function SuperAdminDashboard() {
 
                 </div>
 
-                {/* Audit Logs */}
 
-                <div className="col-md-4 mb-4">
 
-                    <div className="feature-card">
 
-                        <h4>Audit Logs</h4>
-
-                        <p>
-                            View and monitor important activities performed across the system.
-                        </p>
-
-                        <button
-                            className="btn btn-dark w-100"
-                            onClick={() => navigate("/superadmin/audit-logs")}
-                        >
-                            Open
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </div>
+            </section>
 
         </div>
     );
