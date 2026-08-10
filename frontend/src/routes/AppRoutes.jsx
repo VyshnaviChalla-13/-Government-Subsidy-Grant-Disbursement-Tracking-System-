@@ -36,7 +36,6 @@ import ManageUsers from "../pages/superadmin/ManageUsers";
 import AnalyticsDashboard from "../pages/superadmin/analytics dashboard.jsx";
 import AuditLogViewer from "../pages/superadmin/AuditLogViewer";
 
-import SystemReports from "../pages/superadmin/SystemReports";
 import FinanceDisbursementConsole from "../pages/finance/FinanceDisbursementConsole";
 import OfficerMilestoneVerification from "../pages/officer/OfficerMilestoneVerification";
 import AdminOverdueResolution from "../pages/admin/AdminOverdueResolution";
@@ -82,32 +81,30 @@ function AppRoutes() {
                 <Route path="/superadmin/departments" element={<DepartmentManagement />} />
                 <Route path="/superadmin/users" element={<ManageUsers />} />
                 <Route path="/superadmin/reports" element={<AnalyticsDashboard />} />
+                <Route path="/superadmin/audit-logs" element={<AuditLogViewer />} />
+
+                {/* Finance / Officer / Admin */}
+                <Route
+                    path="/finance/disbursement/:id"
+                    element={<FinanceDisbursementConsole />}
+                />
+
+                <Route
+                    path="/officer/verification/milestone"
+                    element={<OfficerMilestoneVerification />}
+                />
+
+                <Route
+                    path="/admin/overdue-resolution"
+                    element={<AdminOverdueResolution />}
+                />
 
                 {/* Common Pages */}
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/about" element={<About />} />
-{/* Super Admin */}
-<Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
-<Route path="/superadmin/departments" element={<DepartmentManagement />} />
-<Route path="/superadmin/users" element={<ManageUsers />} />
-<Route path="/superadmin/reports" element={<AnalyticsDashboard />} />
-<Route path="/superadmin/audit-logs" element={<AuditLogViewer />} />
 
-{/* Finance / Officer / Admin */}
-<Route
-    path="/finance/disbursement/:id"
-    element={<FinanceDisbursementConsole />}
-/>
 
-<Route
-    path="/officer/verification/milestone"
-    element={<OfficerMilestoneVerification />}
-/>
 
-<Route
-    path="/admin/overdue-resolution"
-    element={<AdminOverdueResolution />}
-/>
             </Routes>
         </BrowserRouter>
     );
