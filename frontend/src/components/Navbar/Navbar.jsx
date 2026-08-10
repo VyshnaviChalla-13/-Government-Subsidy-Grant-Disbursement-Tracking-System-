@@ -62,11 +62,16 @@ function Navbar() {
                             </Link>
                         </li>
 
-                        <li className="nav-item">
-                            <Link className="nav-link" to="/login">
-                                Track Status
-                            </Link>
-                        </li>
+                        {!isAuthenticated || user?.role === "ROLE_USER" ? (
+                            <li className="nav-item">
+                                <Link
+                                    className="nav-link"
+                                    to={isAuthenticated ? "/beneficiary/my-applications" : "/login"}
+                                >
+                                    Track Status
+                                </Link>
+                            </li>
+                        ) : null}
 
                         <li className="nav-item">
                             <Link className="nav-link" to="/about">
@@ -102,20 +107,33 @@ function Navbar() {
                                     className="login-btn"
                                     onClick={() => {
                                         switch (user?.role) {
-                                            case "BENEFICIARY":
+
+                                            case "ROLE_USER":
                                                 navigate("/dashboard");
                                                 break;
-                                            case "FINANCE":
-                                                navigate("/finance");
-                                                break;
-                                            case "ADMIN":
-                                                navigate("/admin/dashboard");
-                                                break;
-                                            case "SUPER_ADMIN":
+
+                                            case "ROLE_SUPER_ADMIN":
                                                 navigate("/superadmin/dashboard");
                                                 break;
+
+                                            case "ROLE_DEPT_ADMIN":
+                                                navigate("/admin/dashboard");
+                                                break;
+
+                                            case "ROLE_FRONT_DESK_OFFICER":
+                                                navigate("/officer/frontdesk");
+                                                break;
+
+                                            case "ROLE_VERIFICATION_OFFICER":
+                                                navigate("/officer/verification");
+                                                break;
+
+                                            case "ROLE_FINANCE_OFFICER":
+                                                navigate("/finance");
+                                                break;
+
                                             default:
-                                                navigate("/dashboard");
+                                                navigate("/role-selection");
                                         }
                                     }}
                                 >
@@ -142,6 +160,8 @@ function Navbar() {
 
         </nav>
     );
+
+
 }
 
 export default Navbar;
