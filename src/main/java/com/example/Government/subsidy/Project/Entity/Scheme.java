@@ -1,4 +1,4 @@
-package com.example.Government.subsidy.Project.Entity;
+﻿package com.example.Government.subsidy.Project.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -58,6 +58,12 @@ public class Scheme {
     @Column(name = "eligibility_score", nullable = false)
     private BigDecimal eligibilityScore;
 
+    @Column(name = "minimum_score")
+    private Integer minimumScore = 50;
+
+    @Column(name = "maximum_income")
+    private Double maximumIncome;
+
     @Column(nullable = false)
     private String status = "ACTIVE";
 
@@ -75,6 +81,10 @@ public class Scheme {
 
         if (status == null) {
             status = "ACTIVE";
+        }
+
+        if (minimumScore == null) {
+            minimumScore = 50;
         }
     }
 }

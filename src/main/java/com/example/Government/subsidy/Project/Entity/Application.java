@@ -43,6 +43,15 @@ public class Application {
     @Column(nullable = false, length = 40)
     private String status = "SUBMITTED";
 
+    @Column(name = "eligibility_score")
+    private Integer eligibilityScore;
+
+    @Column(name = "eligibility_status", length = 30)
+    private String eligibilityStatus;
+
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
     @Column(name = "remarks", columnDefinition = "TEXT")
     private String remarks;
 
