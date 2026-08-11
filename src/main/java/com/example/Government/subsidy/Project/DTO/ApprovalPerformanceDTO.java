@@ -1,4 +1,9 @@
 package com.example.Government.subsidy.Project.DTO;
 
-public class ApprovalPerformanceDTO {
+public record ApprovalPerformanceDTO(
+        Integer schemeId,
+        String schemeName,
+        long approvedCount,
+        double averageDaysToApproval
+) {
 }
