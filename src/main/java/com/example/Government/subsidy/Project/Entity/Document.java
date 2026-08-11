@@ -1,12 +1,19 @@
-﻿package com.example.Government.subsidy.Project.Entity;
+package com.example.Government.subsidy.Project.Entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "beneficiary_documents")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Table(name = "documents")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Document {
 
     @Id
@@ -24,11 +31,20 @@ public class Document {
     @Column(name = "file_name", length = 255)
     private String fileName;
 
-    @Column(name = "file_path", length = 255)
+    @Column(name = "file_path", nullable = false, columnDefinition = "TEXT")
     private String filePath;
 
-    @Column(name = "verified")
+    @Column(name = "verified", nullable = false)
     private Boolean verified = false;
+
+    @Column(name = "verification_remarks", columnDefinition = "TEXT")
+    private String verificationRemarks;
+
+    @Column(name = "verified_at")
+    private LocalDateTime verifiedAt;
+
+    @Column(name = "verified_by")
+    private String verifiedBy;
 
     @Column(name = "uploaded_at", updatable = false)
     private LocalDateTime uploadedAt;
@@ -36,6 +52,9 @@ public class Document {
     @PrePersist
     public void prePersist() {
         uploadedAt = LocalDateTime.now();
-        if (verified == null) verified = false;
+
+        if (verified == null) {
+            verified = false;
+        }
     }
 }

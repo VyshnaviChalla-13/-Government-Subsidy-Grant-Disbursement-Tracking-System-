@@ -1,0 +1,14 @@
+$kind: http-request
+description: ""
+url: http://localhost:8080/applications/3/field-reject?remarks=Not eligible
+method: PATCH
+queryParams:
+  remarks: Not eligible
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5MDAwMDAwMDAxIiwicm9sZSI6IlJPTEVfRlJPTlRfREVTS19PRkZJQ0VSIiwiaWF0IjoxNzg1NTg4MTEyLCJleHAiOjE3ODU2NzQ1MTJ9.jgcmV30Rc_7pyV_rVyvLyz2WANIVJJg2ZOD0DwnQYgKhlIyQnWTUMIStivKdiP7c
+order: 4503599627342368

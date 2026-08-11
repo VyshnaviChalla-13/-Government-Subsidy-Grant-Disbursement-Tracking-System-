@@ -1,7 +1,21 @@
 import "./BrowseSchemes.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
+import {
+    Search,
+    Building2,
+    IndianRupee,
+    CalendarDays,
+    ArrowRight,
+    FileText
+} from "lucide-react";
 
 function BrowseSchemes() {
+
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const fromPublic = location.state?.fromPublic || false;
 
     const schemes = [
         {
@@ -33,66 +47,236 @@ function BrowseSchemes() {
             deadline: "10 Jan 2027"
         }
     ];
-    
-    const navigate = useNavigate();
-    
+
     return (
+
         <div className="browse-page">
-            <div className="container py-5">
 
-                <h2 className="browse-title">
-                    Browse Government Schemes
-                </h2>
+            <div className="container py-4">
 
-                <p className="browse-subtitle">
-                    Explore available government schemes.
-                </p>
+                {/* ================= HERO ================= */}
 
-                <div className="row">
+                <div className="browse-hero">
 
-                    {schemes.map((scheme) => (
+                    <div>
 
-                        <div className="col-lg-6 mb-4" key={scheme.id}>
+                        <span className="browse-tag">
+                            Government Welfare Portal
+                        </span>
 
-                            <div className="scheme-card">
+                        <h1>
+                            Browse Government Schemes
+                        </h1>
 
-                                <h4>{scheme.title}</h4>
+                        <p>
+                            Explore available welfare schemes, check eligibility,
+                            and apply online in just a few clicks.
+                        </p>
 
-                                <p><strong>Department:</strong> {scheme.department}</p>
+                    </div>
 
-                                <p><strong>Grant:</strong> {scheme.amount}</p>
+                </div>
 
-                                <p><strong>Last Date:</strong> {scheme.deadline}</p>
+                {/* ================= SEARCH ================= */}
 
-                                <div className="d-flex gap-2">
+                <div className="search-section">
 
-                                    <button
-                                        className="btn btn-outline-primary"
-                                        onClick={() => navigate("/beneficiary/schemes/1")}
-                                    >
-                                        View Details
-                                    </button>
+                    <div className="search-box">
 
-                                    <button
-                                        className="btn btn-primary"
-                                        onClick={() => navigate("/beneficiary/apply")}
-                                    >
-                                        Apply
-                                    </button>
+                        <Search size={20} />
+
+                        <input
+                            type="text"
+                            placeholder="Search schemes..."
+                        />
+
+                    </div>
+
+                    <select className="filter-dropdown">
+
+                        <option>All Departments</option>
+
+                        <option>Agriculture</option>
+
+                        <option>Education</option>
+
+                        <option>Housing</option>
+
+                        <option>Social Welfare</option>
+
+                    </select>
+
+                </div>
+
+                {/* ================= SCHEMES ================= */}
+
+                <div className="row mt-4">
+
+                    {
+
+                        schemes.map((scheme) => (
+
+                            <div
+                                className="col-lg-6 col-md-6 mb-4"
+                                key={scheme.id}
+                            >
+
+                                <div className="scheme-card">
+
+                                    <div className="scheme-header">
+
+                                        <div className="scheme-icon">
+
+                                            <FileText size={32} />
+
+                                        </div>
+
+                                        <div>
+
+                                            <h4>
+
+                                                {scheme.title}
+
+                                            </h4>
+
+                                            <span>
+
+                                                Government Scheme
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div className="scheme-info">
+
+                                        <div className="info-row">
+
+                                            <Building2 size={18} />
+
+                                            <span>
+
+                                                {scheme.department}
+
+                                            </span>
+
+                                        </div>
+
+                                        <div className="info-row">
+
+                                            <IndianRupee size={18} />
+
+                                            <span>
+
+                                                {scheme.amount}
+
+                                            </span>
+
+                                        </div>
+
+                                        <div className="info-row">
+
+                                            <CalendarDays size={18} />
+
+                                            <span>
+
+                                                Last Date :
+                                                {scheme.deadline}
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div className="scheme-actions">
+
+                                        <button
+
+                                            className="details-btn"
+
+                                            onClick={() =>
+                                                navigate(
+                                                    `/beneficiary/schemes/${scheme.id}`,
+                                                    {
+                                                        state: {
+                                                            fromPublic
+                                                        }
+                                                    }
+                                                )
+                                            }
+
+                                        >
+
+                                            View Details
+
+                                            <ArrowRight size={16} />
+
+                                        </button>
+
+                                        <button
+
+                                            className="apply-btn"
+
+                                            onClick={() => {
+
+                                                if (fromPublic) {
+
+                                                    navigate("/login", {
+
+                                                        state: {
+
+                                                            fromApply: true,
+
+                                                            schemeId: scheme.id
+
+                                                        }
+
+                                                    });
+
+                                                }
+
+                                                else {
+
+                                                    navigate("/beneficiary/apply", {
+
+                                                        state: {
+
+                                                            schemeId: scheme.id
+
+                                                        }
+
+                                                    });
+
+                                                }
+
+                                            }}
+
+                                        >
+
+                                            Apply Now
+
+                                        </button>
+
+                                    </div>
 
                                 </div>
 
                             </div>
 
-                        </div>
+                        ))
 
-                    ))}
+                    }
 
                 </div>
 
             </div>
+
         </div>
+
     );
+
 }
 
 export default BrowseSchemes;

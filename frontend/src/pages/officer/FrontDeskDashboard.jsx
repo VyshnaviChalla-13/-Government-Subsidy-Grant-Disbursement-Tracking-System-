@@ -1,92 +1,104 @@
+import {
+    getApplications,
+    forwardApplication,
+    returnApplication,
+    rejectApplication
+} from "../../api/frontDeskApi";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./FrontDeskDashboard.css";
+import { useEffect } from "react";
 
 function FrontDeskDashboard() {
 
-    const [applications, setApplications] = useState([
-        {
-            id: "APP001",
-            name: "Ravi Kumar",
-            scheme: "Farmer Scheme",
-            date: "10-07-2026",
-            status: "Pending"
-        },
-        {
-            id: "APP002",
-            name: "Anitha",
-            scheme: "Education Scheme",
-            date: "09-07-2026",
-            status: "Forwarded"
-        },
-        {
-            id: "APP003",
-            name: "Suresh",
-            scheme: "Housing Scheme",
-            date: "08-07-2026",
-            status: "Rejected"
-        },
-        {
-            id: "APP004",
-            name: "Priya",
-            scheme: "Farmer Scheme",
-            date: "07-07-2026",
-            status: "Pending"
-        }
-    ]);
-
+    const [applications, setApplications] = useState([]);
     const [search, setSearch] = useState("");
     const [schemeFilter, setSchemeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+    const [selectedApplication, setSelectedApplication] = useState(null);
+    const [actionType, setActionType] = useState("");
+    const [reason, setReason] = useState("");
+    const navigate = useNavigate();
+    useEffect(() => {
+        fetchApplications();
+    }, []);
+
+    const fetchApplications = async () => {
+        try {
+            const data = await getApplications();
+
+            console.log("Applications received:", data); // <-- ADD THIS
+
+            setApplications(data);
+        } catch (error) {
+            console.error("Failed to fetch applications:", error);
+
+            if (error.response) {
+                console.log("Status:", error.response.status);
+                console.log("Response:", error.response.data);
+            }
+        }
+    };
 
     const filteredApplications = applications.filter((app) => {
 
         const matchesSearch =
-            app.id.toLowerCase().includes(search.toLowerCase()) ||
-            app.name.toLowerCase().includes(search.toLowerCase());
+            app.applicationNumber?.toLowerCase().includes(search.toLowerCase()) ||
+            app.beneficiary?.fullName?.toLowerCase().includes(search.toLowerCase());
 
         const matchesScheme =
-            schemeFilter === "" || app.scheme === schemeFilter;
+            schemeFilter === "" ||
+            app.scheme?.schemeName === schemeFilter;
 
         const matchesStatus =
             statusFilter === "" || app.status === statusFilter;
 
         return matchesSearch && matchesScheme && matchesStatus;
     });
+    const schemes = [
+        ...new Set(
+            applications
+                .map(app => app.scheme?.schemeName)
+                .filter(Boolean)
+        ),
+    ];
 
-    const updateStatus = (id, status) => {
 
-        const updated = applications.map((app) =>
-            app.id === id ? { ...app, status } : app
-        );
-
-        setApplications(updated);
+    const openReasonPopup = (application, action) => {
+        setSelectedApplication(application);
+        setActionType(action);
+        setReason("");
     };
+    const submitReason = async () => {
+        try {
 
+            if (actionType === "RETURNED") {
+                await returnApplication(selectedApplication.applicationId, reason);
+            }
+
+            if (actionType === "REJECTED") {
+                await rejectApplication(selectedApplication.applicationId, reason);
+            }
+
+            await fetchApplications();
+
+            setSelectedApplication(null);
+            setReason("");
+            setActionType("");
+
+            alert(`Application ${actionType.toLowerCase()} successfully`);
+
+        } catch (err) {
+            console.error(err);
+            alert("Operation failed");
+        }
+    };
     return (
 
         <div className="dashboard-layout">
 
-            {/* Sidebar */}
 
-            <aside className="sidebar">
 
-                <h2>Gov Portal</h2>
-
-                <ul>
-
-                    <li>🏠 Dashboard</li>
-
-                    <li>📄 Applications</li>
-
-                    <li>📋 Schemes</li>
-
-                    <li>👤 Profile</li>
-
-                    <li>🚪 Logout</li>
-
-                </ul>
-
-            </aside>
 
 
 
@@ -137,7 +149,8 @@ function FrontDeskDashboard() {
                         <p>
                             {
                                 applications.filter(
-                                    (a) => a.status === "Pending"
+                                    (a) => a.status === "SUBMITTED" ||
+                                        a.status === "RESUBMITTED"
                                 ).length
                             }
                         </p>
@@ -151,7 +164,7 @@ function FrontDeskDashboard() {
                         <p>
                             {
                                 applications.filter(
-                                    (a) => a.status === "Forwarded"
+                                    (a) => a.status === "FIELD_APPROVED"
                                 ).length
                             }
                         </p>
@@ -165,7 +178,7 @@ function FrontDeskDashboard() {
                         <p>
                             {
                                 applications.filter(
-                                    (a) => a.status === "Rejected"
+                                    (a) => a.status === "REJECTED"
                                 ).length
                             }
                         </p>
@@ -191,15 +204,13 @@ function FrontDeskDashboard() {
                         value={schemeFilter}
                         onChange={(e) => setSchemeFilter(e.target.value)}
                     >
-
                         <option value="">All Schemes</option>
 
-                        <option>Farmer Scheme</option>
-
-                        <option>Education Scheme</option>
-
-                        <option>Housing Scheme</option>
-
+                        {schemes.map((scheme) => (
+                            <option key={scheme} value={scheme}>
+                                {scheme}
+                            </option>
+                        ))}
                     </select>
 
 
@@ -211,11 +222,11 @@ function FrontDeskDashboard() {
 
                         <option value="">All Status</option>
 
-                        <option>Pending</option>
-
-                        <option>Forwarded</option>
-
-                        <option>Rejected</option>
+                        <option value="SUBMITTED">Submitted</option>
+                        <option value="RESUBMITTED">Resubmitted</option>
+                        <option value="FIELD_APPROVED">Field Approved</option>
+                        <option value="RETURNED">Returned</option>
+                        <option value="REJECTED">Rejected</option>
 
                     </select>
 
@@ -251,54 +262,66 @@ function FrontDeskDashboard() {
 
                     {filteredApplications.map((app) => (
 
-                        <tr key={app.id}>
+                        <tr key={app.applicationId}>
 
-                            <td>{app.id}</td>
+                            <td>{app.applicationNumber}</td>
 
-                            <td>{app.name}</td>
+                            <td>{app.beneficiary?.fullName}</td>
 
-                            <td>{app.scheme}</td>
+                            <td>{app.scheme?.schemeName}</td>
 
-                            <td>{app.date}</td>
+                            <td>{new Date(app.submittedAt).toLocaleDateString()}</td>
 
                             <td>
+    <span className={app.status.toLowerCase().replace(/\s+/g, "-")}>
+        {app.status}
+    </span>
 
-                                    <span
-                                        className={app.status.toLowerCase()}
-                                    >
-                                        {app.status}
-                                    </span>
-
+                                {(app.status === "RETURNED" || app.status === "REJECTED") &&
+                                    app.remarks && (
+                                        <div className="reason-text">
+                                            Reason: {app.remarks}
+                                        </div>
+                                    )}
                             </td>
 
                             <td>
 
-                                <button>
+                                <button
+                                    className="view-btn"
+                                    onClick={() => setSelectedApplication(app)}
+                                >
                                     View
                                 </button>
 
                                 <button
-                                    onClick={() =>
-                                        updateStatus(
-                                            app.id,
-                                            "Forwarded"
-                                        )
-                                    }
+                                    onClick={async () => {
+                                        try {
+                                            await forwardApplication(app.applicationId);
+                                            await fetchApplications();
+                                            alert("Application forwarded successfully");
+                                        } catch (err) {
+                                            console.error(err);
+                                            alert("Failed to forward application");
+                                        }
+                                    }}
                                 >
                                     Forward
                                 </button>
 
                                 <button
-                                    onClick={() =>
-                                        updateStatus(
-                                            app.id,
-                                            "Rejected"
-                                        )
-                                    }
+                                    className="return-btn"
+                                    onClick={() => openReasonPopup(app, "RETURNED")}
                                 >
-                                    Reject
+                                    ↩ Return
                                 </button>
 
+                                <button
+                                    className="reject-btn"
+                                    onClick={() => openReasonPopup(app, "REJECTED")}
+                                >
+                                    ❌ Reject
+                                </button>
                             </td>
 
                         </tr>
@@ -308,6 +331,155 @@ function FrontDeskDashboard() {
                     </tbody>
 
                 </table>
+                {selectedApplication && (
+
+                    <div className="modal-overlay">
+
+                        <div className="modal">
+
+                            <h2>Application Details</h2>
+
+                            <div className="details-grid">
+
+                                <div>
+                                    <strong>Application ID</strong>
+                                    <p>{selectedApplication.applicationId}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Beneficiary Name</strong>
+                                    <p>{selectedApplication.beneficiary?.fullName}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Scheme</strong>
+                                    <p>{selectedApplication.scheme?.schemeName}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Date</strong>
+                                    <p>{new Date(selectedApplication.submittedAt).toLocaleDateString()}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Status</strong>
+                                    <p>{selectedApplication.status}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Mobile</strong>
+                                    <p>{selectedApplication.beneficiary?.mobileNumber}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Email</strong>
+                                    <p>{selectedApplication.beneficiary?.email}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Aadhaar</strong>
+                                    <p>{selectedApplication.beneficiary?.aadhaarNumber}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Address</strong>
+                                    <p>{selectedApplication.beneficiary?.address}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Income</strong>
+                                    <p>{selectedApplication.beneficiary?.annualIncome}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Bank</strong>
+                                    <p>{selectedApplication.beneficiary?.bankName}</p>
+                                </div>
+
+                                <div>
+                                    <strong>Account Status</strong>
+                                    <p>Verified</p>
+                                </div>
+
+                            </div>
+
+                            <div className="document-section">
+
+                                <h3>Uploaded Documents</h3>
+
+                                <ul>
+                                    <li>✔ Aadhaar Card</li>
+                                    <li>✔ Income Certificate</li>
+                                    <li>✔ Bank Passbook</li>
+                                    <li>✔ Residence Certificate</li>
+                                </ul>
+
+                            </div>
+
+                            <div className="modal-buttons">
+
+                                <button
+                                    className="close-btn"
+                                    onClick={() => setSelectedApplication(null)}
+                                >
+                                    Close
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                )}
+                {selectedApplication &&
+                    (actionType === "RETURNED" || actionType === "REJECTED") && (
+
+                        <div className="modal-overlay">
+
+                            <div className="reason-modal">
+
+                                <h2>{actionType} Application</h2>
+
+                                <p>
+                                    Please provide the reason before continuing.
+                                </p>
+
+                                <textarea
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                    placeholder="Enter reason..."
+                                    rows="5"
+                                />
+
+                                <div className="reason-buttons">
+
+                                    <button
+                                        className="submit-btn"
+                                        disabled={reason.trim() === ""}
+                                        onClick={submitReason}
+                                    >
+                                        Submit
+                                    </button>
+
+                                    <button
+                                        className="cancel-btn"
+                                        onClick={() => {
+                                            setSelectedApplication(null);
+                                            setReason("");
+                                            setActionType("");
+                                        }}
+                                    >
+                                        Cancel
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    )}
 
             </main>
 

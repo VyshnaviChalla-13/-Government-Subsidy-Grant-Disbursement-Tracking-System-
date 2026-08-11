@@ -1,0 +1,13 @@
+$kind: http-request
+name: Delete User
+description: ""
+url: http://localhost:8080/users/delete/1
+method: DELETE
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfU1VQRVJfQURNSU4iLCJpYXQiOjE3ODU1NzY2NDIsImV4cCI6MTc4NTY2MzA0Mn0.4JTuv7qVbJdEFO8K-ImP0QZhqqqQP9p9hUz4JItmAAVz_OQ9_2zG6vXmHQGup7Mr
+order: 4499224603548231

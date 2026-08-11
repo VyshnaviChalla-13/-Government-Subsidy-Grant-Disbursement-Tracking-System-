@@ -1,0 +1,43 @@
+$kind: http-request
+name: Invalid User Id-> User not found
+description: ""
+url: http://localhost:8080/superadmin/schemes
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"department\": {\r
+
+    \        \"departmentId\": 1\r
+
+    \    },\r
+
+    \    \"user\": {\r
+
+    \        \"userId\": 45\r
+
+    \    },\r
+
+    \    \"schemeName\": \"Educational\",\r
+
+    \    \"description\": \"Financial assistance for farmers.\",\r
+
+    \    \"totalBudget\": 10000000,\r
+
+    \    \"minGrant\": 1000,\r
+
+    \    \"maxGrant\": 50000,\r
+
+    \    \"applicationStartDate\": \"2026-07-25\",\r
+
+    \    \"applicationEndDate\": \"2026-12-31\",\r
+
+    \    \"eligibilityScore\": 80\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfQURNSU4iLCJpYXQiOjE3ODQ5MjI2NzgsImV4cCI6MTc4NTAwOTA3OH0.OYua0WXA4J93NueGh5Qv7OAQyawXotRALS-JnLIuVSmZyc0cs68xfD__JUPwdD2h
+order: 4431869021964921

@@ -1,4 +1,4 @@
-﻿package com.example.Government.subsidy.Project.Controller;
+package com.example.Government.subsidy.Project.Controller;
 
 import com.example.Government.subsidy.Project.Entity.Application;
 import com.example.Government.subsidy.Project.Service.ApplicationService;

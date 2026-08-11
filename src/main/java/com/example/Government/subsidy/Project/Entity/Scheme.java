@@ -48,6 +48,12 @@ public class Scheme {
 
     @Column(name = "max_grant", nullable = false)
     private BigDecimal maxGrant;
+    
+    @Column(name = "maximum_income")
+    private Double maximumIncome;
+
+    @Column(name = "minimum_score")
+    private Integer minimumScore;
 
     @Column(name = "application_start_date", nullable = false)
     private LocalDate applicationStartDate;

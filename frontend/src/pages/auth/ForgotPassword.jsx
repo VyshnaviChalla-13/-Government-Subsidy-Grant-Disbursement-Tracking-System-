@@ -1,93 +1,84 @@
+import React from "react";
 import { Link } from "react-router-dom";
-import "../../styles/login.css";
+import "../../styles/forgotpassword.css";
 
 function ForgotPassword() {
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+    };
+
     return (
-        <div className="login-page">
 
-            <div className="container">
+        <div className="forgot-page">
 
-                <div className="row align-items-center">
+            <div className="forgot-wrapper">
 
-                    {/* Left Section */}
+                <div className="forgot-card">
 
-                    <div className="col-lg-6 d-none d-lg-flex">
+                    <div className="forgot-header">
 
-                        <div className="login-info text-center">
+                        <i className="fa-solid fa-key forgot-icon"></i>
 
-                            <img
-                                src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                                alt="Forgot Password"
-                                className="img-fluid login-image"
-                            />
+                        <h2>Forgot Password</h2>
 
-                            <h2>Government Scheme Management System</h2>
-
-                            <p>
-                                Enter your registered email address to receive
-                                a password reset link.
-                            </p>
-
-                        </div>
+                        <p>
+                            Enter your registered email address to receive a
+                            password reset link.
+                        </p>
 
                     </div>
 
-                    {/* Right Section */}
+                    <form onSubmit={handleSubmit}>
 
-                    <div className="col-lg-6">
+                        <div className="mb-4">
 
-                        <div className="login-card">
+                            <label className="form-label">
+                                Email Address
+                            </label>
 
-                            <h2 className="text-center mb-2">
-                                Forgot Password
-                            </h2>
+                            <div className="input-box">
 
-                            <p className="text-center mb-4">
-                                Reset your password
-                            </p>
+                                <i className="fa-solid fa-envelope"></i>
 
-                            <form>
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    placeholder="Enter your registered email"
+                                    required
+                                />
 
-                                <div className="mb-4">
-
-                                    <label className="form-label">
-                                        Email Address
-                                    </label>
-
-                                    <input
-                                        type="email"
-                                        className="form-control"
-                                        placeholder="Enter your registered email"
-                                    />
-
-                                </div>
-
-                                <button
-                                    className="btn btn-primary w-100">
-
-                                    Send Reset Link
-
-                                </button>
-
-                            </form>
-
-                            <hr />
-
-                            <p className="text-center">
-
-                                Remember your password?{" "}
-
-                                <Link
-                                    to="/login"
-                                    className="login-link">
-
-                                    Login
-
-                                </Link>
-
-                            </p>
+                            </div>
 
                         </div>
+
+                        <button
+                            type="submit"
+                            className="btn login-btn w-100">
+
+                            <i className="fa-solid fa-paper-plane me-2"></i>
+
+                            Send Reset Link
+
+                        </button>
+
+                    </form>
+
+                    <div className="forgot-footer">
+
+                        <p>
+
+                            Remember your password?
+
+                            <Link
+                                to="/login"
+                                className="login-link ms-2">
+
+                                Login
+
+                            </Link>
+
+                        </p>
 
                     </div>
 
@@ -96,7 +87,9 @@ function ForgotPassword() {
             </div>
 
         </div>
+
     );
+
 }
 
 export default ForgotPassword;

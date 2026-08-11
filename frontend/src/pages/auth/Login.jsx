@@ -1,149 +1,319 @@
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/login.css";
+
+// Maps backend role strings to the dashboard each role should land on.
+const ROLE_HOME = {
+    ROLE_USER: "/beneficiary/schemes",
+    ROLE_SUPER_ADMIN: "/superadmin/dashboard",
+    ROLE_DEPT_ADMIN: "/admin/dashboard",
+    ROLE_FRONT_DESK_OFFICER: "/officer/frontdesk",
+    ROLE_VERIFICATION_OFFICER: "/officer/verification",
+    ROLE_FINANCE_OFFICER: "/finance",
+};
 
 function Login() {
 
     const navigate = useNavigate();
+    const location = useLocation();
+    const { login } = useAuth();
 
-    const handleLogin = (e) => {
+    const [mobileNumber, setMobileNumber] = useState("");
+    const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState({});
+    const [submitting, setSubmitting] = useState(false);
+
+    console.log("Location State:", location.state);
+
+    const handleLogin =  async (e) => {
         e.preventDefault();
-        navigate("/dashboard");
-    };
+
+        let newErrors = {};
+
+        // Mobile Validation
+        if (!mobileNumber.trim()) {
+            newErrors.mobileNumber = "Mobile Number is required";
+        } else if (!/^[0-9]{10}$/.test(mobileNumber)) {
+            newErrors.mobileNumber = "Enter a valid 10-digit Mobile Number";
+        }
+
+        // Password Validation
+        if (!password.trim()) {
+            newErrors.password = "Password is required";
+        } else if (
+            !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)
+        ) {
+            newErrors.password =
+                "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character.";
+        }
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length > 0) {
+            return;
+        }
+
+//         // Existing Navigation
+//         if (location.state?.fromApply) {
+//             navigate("/beneficiary/apply", {
+//                 state: {
+//                     schemeId: location.state?.schemeId
+//                 }
+//             });
+//         } else {
+//             navigate("/role-selection");
+//         }
+//     };
+
+        setSubmitting(true);
+
+        try {
+                    const user = await login(mobileNumber, password);
+            console.log("Logged in user:", user);
+
+                    if (location.state?.fromApply) {
+                        navigate("/beneficiary/apply", {
+                            state: {
+                                schemeId: location.state?.schemeId
+                            }
+                        });
+                    } else if (location.state?.from) {
+                        navigate(location.state.from);
+                    } else {
+                        navigate(ROLE_HOME[user.role] || "/role-selection");
+                    }
+                } catch (err) {
+                    setErrors({ form: err.message || "Login failed. Please try again." });
+                } finally {
+                    setSubmitting(false);
+                }
+            };
 
     return (
+
         <div className="login-page">
 
             <div className="container">
 
-                <div className="row align-items-center">
+                <div className="login-wrapper">
 
-                    {/* Left Side */}
+                    <div className="row g-0">
 
-                    <div className="col-lg-6 d-none d-lg-flex">
+                        {/* LEFT SECTION */}
 
-                        <div className="login-info text-center">
+                        <div className="col-lg-4 d-none d-lg-flex">
 
-                            <img
-                                src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                                alt="Government Portal"
-                                className="img-fluid login-image"
-                            />
+                            <div className="login-left">
 
-                            <h2>Government Scheme Management System</h2>
+                                <div className="portal-brand">
 
-                            <p>
-                                A secure digital platform that enables citizens
-                                to explore government welfare schemes, apply
-                                online, upload documents, and track application
-                                status anytime, anywhere.
-                            </p>
+                                    <i className="fa-solid fa-landmark portal-icon"></i>
 
-                        </div>
+                                    <h2>Government Welfare Portal</h2>
 
-                    </div>
+                                    <p>
+                                        One secure platform to access
+                                        government welfare schemes,
+                                        upload documents and track
+                                        application status online.
+                                    </p>
 
-                    {/* Right Side */}
-
-                    <div className="col-lg-6">
-
-                        <div className="login-card">
-
-                            <h2 className="text-center mb-2">
-                                Welcome Back
-                            </h2>
-
-                            <p className="text-center mb-4">
-                                Login to continue
-                            </p>
-
-                            {/* IMPORTANT CHANGE */}
-                            <form onSubmit={handleLogin}>
-
-                                <div className="mb-3">
-
-                                    <label className="form-label">
-                                        Email Address
-                                    </label>
-
-                                    <input
-                                        type="email"
-                                        className="form-control"
-                                        placeholder="Enter your email"
-                                        required
-                                    />
+                                    <div className="gold-line"></div>
 
                                 </div>
 
-                                <div className="mb-3">
+                                <div className="portal-stats">
 
-                                    <label className="form-label">
-                                        Password
-                                    </label>
+                                    <div className="login-stat-card">
 
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        placeholder="Enter your password"
-                                        required
-                                    />
+                                        <h3>100%</h3>
 
-                                </div>
-
-                                <div className="d-flex justify-content-between align-items-center mb-4">
-
-                                    <div className="form-check">
-
-                                        <input
-                                            className="form-check-input"
-                                            type="checkbox"
-                                            id="remember"
-                                        />
-
-                                        <label
-                                            className="form-check-label"
-                                            htmlFor="remember">
-
-                                            Remember Me
-
-                                        </label>
+                                        <span>Secure</span>
 
                                     </div>
 
-                                    <Link
-                                        to="/forgot-password"
-                                        className="login-link">
+                                    <div className="login-stat-card">
 
-                                        Forgot Password?
+                                        <h3>24×7</h3>
 
-                                    </Link>
+                                        <span>Available</span>
+
+                                    </div>
+
+                                    <div className="login-stat-card">
+
+                                        <h3>Easy</h3>
+
+                                        <span>Access</span>
+
+                                    </div>
 
                                 </div>
 
-                                <button
-                                    type="submit"
-                                    className="btn btn-primary w-100">
+                            </div>
 
-                                    Login
+                        </div>
 
-                                </button>
+                        {/* RIGHT SECTION */}
 
-                            </form>
+                        <div className="col-lg-8">
 
-                            <hr />
+                            <div className="login-card">
 
-                            <p className="text-center">
+                                <div className="login-header">
 
-                                Don't have an account?{" "}
+                                    <span className="welcome-text">
+                                        Welcome Back
+                                    </span>
 
-                                <Link
-                                    to="/register"
-                                    className="login-link">
+                                    <h1>Sign In</h1>
 
-                                    Register
+                                    <p>
+                                        Login to continue to your dashboard.
+                                    </p>
 
-                                </Link>
+                                </div>
 
-                            </p>
+                                {/* LOGIN FORM */}
+
+                                <form onSubmit={handleLogin}>
+
+                                    {errors.form && (
+                                        <div className="alert alert-danger py-2">
+                                            {errors.form}
+                                        </div>
+                                    )}
+
+                                    {/* MOBILE NUMBER */}
+
+                                    <div className="mb-4">
+
+                                        <label className="form-label">
+                                            Mobile Number
+                                        </label>
+
+                                        <div className="input-box">
+
+                                            <i className="fa-solid fa-mobile-screen-button"></i>
+
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="Enter your Mobile Number"
+                                                value={mobileNumber}
+                                                onChange={(e) => setMobileNumber(e.target.value)}
+                                                maxLength={10}
+                                            />
+
+                                        </div>
+
+                                        {errors.mobileNumber && (
+                                            <small className="text-danger">
+                                                {errors.mobileNumber}
+                                            </small>
+                                        )}
+
+                                    </div>
+
+                                    {/* PASSWORD */}
+
+                                    <div className="mb-4">
+
+                                        <label className="form-label">
+                                            Password
+                                        </label>
+
+                                        <div className="input-box">
+
+                                            <i className="fa-solid fa-lock"></i>
+
+                                            <input
+                                                type="password"
+                                                className="form-control"
+                                                placeholder="Enter your Password"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                            />
+
+                                        </div>
+
+                                        {errors.password && (
+                                            <small className="text-danger">
+                                                {errors.password}
+                                            </small>
+                                        )}
+
+                                    </div>
+
+                                    {/* REMEMBER & FORGOT */}
+
+                                    <div className="login-options">
+
+                                        <div className="form-check">
+
+                                            <input
+                                                className="form-check-input"
+                                                type="checkbox"
+                                                id="remember"
+                                            />
+
+                                            <label
+                                                className="form-check-label"
+                                                htmlFor="remember">
+
+                                                Remember Me
+
+                                            </label>
+
+                                        </div>
+
+                                        <Link
+                                            to="/forgot-password"
+                                            className="login-link">
+
+                                            Forgot Password?
+
+                                        </Link>
+
+                                    </div>
+
+                                    {/* LOGIN BUTTON */}
+
+                                    <button
+                                        type="submit"
+                                        className="btn login-btn w-100"
+                                        disabled={submitting}>
+
+                                        <i className="fa-solid fa-right-to-bracket me-2"></i>
+
+                                        {submitting? "Signing in..." : "Login"}
+
+                                    </button>
+
+                                </form>
+
+                                {/* REGISTER */}
+
+                                <div className="register-box">
+
+                                    <p>
+
+                                        Don't have an account?
+
+                                        <Link
+                                            to="/register"
+                                            className="login-link ms-2">
+
+                                            Register Now
+
+                                        </Link>
+
+                                    </p>
+
+                                </div>
+
+                            </div>
 
                         </div>
 
@@ -154,7 +324,9 @@ function Login() {
             </div>
 
         </div>
+
     );
+
 }
 
 export default Login;
