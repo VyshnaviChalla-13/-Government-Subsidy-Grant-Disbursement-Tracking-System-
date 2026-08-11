@@ -1,16 +1,15 @@
 package com.example.Government.subsidy.Project.Service;
 
 import com.example.Government.subsidy.Project.Entity.Application;
-import com.example.Government.subsidy.Project.Entity.Officer;
 import com.example.Government.subsidy.Project.Entity.Scheme;
 import com.example.Government.subsidy.Project.Entity.User;
 import com.example.Government.subsidy.Project.Repository.ApplicationRepository;
-import com.example.Government.subsidy.Project.Repository.OfficerRepository;
 import com.example.Government.subsidy.Project.Repository.SchemeRepository;
 import com.example.Government.subsidy.Project.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,18 +27,24 @@ public class ApplicationService {
     private UserRepository userRepository;
 
     @Autowired
-    private OfficerRepository officerRepository;
+    private EligibilityScoreService eligibilityScoreService;
 
     private String currentPrincipalMobile() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null ? auth.getName() : null;
     }
 
-    private boolean isAssignedToCurrentOfficer(Application application) {
-        if (application.getAssignedOfficer() == null) return false;
-        String officerMobile = application.getAssignedOfficer().getUser().getMobileNumber();
-        String callerMobile = currentPrincipalMobile();
-        return officerMobile != null && officerMobile.equals(callerMobile);
+    private boolean currentUserHasAnyRole(String... roles) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return false;
+        for (String role : roles) {
+            String target = "ROLE_" + role;
+            boolean match = auth.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .anyMatch(a -> a.equals(target));
+            if (match) return true;
+        }
+        return false;
     }
 
     public String submitApplication(Integer beneficiaryId, Integer schemeId, String customFields) {
@@ -56,11 +61,19 @@ public class ApplicationService {
         application.setCustomFields(customFields);
         applicationRepository.save(application);
 
-        return "Application submitted successfully with number " + application.getApplicationNumber();
+        eligibilityScoreService.evaluateApplication(application);
+        applicationRepository.save(application);
+
+        return "Application submitted. Eligibility: " + application.getEligibilityStatus()
+                + " (score: " + application.getEligibilityScore() + ")";
     }
 
-    public List<Application> getAllApplications() {
-        return applicationRepository.findAll();
+    public List<Application> getVisibleApplications() {
+        if (currentUserHasAnyRole("SUPER_ADMIN", "DEPT_ADMIN", "FIELD_OFFICER", "DISTRICT_OFFICER", "FINANCE_OFFICER")) {
+            return applicationRepository.findAll();
+        }
+        String mobile = currentPrincipalMobile();
+        return applicationRepository.findByBeneficiary_MobileNumber(mobile);
     }
 
     public Application getApplicationById(Integer id) {
@@ -82,84 +95,5 @@ public class ApplicationService {
         application.setStatus("RESUBMITTED");
         applicationRepository.save(application);
         return "Application resubmitted successfully";
-    }
-
-    public String assignOfficer(Integer applicationId, Integer officerId) {
-        Application application = applicationRepository.findById(applicationId).orElse(null);
-        if (application == null) return "Application not found";
-        Officer officer = officerRepository.findById(officerId).orElse(null);
-        if (officer == null) return "Officer not found";
-        application.setAssignedOfficer(officer);
-        applicationRepository.save(application);
-        return "Application assigned to officer successfully";
-    }
-
-    public String fieldApprove(Integer id, String remarks) {
-        Application application = applicationRepository.findById(id).orElse(null);
-        if (application == null) return "Application not found";
-        if (!isAssignedToCurrentOfficer(application)) return "You are not assigned to this application";
-        if (!"SUBMITTED".equalsIgnoreCase(application.getStatus())
-                && !"RESUBMITTED".equalsIgnoreCase(application.getStatus()))
-            return "Application is not awaiting field review";
-        application.setStatus("FIELD_APPROVED");
-        application.setRemarks(remarks);
-        applicationRepository.save(application);
-        return "Application approved at field level";
-    }
-
-    public String fieldReturn(Integer id, String remarks) {
-        Application application = applicationRepository.findById(id).orElse(null);
-        if (application == null) return "Application not found";
-        if (!isAssignedToCurrentOfficer(application)) return "You are not assigned to this application";
-        if (remarks == null || remarks.isBlank()) return "Remarks are mandatory when returning an application";
-        application.setStatus("RETURNED");
-        application.setRemarks(remarks);
-        applicationRepository.save(application);
-        return "Application returned to beneficiary for correction";
-    }
-
-    public String fieldReject(Integer id, String remarks) {
-        Application application = applicationRepository.findById(id).orElse(null);
-        if (application == null) return "Application not found";
-        if (!isAssignedToCurrentOfficer(application)) return "You are not assigned to this application";
-        if (remarks == null || remarks.isBlank()) return "Remarks are mandatory when rejecting an application";
-        application.setStatus("REJECTED");
-        application.setRemarks(remarks);
-        applicationRepository.save(application);
-        return "Application rejected";
-    }
-
-    public String verifyApprove(Integer id, String remarks) {
-        Application application = applicationRepository.findById(id).orElse(null);
-        if (application == null) return "Application not found";
-        if (!isAssignedToCurrentOfficer(application)) return "You are not assigned to this application";
-        if (!"FIELD_APPROVED".equalsIgnoreCase(application.getStatus()))
-            return "Application has not passed field review yet";
-        application.setStatus("VERIFICATION_APPROVED");
-        application.setRemarks(remarks);
-        applicationRepository.save(application);
-        return "Application approved by verification officer";
-    }
-
-    public String verifyReturn(Integer id, String remarks) {
-        Application application = applicationRepository.findById(id).orElse(null);
-        if (application == null) return "Application not found";
-        if (!isAssignedToCurrentOfficer(application)) return "You are not assigned to this application";
-        if (remarks == null || remarks.isBlank()) return "Remarks are mandatory when returning an application";
-        application.setStatus("RETURNED");
-        application.setRemarks(remarks);
-        applicationRepository.save(application);
-        return "Application returned by verification officer";
-    }
-
-    public String verifyReject(Integer id, String remarks) {
-        Application application = applicationRepository.findById(id).orElse(null);
-        if (application == null) return "Application not found";
-        if (!isAssignedToCurrentOfficer(application)) return "You are not assigned to this application";
-        if (remarks == null || remarks.isBlank()) return "Remarks are mandatory when rejecting an application";
-        application.setStatus("REJECTED");
-        application.setRemarks(remarks);
-        applicationRepository.save(application);
-        return "Application rejected by verification officer";
     }
 }

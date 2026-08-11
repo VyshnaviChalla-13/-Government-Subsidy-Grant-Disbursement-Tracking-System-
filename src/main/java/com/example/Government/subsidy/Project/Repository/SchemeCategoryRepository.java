@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface SchemeCategoryRepository extends JpaRepository<SchemeCategory, Integer> {
+public interface SchemeCategoryRepository
+        extends JpaRepository<SchemeCategory, Integer> {
 
     List<SchemeCategory> findByScheme(Scheme scheme);
-
 }

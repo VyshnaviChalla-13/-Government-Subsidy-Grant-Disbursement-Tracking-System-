@@ -21,4 +21,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
     List<Application> findByBeneficiary_AadhaarNumberContaining(String aadhaar);
 
     List<Application> findByBeneficiary_FullNameContainingIgnoreCase(String name);
+
+    List<Application> findByBeneficiary_MobileNumber(String mobileNumber);
 }

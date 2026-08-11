@@ -1,9 +1,18 @@
 package com.example.Government.subsidy.Project.Entity;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "scheme_required_documents")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class SchemeRequiredDocument {
 
     @Id
@@ -12,10 +21,10 @@ public class SchemeRequiredDocument {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "scheme_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler","user","department"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user", "department"})
     private Scheme scheme;
 
-    @Column(nullable = false)
+    @Column(name = "document_name", nullable = false, length = 150)
     private String documentName;
 
     @Column(nullable = false)
@@ -23,47 +32,4 @@ public class SchemeRequiredDocument {
 
     @Column(nullable = false)
     private Integer points = 10;
-
-    public SchemeRequiredDocument() {
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Scheme getScheme() {
-        return scheme;
-    }
-
-    public void setScheme(Scheme scheme) {
-        this.scheme = scheme;
-    }
-
-    public String getDocumentName() {
-        return documentName;
-    }
-
-    public void setDocumentName(String documentName) {
-        this.documentName = documentName;
-    }
-
-    public Boolean getMandatory() {
-        return mandatory;
-    }
-
-    public void setMandatory(Boolean mandatory) {
-        this.mandatory = mandatory;
-    }
-
-    public Integer getPoints() {
-        return points;
-    }
-
-    public void setPoints(Integer points) {
-        this.points = points;
-    }
 }

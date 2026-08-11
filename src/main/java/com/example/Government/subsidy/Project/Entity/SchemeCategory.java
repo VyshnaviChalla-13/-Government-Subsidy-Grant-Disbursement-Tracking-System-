@@ -2,7 +2,10 @@ package com.example.Government.subsidy.Project.Entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "scheme_categories")
@@ -19,7 +22,7 @@ public class SchemeCategory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "scheme_id", nullable = false)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler","user","department"})
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "user", "department"})
     private Scheme scheme;
 
     @Column(name = "category", nullable = false, length = 100)
