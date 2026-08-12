@@ -19,8 +19,8 @@ public class ApplicationController {
 
     @PostMapping("/submit")
     public String submitApplication(@RequestParam Integer beneficiaryId,
-                                     @RequestParam Integer schemeId,
-                                     @RequestBody(required = false) Map<String, Object> customFields) {
+                                    @RequestParam Integer schemeId,
+                                    @RequestBody(required = false) Map<String, Object> customFields) {
         String json = customFields != null ? customFields.toString() : null;
         return applicationService.submitApplication(beneficiaryId, schemeId, json);
     }
@@ -28,6 +28,12 @@ public class ApplicationController {
     @GetMapping("/all")
     public List<Application> getAllApplications() {
         return applicationService.getAllApplications();
+    }
+
+    // Role-aware list: admins/officers see everything, a beneficiary sees only their own applications.
+    @GetMapping("/mine")
+    public List<Application> getVisibleApplications() {
+        return applicationService.getVisibleApplications();
     }
 
     @GetMapping("/{id}")
@@ -51,6 +57,8 @@ public class ApplicationController {
         return applicationService.assignOfficer(id, officerId);
     }
 
+    // ---------- Field Officer (front desk) stage ----------
+
     @PatchMapping("/{id}/field-approve")
     @PreAuthorize("hasRole('FRONT_DESK_OFFICER')")
     public String fieldApprove(@PathVariable Integer id, @RequestParam(required = false) String remarks) {
@@ -68,6 +76,8 @@ public class ApplicationController {
     public String fieldReject(@PathVariable Integer id, @RequestParam String remarks) {
         return applicationService.fieldReject(id, remarks);
     }
+
+    // ---------- Verification Officer stage ----------
 
     @PatchMapping("/{id}/verify-approve")
     @PreAuthorize("hasRole('VERIFICATION_OFFICER')")

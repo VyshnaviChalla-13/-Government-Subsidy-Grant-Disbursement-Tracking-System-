@@ -3,14 +3,16 @@ package com.example.Government.subsidy.Project.Service;
 import com.example.Government.subsidy.Project.DTO.ApprovalPerformanceDTO;
 import com.example.Government.subsidy.Project.DTO.RegionSummaryDTO;
 import com.example.Government.subsidy.Project.DTO.SchemeSummaryDTO;
+import com.example.Government.subsidy.Project.DTO.SystemOverviewDTO;
 import com.example.Government.subsidy.Project.Entity.Application;
+import com.example.Government.subsidy.Project.Entity.ApplicationMilestone;
 import com.example.Government.subsidy.Project.Entity.Officer;
 import com.example.Government.subsidy.Project.Entity.Scheme;
+import com.example.Government.subsidy.Project.Repository.ApplicationMilestoneRepository;
 import com.example.Government.subsidy.Project.Repository.ApplicationRepository;
 import com.example.Government.subsidy.Project.Repository.DepartmentRepository;
 import com.example.Government.subsidy.Project.Repository.OfficerRepository;
 import com.example.Government.subsidy.Project.Repository.SchemeRepository;
-import com.example.Government.subsidy.Project.DTO.SystemOverviewDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +32,9 @@ public class DashboardService {
     private static final String STATUS_REJECTED = "REJECTED";
     private static final String STATUS_APPROVED = "VERIFICATION_APPROVED";
 
+    private static final String MILESTONE_RELEASED = "RELEASED";
+    private static final String MILESTONE_OVERDUE = "OVERDUE";
+
     // Any scheme using 80%+ of its budget is flagged, per the Milestone 3 spec.
     private static final BigDecimal BUDGET_WARNING_THRESHOLD = new BigDecimal("0.80");
 
@@ -45,13 +50,18 @@ public class DashboardService {
     @Autowired
     private DepartmentRepository departmentRepository;
 
+    @Autowired
+    private ApplicationMilestoneRepository applicationMilestoneRepository;
+
     /**
-     * Region-wise summary: application counts and a proxy grant value,
-     * grouped by the beneficiary's district.
+     * Region-wise summary: application counts, plus a real
+     * total-disbursed figure per district now that Module 3 records
+     * actual RELEASED amounts on ApplicationMilestone.
      */
     public List<RegionSummaryDTO> getRegionSummary() {
         List<Application> applications = applicationRepository.findAll();
         List<Officer> officers = officerRepository.findAll();
+        List<ApplicationMilestone> allMilestones = applicationMilestoneRepository.findAll();
 
         Map<String, List<Application>> appsByDistrict = applications.stream()
                 .filter(a -> a.getBeneficiary() != null && a.getBeneficiary().getDistrictId() != null)
@@ -61,12 +71,21 @@ public class DashboardService {
                 .filter(o -> o.getUser() != null && o.getUser().getDistrictId() != null)
                 .collect(Collectors.groupingBy(o -> o.getUser().getDistrictId(), Collectors.counting()));
 
-        // Union of both key sets, so a district with officers but no
-        // applications yet (or vice versa) still shows up with a 0 for
-        // whichever side it's missing, instead of being dropped silently.
+        // Sum of RELEASED milestone amounts, grouped by the beneficiary's district.
+        Map<String, BigDecimal> disbursedByDistrict = allMilestones.stream()
+                .filter(m -> MILESTONE_RELEASED.equalsIgnoreCase(m.getStatus())
+                        && m.getApplication() != null
+                        && m.getApplication().getBeneficiary() != null
+                        && m.getApplication().getBeneficiary().getDistrictId() != null
+                        && m.getAmountReleased() != null)
+                .collect(Collectors.groupingBy(
+                        m -> m.getApplication().getBeneficiary().getDistrictId(),
+                        Collectors.reducing(BigDecimal.ZERO, ApplicationMilestone::getAmountReleased, BigDecimal::add)));
+
         Set<String> allDistricts = new HashSet<>();
         allDistricts.addAll(appsByDistrict.keySet());
         allDistricts.addAll(officersByDistrict.keySet());
+        allDistricts.addAll(disbursedByDistrict.keySet());
 
         return allDistricts.stream()
                 .map(district -> {
@@ -83,24 +102,31 @@ public class DashboardService {
                             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
                     long totalOfficers = officersByDistrict.getOrDefault(district, 0L);
+                    BigDecimal totalDisbursed = disbursedByDistrict.getOrDefault(district, BigDecimal.ZERO);
 
-                    return new RegionSummaryDTO(district, apps.size(), approved, rejected, pending, potentialGrantValue, totalOfficers, BigDecimal.ZERO);
+                    return new RegionSummaryDTO(district, apps.size(), approved, rejected, pending, potentialGrantValue, totalOfficers, totalDisbursed);
                 })
                 .sorted(Comparator.comparingLong(RegionSummaryDTO::totalApplications).reversed())
                 .toList();
     }
 
     /**
-     * Scheme-wise summary: application counts plus budget utilization and
-     * an over-80%-used warning flag.
+     * Scheme-wise summary: application counts, budget utilization with
+     * an over-80%-used warning flag, and a compliance rate derived from
+     * disbursement milestone history.
      */
     public List<SchemeSummaryDTO> getSchemeSummary() {
         List<Scheme> schemes = schemeRepository.findAll();
         List<Application> applications = applicationRepository.findAll();
+        List<ApplicationMilestone> allMilestones = applicationMilestoneRepository.findAll();
 
         Map<Integer, List<Application>> bySchemeId = applications.stream()
                 .filter(a -> a.getScheme() != null)
                 .collect(Collectors.groupingBy(a -> a.getScheme().getSchemeId()));
+
+        Map<Integer, List<ApplicationMilestone>> milestonesBySchemeId = allMilestones.stream()
+                .filter(m -> m.getMilestone() != null && m.getMilestone().getScheme() != null)
+                .collect(Collectors.groupingBy(m -> m.getMilestone().getScheme().getSchemeId()));
 
         return schemes.stream()
                 .map(scheme -> {
@@ -121,6 +147,24 @@ public class DashboardService {
                         warning = ratio.compareTo(BUDGET_WARNING_THRESHOLD) > 0;
                     }
 
+                    List<ApplicationMilestone> milestones = milestonesBySchemeId.getOrDefault(scheme.getSchemeId(), List.of());
+
+                    // "Ever went overdue" = currently OVERDUE, or COMPLETED/RELEASED via the
+                    // admin resolve path (resolvedReason is only ever set on that path).
+                    long overdueCount = milestones.stream()
+                            .filter(m -> MILESTONE_OVERDUE.equalsIgnoreCase(m.getStatus()) || m.getResolvedReason() != null)
+                            .count();
+
+                    long onTimeCount = milestones.stream()
+                            .filter(m -> ("COMPLETED".equalsIgnoreCase(m.getStatus()) || MILESTONE_RELEASED.equalsIgnoreCase(m.getStatus()))
+                                    && m.getResolvedReason() == null)
+                            .count();
+
+                    long finishedOrFlagged = overdueCount + onTimeCount;
+                    double complianceRatePercent = finishedOrFlagged == 0
+                            ? 100.0
+                            : Math.round((onTimeCount * 10000.0) / finishedOrFlagged) / 100.0;
+
                     return new SchemeSummaryDTO(
                             scheme.getSchemeId(),
                             scheme.getSchemeName(),
@@ -131,7 +175,9 @@ public class DashboardService {
                             totalBudget,
                             budgetUsed,
                             utilizationPercent,
-                            warning
+                            warning,
+                            complianceRatePercent,
+                            overdueCount
                     );
                 })
                 .toList();
