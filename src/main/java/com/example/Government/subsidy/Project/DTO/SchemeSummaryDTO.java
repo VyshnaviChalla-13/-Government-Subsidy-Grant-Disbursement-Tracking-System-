@@ -12,6 +12,10 @@ public record SchemeSummaryDTO(
         BigDecimal totalBudget,
         BigDecimal budgetUsed,
         double utilizationPercent,
-        boolean budgetWarning
+        boolean budgetWarning,
+        /** % of this scheme's finished disbursement stages (RELEASED or resolved-late COMPLETED)
+         *  that were completed on or before their due date, vs. ones that went OVERDUE. */
+        double complianceRatePercent,
+        long overdueMilestoneCount
 ) {
 }

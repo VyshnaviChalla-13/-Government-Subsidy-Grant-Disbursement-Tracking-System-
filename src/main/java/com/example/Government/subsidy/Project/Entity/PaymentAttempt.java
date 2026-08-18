@@ -1,4 +1,4 @@
-﻿package com.example.Government.subsidy.Project.Entity;
+package com.example.Government.subsidy.Project.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
