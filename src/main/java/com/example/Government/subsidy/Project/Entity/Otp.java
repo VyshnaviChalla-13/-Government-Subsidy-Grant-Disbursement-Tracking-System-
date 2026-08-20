@@ -6,7 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "otp_details")
+@Table(name = "otp")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,4 +25,22 @@ public class Otp {
 
     @Column(nullable = false)
     private LocalDateTime expiryTime;
+
+    @Column(nullable = false)
+    private boolean verified = false;
+
+    @Column(nullable = false)
+    private int attempts = 0;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+
+        if (!verified) {
+            verified = false;
+        }
+    }
 }
