@@ -5,12 +5,12 @@ import "../../styles/login.css";
 
 // Maps backend role strings to the dashboard each role should land on.
 const ROLE_HOME = {
+    ROLE_USER: "/beneficiary/schemes",
     ROLE_SUPER_ADMIN: "/superadmin/dashboard",
     ROLE_DEPT_ADMIN: "/admin/dashboard",
     ROLE_FRONT_DESK_OFFICER: "/officer/frontdesk",
     ROLE_VERIFICATION_OFFICER: "/officer/verification",
     ROLE_FINANCE_OFFICER: "/finance",
-    ROLE_BENEFICIARY: "/dashboard",
 };
 
 function Login() {
@@ -70,6 +70,7 @@ function Login() {
 
         try {
                     const user = await login(mobileNumber, password);
+            console.log("Logged in user:", user);
 
                     if (location.state?.fromApply) {
                         navigate("/beneficiary/apply", {

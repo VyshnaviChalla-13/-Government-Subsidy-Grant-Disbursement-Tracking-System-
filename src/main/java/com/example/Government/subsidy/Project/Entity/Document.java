@@ -25,20 +25,36 @@ public class Document {
     @JoinColumn(name = "application_id", nullable = false)
     private Application application;
 
-    @Column(name = "document_type", nullable = false, length = 100)
+    @Column(name = "document_type", nullable = false, length = 150)
     private String documentType;
+
+    @Column(name = "file_name", length = 255)
+    private String fileName;
 
     @Column(name = "file_path", nullable = false, columnDefinition = "TEXT")
     private String filePath;
 
-    @Column(nullable = false)
+    @Column(name = "verified", nullable = false)
     private Boolean verified = false;
 
     @Column(name = "verification_remarks", columnDefinition = "TEXT")
     private String verificationRemarks;
+
     @Column(name = "verified_at")
     private LocalDateTime verifiedAt;
 
     @Column(name = "verified_by")
     private String verifiedBy;
+
+    @Column(name = "uploaded_at", updatable = false)
+    private LocalDateTime uploadedAt;
+
+    @PrePersist
+    public void prePersist() {
+        uploadedAt = LocalDateTime.now();
+
+        if (verified == null) {
+            verified = false;
+        }
+    }
 }

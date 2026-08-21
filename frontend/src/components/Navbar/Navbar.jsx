@@ -1,7 +1,11 @@
 import "../../styles/navbar.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 function Navbar() {
+
+    const navigate = useNavigate();
+    const { isAuthenticated, user, logout } = useAuth();
     return (
         <nav className="navbar navbar-expand-lg custom-navbar sticky-top">
 
@@ -52,17 +56,22 @@ function Navbar() {
                             <Link
                                 className="nav-link"
                                 to="/beneficiary/schemes"
-                                state={{ fromPublic: true }}
+                                state={{ fromPublic: !isAuthenticated }}
                             >
                                 Schemes
                             </Link>
                         </li>
 
-                        <li className="nav-item">
-                            <Link className="nav-link" to="/login">
-                                Track Status
-                            </Link>
-                        </li>
+                        {!isAuthenticated || user?.role === "ROLE_USER" ? (
+                            <li className="nav-item">
+                                <Link
+                                    className="nav-link"
+                                    to={isAuthenticated ? "/beneficiary/my-applications" : "/login"}
+                                >
+                                    Track Status
+                                </Link>
+                            </li>
+                        ) : null}
 
                         <li className="nav-item">
                             <Link className="nav-link" to="/about">
@@ -80,21 +89,68 @@ function Navbar() {
 
                     <div className="nav-buttons">
 
-                        <Link className="login-btn" to="/login">
+                        {!isAuthenticated ? (
+                            <>
+                                <Link className="login-btn" to="/login">
+                                    <i className="bi bi-person-fill"></i>
+                                    Login
+                                </Link>
 
-                            <i className="bi bi-person-fill"></i>
+                                <Link className="register-btn" to="/register">
+                                    <i className="bi bi-person-plus-fill"></i>
+                                    Register
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    className="login-btn"
+                                    onClick={() => {
+                                        switch (user?.role) {
 
-                            Login
+                                            case "ROLE_USER":
+                                                navigate("/dashboard");
+                                                break;
 
-                        </Link>
+                                            case "ROLE_SUPER_ADMIN":
+                                                navigate("/superadmin/dashboard");
+                                                break;
 
-                        <Link className="register-btn" to="/register">
+                                            case "ROLE_DEPT_ADMIN":
+                                                navigate("/admin/dashboard");
+                                                break;
 
-                            <i className="bi bi-person-plus-fill"></i>
+                                            case "ROLE_FRONT_DESK_OFFICER":
+                                                navigate("/officer/frontdesk");
+                                                break;
 
-                            Register
+                                            case "ROLE_VERIFICATION_OFFICER":
+                                                navigate("/officer/verification");
+                                                break;
 
-                        </Link>
+                                            case "ROLE_FINANCE_OFFICER":
+                                                navigate("/finance");
+                                                break;
+
+                                            default:
+                                                navigate("/role-selection");
+                                        }
+                                    }}
+                                >
+                                    Dashboard
+                                </button>
+
+                                <button
+                                    className="register-btn"
+                                    onClick={() => {
+                                        logout();
+                                        navigate("/");
+                                    }}
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        )}
 
                     </div>
 
@@ -104,6 +160,8 @@ function Navbar() {
 
         </nav>
     );
+
+
 }
 
 export default Navbar;

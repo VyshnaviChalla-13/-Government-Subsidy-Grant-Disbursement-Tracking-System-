@@ -10,5 +10,4 @@ public interface SchemeRequiredDocumentRepository
         extends JpaRepository<SchemeRequiredDocument, Integer> {
 
     List<SchemeRequiredDocument> findByScheme(Scheme scheme);
-
 }

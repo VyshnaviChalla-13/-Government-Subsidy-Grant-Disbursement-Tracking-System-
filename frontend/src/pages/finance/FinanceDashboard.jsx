@@ -210,10 +210,12 @@ function FinanceDashboard() {
                                     👁 View
                                 </button>
 
-                               <button
+                                <button
                                     className="pay-btn"
                                     disabled={payment.status === "Completed"}
-                                    onClick={() => setSelectedPayment(payment)}
+                                    onClick={() =>
+                                        navigate(`/finance/disbursement/${payment.id}`)
+                                    }
                                 >
                                     💰 Pay
                                 </button>

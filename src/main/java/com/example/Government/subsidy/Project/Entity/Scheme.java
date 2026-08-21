@@ -48,12 +48,12 @@ public class Scheme {
 
     @Column(name = "max_grant", nullable = false)
     private BigDecimal maxGrant;
-    
+
     @Column(name = "maximum_income")
     private Double maximumIncome;
 
     @Column(name = "minimum_score")
-    private Integer minimumScore;
+    private Integer minimumScore = 50;
 
     @Column(name = "application_start_date", nullable = false)
     private LocalDate applicationStartDate;
@@ -81,6 +81,10 @@ public class Scheme {
 
         if (status == null) {
             status = "ACTIVE";
+        }
+
+        if (minimumScore == null) {
+            minimumScore = 50;
         }
     }
 }

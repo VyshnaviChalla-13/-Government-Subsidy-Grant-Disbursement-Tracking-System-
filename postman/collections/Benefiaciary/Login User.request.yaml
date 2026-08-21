@@ -7,9 +7,9 @@ body:
   type: json
   content: "{\r
 
-    \    \"mobileNumber\":9999999999,\r
+    \    \"mobileNumber\":9000000003,\r
 
-    \    \"password\":\"admin123\" \r
+    \    \"password\": \"admin123\"\r
 
     }"
 auth:

@@ -25,11 +25,12 @@ public class EligibilityScoreService {
     private SchemeRequiredDocumentRepository requiredDocumentRepository;
 
     /**
-     * Income Score
+     * Income Score - Maximum 30 points
      */
     public int calculateIncomeScore(Application application) {
 
-        Double beneficiaryIncome = application.getBeneficiary().getAnnualIncome();
+        Double beneficiaryIncome =
+                application.getBeneficiary().getAnnualIncome();
 
         if (beneficiaryIncome != null &&
                 beneficiaryIncome <= application.getScheme().getMaximumIncome()) {
@@ -41,7 +42,7 @@ public class EligibilityScoreService {
     }
 
     /**
-     * Category Score
+     * Category Score - Maximum 40 points
      */
     public int calculateCategoryScore(Application application) {
 
@@ -64,7 +65,7 @@ public class EligibilityScoreService {
     }
 
     /**
-     * Required Document Score
+     * Required Document Score - Maximum 30 points
      */
     public int calculateDocumentScore(Application application) {
 
@@ -74,25 +75,30 @@ public class EligibilityScoreService {
         List<Document> uploadedDocuments =
                 documentRepository.findByApplication(application);
 
-        int score = 0;
+        int verifiedCount = 0;
 
         for (SchemeRequiredDocument required : requiredDocuments) {
 
             boolean verified = uploadedDocuments.stream()
                     .anyMatch(document ->
-                            document.getDocumentType().equalsIgnoreCase(required.getDocumentName())
+                            document.getDocumentType()
+                                    .equalsIgnoreCase(required.getDocumentName())
                                     && Boolean.TRUE.equals(document.getVerified()));
 
             if (verified) {
-                score += required.getPoints();
+                verifiedCount++;
             }
         }
 
-        return score;
+        if (requiredDocuments.isEmpty()) {
+            return 0;
+        }
+
+        return (verifiedCount * 30) / requiredDocuments.size();
     }
 
     /**
-     * Total Score
+     * Calculate Total Eligibility Score
      */
     public int calculateTotalScore(Application application) {
 
@@ -116,22 +122,20 @@ public class EligibilityScoreService {
 
         int documentScore = calculateDocumentScore(application);
 
-        int totalScore = incomeScore + categoryScore + documentScore;
+        int totalScore =
+                incomeScore + categoryScore + documentScore;
 
         application.setEligibilityScore(totalScore);
 
         if (totalScore >= application.getScheme().getMinimumScore()) {
 
             application.setEligibilityStatus("ELIGIBLE");
-
             application.setRejectionReason(null);
-
             application.setStatus("ELIGIBLE");
 
         } else {
 
             application.setEligibilityStatus("INELIGIBLE");
-
             application.setStatus("REJECTED");
 
             application.setRejectionReason(
@@ -140,7 +144,7 @@ public class EligibilityScoreService {
     }
 
     /**
-     * Print Evaluation (Useful for debugging/logging)
+     * Get Evaluation Summary
      */
     public String getEvaluationSummary(Application application) {
 
@@ -152,13 +156,15 @@ public class EligibilityScoreService {
 
         int total = income + category + documents;
 
+        String eligibility =
+                total >= application.getScheme().getMinimumScore()
+                        ? "ELIGIBLE"
+                        : "INELIGIBLE";
+
         return "Income Score : " + income +
                 "\nCategory Score : " + category +
                 "\nDocument Score : " + documents +
                 "\nTotal Score : " + total +
-                "\nEligibility : " +
-                (total >= application.getScheme().getMinimumScore()
-                        ? "ELIGIBLE"
-                        : "INELIGIBLE");
+                "\nEligibility : " + eligibility;
     }
 }

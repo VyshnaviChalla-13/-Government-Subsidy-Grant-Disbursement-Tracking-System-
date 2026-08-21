@@ -9,7 +9,7 @@ body:
 
     \    \"user\": {\r
 
-    \        \"userId\": 23\r
+    \        \"userId\": 2\r
 
     \    },\r
 
@@ -19,7 +19,7 @@ body:
 
     \    },\r
 
-    \    \"employeeCode\": \"003\",\r
+    \    \"employeeCode\": \"008\",\r
 
     \    \"designation\": \"finance officer\"\r
 
@@ -27,5 +27,5 @@ body:
 auth:
   type: bearer
   credentials:
-    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfQURNSU4iLCJpYXQiOjE3ODQ5MjI2NzgsImV4cCI6MTc4NTAwOTA3OH0.OYua0WXA4J93NueGh5Qv7OAQyawXotRALS-JnLIuVSmZyc0cs68xfD__JUPwdD2h
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfU1VQRVJfQURNSU4iLCJpYXQiOjE3ODU1NzY2NDIsImV4cCI6MTc4NTY2MzA0Mn0.4JTuv7qVbJdEFO8K-ImP0QZhqqqQP9p9hUz4JItmAAVz_OQ9_2zG6vXmHQGup7Mr
 order: 1784923171815
