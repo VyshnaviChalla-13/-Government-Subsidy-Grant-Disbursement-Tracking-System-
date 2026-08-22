@@ -1,10 +1,14 @@
 package com.example.Government.subsidy.Project.Service;
 
-
 import com.example.Government.subsidy.Project.Entity.User;
 import com.example.Government.subsidy.Project.Repository.UserRepository;
 import com.example.Government.subsidy.Project.Security.JwtUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,95 +19,440 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public String register(User user) {
+    @Autowired
+    private AuditLogService auditLogService;
 
+    // Notification service
+    @Autowired
+    private NotificationService notificationService;
+
+
+    // =========================================================
+    // REGISTER BENEFICIARY
+    // =========================================================
+
+    public ResponseEntity<String> register(User user) {
+
+        // Check email
         if (userRepository.existsByEmail(user.getEmail())) {
-            return "Email already exists";
+
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Email already exists");
         }
 
+
+        // Check mobile number
         if (userRepository.existsBymobileNumber(user.getMobileNumber())) {
-            return "Mobile number already exists";
+
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Mobile number already exists");
         }
 
+
+        // Check Aadhaar
         if (userRepository.existsByAadhaarNumber(user.getAadhaarNumber())) {
-            return "Aadhaar already registered";
+
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Aadhaar already registered");
         }
 
-        if (user.getRole() == null || user.getRole().isBlank()) {
-            user.setRole("ROLE_USER");
-        }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        /*
+         * IMPORTANT:
+         *
+         * Do not trust role coming from frontend.
+         * Every user registering through this endpoint
+         * will be a beneficiary.
+         */
 
-        userRepository.save(user);
+        user.setRole("ROLE_BENEFICIARY");
 
-        return "Registration Successful";
+
+        // Encode password before saving
+        user.setPassword(
+                passwordEncoder.encode(user.getPassword())
+        );
+
+
+        // Save user
+        User savedUser = userRepository.save(user);
+
+
+        // =====================================================
+        // AUDIT LOG
+        // =====================================================
+
+        auditLogService.log(
+                savedUser.getUserId(),
+                savedUser.getFullName(),
+                savedUser.getRole(),
+                "REGISTERED",
+                "USER_ACCOUNT",
+                "New beneficiary account created",
+                "SUCCESS",
+                null
+        );
+
+
+        // =====================================================
+        // APP NOTIFICATION
+        // =====================================================
+
+        notificationService.createNotification(
+                savedUser.getUserId(),
+                "Registration Successful",
+                "Your beneficiary registration was completed successfully.",
+                "REGISTRATION",
+                null
+        );
+
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body("Registration Successful");
     }
 
+
+    // =========================================================
+    // GET ALL USERS
+    // =========================================================
+
     public List<User> getAllUsers() {
+
         return userRepository.findAll();
     }
 
+
+    // =========================================================
+    // GET USER BY ID
+    // =========================================================
+
     public User getUser(Integer id) {
-        return userRepository.findById(id).orElse(null);
+
+        return userRepository.findById(id)
+                .orElse(null);
     }
+
+
+    // =========================================================
+    // DELETE USER
+    // =========================================================
 
     public String deleteUser(Integer id) {
 
-        if (!userRepository.existsById(id)) {
+        User user = userRepository.findById(id)
+                .orElse(null);
+
+        if (user == null) {
+
             return "User Not Found";
         }
 
-        userRepository.deleteById(id);
+
+        /*
+         * Store target user's information before deletion.
+         */
+
+        Integer targetUserId = user.getUserId();
+
+        String targetUserName = user.getFullName();
+
+
+        // Get currently logged-in user
+        User performedBy = getAuthenticatedUser();
+
+
+        // Delete user
+        userRepository.delete(user);
+
+
+        // =====================================================
+        // AUDIT LOG
+        // =====================================================
+
+        if (performedBy != null) {
+
+            auditLogService.log(
+                    performedBy.getUserId(),
+                    performedBy.getFullName(),
+                    performedBy.getRole(),
+                    "DELETED_USER",
+                    targetUserName,
+                    "User account deleted",
+                    "SUCCESS",
+                    null
+            );
+
+        } else {
+
+            auditLogService.log(
+                    null,
+                    "SYSTEM",
+                    "SYSTEM",
+                    "DELETED_USER",
+                    targetUserName,
+                    "User account deleted",
+                    "SUCCESS",
+                    null
+            );
+        }
+
 
         return "User Deleted Successfully";
     }
 
+
+    // =========================================================
+    // UPDATE USER
+    // =========================================================
+
     public String updateUser(Integer id, User user) {
 
-        User existing = userRepository.findById(id).orElse(null);
+        User existing = userRepository.findById(id)
+                .orElse(null);
+
 
         if (existing == null) {
+
             return "User Not Found";
         }
 
-        existing.setFullName(user.getFullName());
-        existing.setEmail(user.getEmail());
-        existing.setMobileNumber(user.getMobileNumber());
-        existing.setAddress(user.getAddress());
-        existing.setDistrictId(user.getDistrictId());
-        existing.setStateId(user.getStateId());
-        existing.setPincode(user.getPincode());
-        existing.setOccupation(user.getOccupation());
-        existing.setAnnualIncome(user.getAnnualIncome());
-        existing.setCategory(user.getCategory());
-        existing.setBankName(user.getBankName());
-        existing.setAccountHolderName(user.getAccountHolderName());
-        existing.setAccountNumber(user.getAccountNumber());
-        existing.setIfscCode(user.getIfscCode());
 
-        userRepository.save(existing);
+        // =====================================================
+        // UPDATE ALLOWED FIELDS
+        // =====================================================
+
+        existing.setFullName(user.getFullName());
+
+        existing.setEmail(user.getEmail());
+
+        existing.setMobileNumber(user.getMobileNumber());
+
+        existing.setAddress(user.getAddress());
+
+        existing.setDistrictId(user.getDistrictId());
+
+        existing.setStateId(user.getStateId());
+
+        existing.setPincode(user.getPincode());
+
+        existing.setOccupation(user.getOccupation());
+
+        existing.setAnnualIncome(user.getAnnualIncome());
+
+        existing.setCategory(user.getCategory());
+
+        existing.setBankName(user.getBankName());
+
+        existing.setAccountHolderName(
+                user.getAccountHolderName()
+        );
+
+        existing.setAccountNumber(
+                user.getAccountNumber()
+        );
+
+        existing.setIfscCode(
+                user.getIfscCode()
+        );
+
+
+        // Save updated user
+        User updatedUser =
+                userRepository.save(existing);
+
+
+        // Get person who performed the update
+        User performedBy =
+                getAuthenticatedUser();
+
+
+        // =====================================================
+        // AUDIT LOG
+        // =====================================================
+
+        if (performedBy != null) {
+
+            auditLogService.log(
+                    performedBy.getUserId(),
+                    performedBy.getFullName(),
+                    performedBy.getRole(),
+                    "UPDATED_PROFILE",
+                    updatedUser.getFullName(),
+                    "Beneficiary profile updated",
+                    "SUCCESS",
+                    null
+            );
+
+        } else {
+
+            auditLogService.log(
+                    null,
+                    "SYSTEM",
+                    "SYSTEM",
+                    "UPDATED_PROFILE",
+                    updatedUser.getFullName(),
+                    "Beneficiary profile updated",
+                    "SUCCESS",
+                    null
+            );
+        }
+
 
         return "User Updated Successfully";
     }
-    public String login(String mobileNumber, String password) {
 
-        User user = userRepository.findBymobileNumber(mobileNumber).orElse(null);
+
+    // =========================================================
+    // LOGIN
+    // =========================================================
+
+    public String login(
+            String mobileNumber,
+            String password
+    ) {
+
+        User user =
+                userRepository
+                        .findBymobileNumber(mobileNumber)
+                        .orElse(null);
+
+
+        // =====================================================
+        // MOBILE NUMBER NOT REGISTERED
+        // =====================================================
 
         if (user == null) {
+
+            auditLogService.log(
+                    null,
+                    "Unknown User",
+                    "UNKNOWN",
+                    "LOGIN_FAILED",
+                    "USER_ACCOUNT",
+                    "Login failed - mobile number not registered",
+                    "FAILED",
+                    null
+            );
+
             return "Mobile number not registered";
         }
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
+
+        // =====================================================
+        // INVALID PASSWORD
+        // =====================================================
+
+        if (!passwordEncoder.matches(
+                password,
+                user.getPassword()
+        )) {
+
+            auditLogService.log(
+                    user.getUserId(),
+                    user.getFullName(),
+                    user.getRole(),
+                    "LOGIN_FAILED",
+                    "USER_ACCOUNT",
+                    "Login failed - invalid password",
+                    "FAILED",
+                    null
+            );
+
             return "Invalid Password";
         }
 
-        return jwtUtil.generateToken(user.getMobileNumber(), user.getRole());
+
+        // =====================================================
+        // GENERATE JWT
+        // =====================================================
+
+        String token =
+                jwtUtil.generateToken(
+                        user.getMobileNumber(),
+                        user.getRole()
+                );
+
+
+        // =====================================================
+        // SUCCESSFUL LOGIN AUDIT
+        // =====================================================
+
+        auditLogService.log(
+                user.getUserId(),
+                user.getFullName(),
+                user.getRole(),
+                "LOGGED_IN",
+                "USER_ACCOUNT",
+                "Successful login",
+                "SUCCESS",
+                null
+        );
+
+
+        return token;
+    }
+
+
+    // =========================================================
+    // GET CURRENTLY AUTHENTICATED USER
+    // =========================================================
+
+    private User getAuthenticatedUser() {
+
+        try {
+
+            Authentication authentication =
+                    SecurityContextHolder
+                            .getContext()
+                            .getAuthentication();
+
+
+            // No authentication
+            if (authentication == null) {
+
+                return null;
+            }
+
+
+            // Authentication not available
+            if (!authentication.isAuthenticated()) {
+
+                return null;
+            }
+
+
+            /*
+             * Your JWT is generated using:
+             *
+             * user.getMobileNumber()
+             *
+             * Therefore authentication.getName()
+             * should contain the mobile number.
+             */
+
+            String mobileNumber =
+                    authentication.getName();
+
+
+            if (mobileNumber == null ||
+                    mobileNumber.isBlank()) {
+
+                return null;
+            }
+
+            return userRepository
+                    .findBymobileNumber(mobileNumber)
+                    .orElse(null);
+        } catch (Exception e) {
+
+            return null;
+        }
     }
 }
