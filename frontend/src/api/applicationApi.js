@@ -38,8 +38,22 @@ export async function getAllApplications() {
     return response.data;
 }
 
+export async function getMyApplications() {
+    const response = await axiosClient.get("/applications/mine");
+
+    return response.data;
+}
+
 export async function getApplicationById(applicationId) {
     const response = await axiosClient.get(`/applications/${applicationId}`);
+
+    return response.data;
+}
+
+export async function getApplicationMilestones(applicationId) {
+    const response = await axiosClient.get(
+        `/disbursement/applications/${applicationId}`
+    );
 
     return response.data;
 }

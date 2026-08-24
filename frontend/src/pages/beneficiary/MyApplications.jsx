@@ -1,6 +1,7 @@
 import "./MyApplications.css";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getMyApplications } from "../../api/applicationApi";
 import {
     ArrowRight,
     Building2,
@@ -15,35 +16,69 @@ import {
     XCircle,
 } from "lucide-react";
 
+function formatDate(date) {
+    if (!date) return "-";
+
+    const parsedDate = new Date(date);
+
+    return Number.isNaN(parsedDate.getTime())
+        ? date
+        : parsedDate.toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        });
+}
+
+function getDisplayStatus(status) {
+    if (["APPROVED", "DISBURSED"].includes(status)) return "Approved";
+    if (["RETURNED", "REJECTED"].includes(status)) return "Returned";
+    return "Under Verification";
+}
+
 function MyApplications() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("All Statuses");
     const [schemeFilter, setSchemeFilter] = useState("All Schemes");
+    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    const applications = [
-        {
-            id: "APP1001",
-            scheme: "Farmer Assistance",
-            date: "10-Jul-2026",
-            status: "Approved",
-            department: "Department of Agriculture",
-        },
-        {
-            id: "APP1002",
-            scheme: "Student Scholarship",
-            date: "12-Jul-2026",
-            status: "Under Verification",
-            department: "Department of Education",
-        },
-        {
-            id: "APP1003",
-            scheme: "Affordable Housing",
-            date: "15-Jul-2026",
-            status: "Returned",
-            department: "Housing and Urban Development",
-        },
-    ];
+    useEffect(() => {
+        async function loadApplications() {
+            try {
+                setError("");
+                const response = await getMyApplications();
+                const applicationData = Array.isArray(response) ? response : response?.applications;
+
+                setApplications(
+                    Array.isArray(applicationData)
+                        ? applicationData.map((application) => {
+                            const statusCode = application?.status?.toUpperCase?.() ?? "";
+
+                            return {
+                                id: application?.applicationNumber ?? application?.applicationId ?? "-",
+                                applicationId: application?.applicationId,
+                                scheme: application?.scheme?.schemeName ?? "-",
+                                date: formatDate(application?.submittedAt),
+                                status: getDisplayStatus(statusCode),
+                                statusCode,
+                                department: application?.scheme?.department?.departmentName ?? "-",
+                            };
+                        })
+                        : []
+                );
+            } catch (requestError) {
+                setApplications([]);
+                setError("We couldn't load your applications. Please try again later.");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        loadApplications();
+    }, []);
 
     const schemes = [...new Set(applications.map((app) => app.scheme))];
     const statusCounts = {
@@ -138,7 +173,10 @@ function MyApplications() {
                         </div>
                     </div>
 
-                    {filteredApplications.length > 0 ? (
+                    {loading && <div className="applications-empty-state"><p>Loading your applications...</p></div>}
+                    {error && <div className="applications-empty-state"><p>{error}</p></div>}
+
+                    {!loading && !error && filteredApplications.length > 0 ? (
                         <div className="applications-list">
                             {filteredApplications.map((app) => (
                                 <article className="application-record-card" key={app.id}>
@@ -160,8 +198,8 @@ function MyApplications() {
                                             View Timeline
                                             <ArrowRight size={16} aria-hidden="true" />
                                         </button>
-                                        {app.status === "Approved" && (
-                                            <button className="application-timeline-btn" onClick={() => navigate("/beneficiary/disbursement")}>
+                                        {app.statusCode === "APPROVED" && (
+                                            <button className="application-timeline-btn" onClick={() => navigate(`/beneficiary/disbursement?applicationId=${app.applicationId}`)}>
                                                 <CheckCircle2 size={17} aria-hidden="true" />
                                                 Track Disbursement
                                                 <ArrowRight size={16} aria-hidden="true" />
@@ -171,7 +209,7 @@ function MyApplications() {
                                 </article>
                             ))}
                         </div>
-                    ) : (
+                    ) : !loading && !error && (
                         <div className="applications-empty-state">
                             <div className="applications-empty-icon" aria-hidden="true"><FolderOpen size={42} /></div>
                             <h3>No applications found</h3>

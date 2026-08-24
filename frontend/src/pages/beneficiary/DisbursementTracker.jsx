@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CalendarDays,
   CheckCircle2,
@@ -10,39 +10,7 @@ import {
   Upload,
   View,
 } from "lucide-react";
-
-const disbursementData = {
-  schemeName: "PM Rural Enterprise Development Scheme",
-  applicationId: "GSGD-2026-001847",
-  totalAmount: 150000,
-  milestones: [
-    {
-      stage: 1,
-      title: "Initial Grant Release",
-      description: "First instalment towards setting up the approved enterprise.",
-      amount: 50000,
-      dueDate: "15 Aug 2026",
-      status: "RELEASED",
-      releasedOn: "12 Aug 2026",
-    },
-    {
-      stage: 2,
-      title: "Progress Verification",
-      description: "Upload photographs and utilisation proof for the initial grant.",
-      amount: 50000,
-      dueDate: "15 Nov 2026",
-      status: "PENDING",
-    },
-    {
-      stage: 3,
-      title: "Final Disbursement",
-      description: "Final instalment after completion and department verification.",
-      amount: 50000,
-      dueDate: "15 Feb 2027",
-      status: "LOCKED",
-    },
-  ],
-};
+import { getApplicationMilestones } from "../../api/applicationApi";
 
 const statusMeta = {
   PENDING: { label: "Pending", icon: Clock3, className: "pending" },
@@ -60,13 +28,59 @@ const formatCurrency = (amount) =>
   }).format(amount);
 
 function DisbursementTracker() {
+  const applicationId = new URLSearchParams(window.location.search).get("applicationId");
   const [selectedMilestone, setSelectedMilestone] = useState(null);
   const [uploadMessage, setUploadMessage] = useState("");
+  const [milestones, setMilestones] = useState([]);
+  const [loading, setLoading] = useState(Boolean(applicationId));
+  const [error, setError] = useState("");
   const fileInputRef = useRef(null);
-  const releasedAmount = disbursementData.milestones
-    .filter((milestone) => ["RELEASED", "COMPLETED"].includes(milestone.status))
-    .reduce((sum, milestone) => sum + milestone.amount, 0);
-  const progress = Math.round((releasedAmount / disbursementData.totalAmount) * 100);
+
+  useEffect(() => {
+    if (!applicationId) {
+      setLoading(false);
+      return;
+    }
+
+    const loadMilestones = async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const response = await getApplicationMilestones(applicationId);
+        const milestoneData = Array.isArray(response) ? response : response?.milestones;
+
+        setMilestones(
+          Array.isArray(milestoneData)
+            ? milestoneData.map((item, index) => ({
+                id: item?.applicationMilestoneId ?? `milestone-${index}`,
+                stage: index + 1,
+                title: item?.milestone?.milestoneName ?? "Milestone",
+                description: item?.milestone?.description ?? "No description available.",
+                amount: item?.amountToRelease ?? 0,
+                dueDate: item?.dueDate ?? "Not available",
+                status: item?.status?.toUpperCase?.() ?? "PENDING",
+                completedDate: item?.completedDate ?? null,
+                amountReleased: item?.amountReleased ?? 0,
+                releasedOn: item?.releaseDate ?? null,
+                application: item?.application,
+              }))
+            : []
+        );
+      } catch (requestError) {
+        setMilestones([]);
+        setError("We couldn't load your disbursement milestones. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMilestones();
+  }, [applicationId]);
+
+  const totalAmount = milestones.reduce((sum, milestone) => sum + (Number(milestone.amount) || 0), 0);
+  const releasedAmount = milestones.reduce((sum, milestone) => sum + (Number(milestone.amountReleased) || 0), 0);
+  const progress = totalAmount ? Math.round((releasedAmount / totalAmount) * 100) : 0;
+  const schemeName = milestones[0]?.application?.scheme?.schemeName ?? "Grant Disbursement";
 
   const handleUpload = (event) => {
     const file = event.target.files?.[0];
@@ -83,8 +97,8 @@ function DisbursementTracker() {
             <h1>Disbursement Tracker</h1>
             <p>Stay informed about every grant instalment and the next step in your disbursement journey.</p>
             <div className="disbursement-identity">
-              <span><Landmark size={17} aria-hidden="true" /> {disbursementData.schemeName}</span>
-              <span><FileText size={17} aria-hidden="true" /> {disbursementData.applicationId}</span>
+              <span><Landmark size={17} aria-hidden="true" /> {schemeName}</span>
+              <span><FileText size={17} aria-hidden="true" /> {applicationId ?? "Application ID unavailable"}</span>
             </div>
           </div>
           <div className="disbursement-hero-icon" aria-hidden="true"><CircleDollarSign size={76} strokeWidth={1.5} /></div>
@@ -96,20 +110,24 @@ function DisbursementTracker() {
             <strong>{progress}% released</strong>
           </div>
           <div className="disbursement-progress-bar" role="progressbar" aria-label="Disbursement progress" aria-valuenow={progress} aria-valuemin="0" aria-valuemax="100"><span style={{ width: `${progress}%` }} /></div>
-          <div className="disbursement-progress-footer"><span>{formatCurrency(releasedAmount)} released of {formatCurrency(disbursementData.totalAmount)}</span><span>{disbursementData.milestones.filter((item) => item.status === "RELEASED").length} of {disbursementData.milestones.length} instalments released</span></div>
+          <div className="disbursement-progress-footer"><span>{formatCurrency(releasedAmount)} released of {formatCurrency(totalAmount)}</span><span>{milestones.filter((item) => item.status === "RELEASED").length} of {milestones.length} instalments released</span></div>
         </section>
 
         {uploadMessage && <div className="disbursement-alert" role="status">{uploadMessage}</div>}
+        {!applicationId && <div className="disbursement-alert" role="status">Please provide an application ID in the URL to view disbursement milestones.</div>}
+        {error && <div className="disbursement-alert" role="alert">{error}</div>}
+        {loading && <div className="disbursement-alert" role="status">Loading disbursement milestones...</div>}
 
         <section className="milestones-section" aria-labelledby="milestones-title">
           <div className="milestones-heading"><div><span className="disbursement-kicker">Payment schedule</span><h2 id="milestones-title">Disbursement Milestones</h2></div><p>Complete each requirement to unlock the next instalment.</p></div>
           <div className="milestone-timeline">
-            {disbursementData.milestones.map((milestone, index) => {
-              const meta = statusMeta[milestone.status];
+            {!loading && applicationId && !error && milestones.length === 0 && <div className="disbursement-alert" role="status">No disbursement milestones are available for this application.</div>}
+            {milestones.map((milestone) => {
+              const meta = statusMeta[milestone.status] ?? statusMeta.PENDING;
               const StatusIcon = meta.icon;
               const isPending = milestone.status === "PENDING";
               return (
-                <article className={`milestone-card ${meta.className}`} key={milestone.stage}>
+                <article className={`milestone-card ${meta.className}`} key={milestone.id}>
                   <div className="milestone-connector" aria-hidden="true" />
                   <div className="milestone-topline">
                     <span className="stage-number">Stage {milestone.stage}</span>
@@ -142,7 +160,7 @@ function DisbursementTracker() {
               <span className="disbursement-kicker">Stage {selectedMilestone.stage} details</span>
               <h2 id="milestone-modal-title">{selectedMilestone.title}</h2>
               <p>{selectedMilestone.description}</p>
-              <dl><div><dt>Amount</dt><dd>{formatCurrency(selectedMilestone.amount)}</dd></div><div><dt>Due date</dt><dd>{selectedMilestone.dueDate}</dd></div><div><dt>Status</dt><dd>{statusMeta[selectedMilestone.status].label}</dd></div></dl>
+              <dl><div><dt>Amount</dt><dd>{formatCurrency(selectedMilestone.amount)}</dd></div><div><dt>Due date</dt><dd>{selectedMilestone.dueDate}</dd></div><div><dt>Status</dt><dd>{(statusMeta[selectedMilestone.status] ?? statusMeta.PENDING).label}</dd></div></dl>
             </section>
           </div>
         )}
