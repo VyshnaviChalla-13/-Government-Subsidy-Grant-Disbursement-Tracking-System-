@@ -1,50 +1,26 @@
 import "./SchemeDetails.css";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
+import { getSchemeById } from "../../api/schemeApi";
 import { ArrowLeft, BadgeCheck, Building2, CalendarDays, FileStack, FileText, Gift, Globe, IndianRupee, Send, UserCheck } from "lucide-react";
 
-const schemes = {
-    1: {
-        title: "Farmer Assistance Scheme", subtitle: "Financial support for eligible farmers to improve agricultural productivity.", department: "Agriculture", amount: "₹50,000", deadline: "31 Dec 2026", type: "Subsidy", status: "Open", mode: "Online",
-        description: "This scheme provides financial assistance to eligible farmers for purchasing seeds, fertilizers, agricultural equipment and improving irrigation facilities.",
-        eligibility: ["Indian farmer.", "Owns or cultivates agricultural land.", "Valid land records.", "Annual agricultural income within scheme limits."],
-        documents: ["Aadhaar Card", "Land Ownership Certificate", "Income Certificate", "Bank Passbook", "Farmer ID"],
-        benefits: ["Subsidy up to ₹50,000.", "Direct Benefit Transfer (DBT).", "Agricultural equipment assistance.", "Crop support."]
-    },
-    2: {
-        title: "Student Scholarship Scheme", subtitle: "Scholarships for deserving students pursuing higher education.", department: "Education", amount: "₹25,000", deadline: "15 Nov 2026", type: "Scholarship", status: "Open", mode: "Online",
-        description: "This scheme provides financial assistance to eligible students for continuing higher education.",
-        eligibility: ["Indian citizen.", "Currently enrolled in a recognized school/college.", "Minimum 60% marks in previous examination.", "Annual family income below ₹2,50,000."],
-        documents: ["Aadhaar Card", "Student ID Card", "Previous Marksheet", "Income Certificate", "Bonafide Certificate", "Bank Passbook"],
-        benefits: ["Scholarship up to ₹50,000 per academic year.", "Direct transfer to bank account.", "Tuition fee assistance.", "Educational support."]
-    },
-    3: {
-        title: "Affordable Housing Scheme", subtitle: "Housing assistance for economically weaker families.", department: "Housing", amount: "₹2,00,000", deadline: "20 Oct 2026", type: "Housing", status: "Open", mode: "Online",
-        description: "This scheme supports economically weaker families by providing housing assistance.",
-        eligibility: ["Indian citizen.", "First-time home buyer.", "Annual family income within government limits.", "Applicant must not own a pucca house."],
-        documents: ["Aadhaar Card", "PAN Card", "Income Certificate", "Property Documents", "Loan Sanction Letter", "Bank Passbook"],
-        benefits: ["Interest subsidy on home loan.", "Affordable housing support.", "Reduced EMI burden.", "Government-backed financial assistance."]
-    },
-    4: {
-        title: "Women Empowerment Scheme", subtitle: "Support for women entrepreneurship and welfare.", department: "Social Welfare", amount: "₹75,000", deadline: "10 Jan 2027", type: "Welfare", status: "Open", mode: "Online",
-        description: "This scheme promotes women entrepreneurship and social welfare through financial assistance.",
-        eligibility: ["Indian woman aged 18 years or above.", "Member of Self Help Group (SHG) or entrepreneur.", "Annual family income below ₹3,00,000.", "Valid Aadhaar."],
-        documents: ["Aadhaar Card", "Income Certificate", "SHG Membership Proof", "Bank Passbook", "Passport Size Photo"],
-        benefits: ["Financial assistance up to ₹1,00,000.", "Skill development training.", "Entrepreneurship support.", "Subsidized business loans."]
-    },
-    5: {
-        title: "Senior Citizen Pension Scheme", subtitle: "Monthly financial support for eligible senior citizens.", department: "Social Welfare", amount: "₹1,000 per month", deadline: "31 Mar 2027", type: "Pension", status: "Open", mode: "Online",
-        description: "This scheme provides monthly pension support to eligible senior citizens to help meet their essential expenses.",
-        eligibility: ["Indian citizen.", "Age 60 years or above.", "Annual family income below scheme limit.", "Not receiving another government pension."],
-        documents: ["Aadhaar Card", "Age Proof", "Income Certificate", "Bank Passbook", "Passport Size Photo"],
-        benefits: ["Monthly pension.", "Direct DBT.", "Financial security.", "Social welfare assistance."]
-    }
-};
+const formatCurrency = (amount) => new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+}).format(Number(amount));
 
-const genericScheme = {
-    ...schemes[1],
-    eligibility: ["Applicant must be an Indian citizen.", "Meet the scheme-specific eligibility requirements."],
-    documents: ["Aadhaar Card", "Income Certificate", "Bank Passbook"],
-    benefits: ["Financial assistance as per scheme guidelines.", "Direct Benefit Transfer (DBT), where applicable."]
+const formatDate = (date) => {
+    if (!date) return "Not available";
+
+    const parsedDate = new Date(`${date}T00:00:00`);
+    return Number.isNaN(parsedDate.getTime())
+        ? "Not available"
+        : new Intl.DateTimeFormat("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        }).format(parsedDate);
 };
 
 function SchemeDetails() {
@@ -52,16 +28,67 @@ function SchemeDetails() {
     const location = useLocation();
     const fromPublic = location.state?.fromPublic || false;
     const { id } = useParams();
-    const scheme = schemes[id] || genericScheme;
-    const overviewItems = [
-        { label: "Department", value: scheme.department, icon: Building2 },
-        { label: "Grant Amount", value: scheme.amount, icon: IndianRupee },
-        { label: "Application Deadline", value: scheme.deadline, icon: CalendarDays },
-        { label: "Scheme Type", value: scheme.type, icon: FileText },
-        { label: "Application Mode", value: scheme.mode, icon: Globe }
-    ];
+    const [scheme, setScheme] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        if (!id || !/^\d+$/.test(id)) {
+            setError("The requested scheme could not be found.");
+            setLoading(false);
+            return;
+        }
+
+        const fetchScheme = async () => {
+            try {
+                setLoading(true);
+                setError("");
+                setScheme(await getSchemeById(id));
+            } catch {
+                setError("We couldn't load this scheme right now. Please try again later.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchScheme();
+    }, [id]);
 
     const renderList = (items) => items.map((item) => <li key={item}>{item}</li>);
+
+    if (loading || error || !scheme) {
+        return (
+            <div className="scheme-details-page">
+                <div className="container py-4 py-md-5">
+                    <section className="details-section text-center">
+                        <div className="section-heading">
+                            <span className="section-kicker">Government Welfare Portal</span>
+                            <h2>{loading ? "Loading scheme details" : "Scheme unavailable"}</h2>
+                            <p>{loading ? "Please wait while we retrieve the scheme information." : error}</p>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        );
+    }
+
+    const eligibility = [
+        scheme.maximumIncome != null && `Maximum annual income: ${formatCurrency(scheme.maximumIncome)}.`,
+        scheme.minimumScore != null && `Minimum score required: ${scheme.minimumScore}.`,
+        scheme.eligibilityScore != null && `Eligibility score: ${scheme.eligibilityScore}.`,
+    ].filter(Boolean);
+    const benefits = [
+        scheme.minGrant != null && `Minimum grant: ${formatCurrency(scheme.minGrant)}.`,
+        scheme.maxGrant != null && `Maximum grant: ${formatCurrency(scheme.maxGrant)}.`,
+        scheme.totalBudget != null && `Total scheme budget: ${formatCurrency(scheme.totalBudget)}.`,
+    ].filter(Boolean);
+    const overviewItems = [
+        { label: "Department", value: scheme.department?.departmentName, icon: Building2 },
+        { label: "Grant Amount", value: formatCurrency(scheme.maxGrant), icon: IndianRupee },
+        { label: "Application Deadline", value: formatDate(scheme.applicationEndDate), icon: CalendarDays },
+        { label: "Application Start Date", value: formatDate(scheme.applicationStartDate), icon: FileText },
+        { label: "Eligibility Score", value: scheme.eligibilityScore, icon: Globe }
+    ];
 
     return (
         <div className="scheme-details-page">
@@ -69,10 +96,10 @@ function SchemeDetails() {
                 <section className="details-hero">
                     <div className="details-hero-content">
                         <span className="details-eyebrow">Government Welfare Portal</span>
-                        <h1>{scheme.title}</h1><p>{scheme.subtitle}</p>
+                        <h1>{scheme.schemeName}</h1><p>{scheme.description}</p>
                         <div className="details-hero-meta">
                             <span className="status-badge"><BadgeCheck size={17} aria-hidden="true" />{scheme.status}</span>
-                            <span className="hero-department"><Building2 size={17} aria-hidden="true" />{scheme.department} Department</span>
+                            <span className="hero-department"><Building2 size={17} aria-hidden="true" />{scheme.department?.departmentName} Department</span>
                         </div>
                     </div>
                     <div className="details-hero-icon" aria-hidden="true"><FileText size={82} strokeWidth={1.5} /></div>
@@ -87,14 +114,14 @@ function SchemeDetails() {
 
                 <div className="details-content-grid">
                     <section className="details-card description-card"><div className="card-heading"><div className="card-heading-icon"><FileText size={21} aria-hidden="true" /></div><h2>Description</h2></div><p>{scheme.description}</p></section>
-                    <section className="details-card"><div className="card-heading"><div className="card-heading-icon"><UserCheck size={21} aria-hidden="true" /></div><h2>Eligibility Criteria</h2></div><ul className="details-list">{renderList(scheme.eligibility)}</ul></section>
-                    <section className="details-card"><div className="card-heading"><div className="card-heading-icon"><FileStack size={21} aria-hidden="true" /></div><h2>Required Documents</h2></div><ul className="details-list">{renderList(scheme.documents)}</ul></section>
-                    <section className="details-card"><div className="card-heading"><div className="card-heading-icon"><Gift size={21} aria-hidden="true" /></div><h2>Benefits</h2></div><ul className="details-list">{renderList(scheme.benefits)}</ul></section>
+                    <section className="details-card"><div className="card-heading"><div className="card-heading-icon"><UserCheck size={21} aria-hidden="true" /></div><h2>Eligibility Criteria</h2></div><ul className="details-list">{eligibility.length ? renderList(eligibility) : <li>Eligibility requirements are not available for this scheme.</li>}</ul></section>
+                    <section className="details-card"><div className="card-heading"><div className="card-heading-icon"><FileStack size={21} aria-hidden="true" /></div><h2>Required Documents</h2></div><ul className="details-list"><li>Required document information is not available for this scheme.</li></ul></section>
+                    <section className="details-card"><div className="card-heading"><div className="card-heading-icon"><Gift size={21} aria-hidden="true" /></div><h2>Benefits</h2></div><ul className="details-list">{benefits.length ? renderList(benefits) : <li>Benefit information is not available for this scheme.</li>}</ul></section>
                 </div>
 
                 <section className="details-actions">
                     <button className="back-btn" onClick={() => navigate("/beneficiary/schemes", { state: { fromPublic } })}><ArrowLeft size={18} aria-hidden="true" /> Back to Schemes</button>
-                    <button className="apply-details-btn" onClick={() => { if (fromPublic) { navigate("/login", { state: { fromApply: true, schemeId: id } }); } else { navigate("/beneficiary/apply", { state: { schemeId: id } }); } }}>Apply Now <Send size={18} aria-hidden="true" /></button>
+                    <button className="apply-details-btn" onClick={() => { if (fromPublic) { navigate("/login", { state: { fromApply: true, schemeId: scheme.schemeId } }); } else { navigate("/beneficiary/apply", { state: { schemeId: scheme.schemeId } }); } }}>Apply Now <Send size={18} aria-hidden="true" /></button>
                 </section>
             </div>
         </div>

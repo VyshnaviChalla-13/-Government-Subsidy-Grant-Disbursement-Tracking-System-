@@ -7,13 +7,13 @@ export async function createScheme(payload) {
 }
 
 export async function getAllSchemes() {
-    const response = await axiosClient.get("/superadmin/schemes");
+    const response = await axiosClient.get("/departmentadmin/schemes/all");
 
     return response.data;
 }
 
 export async function getSchemeById(schemeId) {
-    const response = await axiosClient.get(`/superadmin/schemes/${schemeId}`);
+    const response = await axiosClient.get(`/departmentadmin/schemes/${schemeId}`);
 
     return response.data;
 }
