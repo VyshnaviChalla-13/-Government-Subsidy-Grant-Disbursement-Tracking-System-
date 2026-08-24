@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     Bell,
     CheckCircle2,
@@ -9,49 +9,7 @@ import {
     WalletCards,
     XCircle,
 } from "lucide-react";
-
-const initialNotifications = [
-    {
-        id: "NOT-1001",
-        type: "Payment Released",
-        title: "Payment Released",
-        message: "Your first subsidy installment for Farmer Assistance has been released to your registered bank account.",
-        timestamp: "06 Aug 2026, 10:30 AM",
-        read: false,
-    },
-    {
-        id: "NOT-1002",
-        type: "Proof Submitted Successfully",
-        title: "Proof Submitted Successfully",
-        message: "Your land ownership proof was uploaded successfully and is now available for officer review.",
-        timestamp: "05 Aug 2026, 04:15 PM",
-        read: true,
-    },
-    {
-        id: "NOT-1003",
-        type: "Milestone Reminder",
-        title: "Milestone Reminder",
-        message: "Submit your utilization proof before the next milestone review to keep your application moving.",
-        timestamp: "04 Aug 2026, 09:00 AM",
-        read: false,
-    },
-    {
-        id: "NOT-1004",
-        type: "Overdue Warning",
-        title: "Overdue Warning",
-        message: "Your pending document submission is overdue. Please upload the required proof to avoid processing delays.",
-        timestamp: "03 Aug 2026, 02:45 PM",
-        read: false,
-    },
-    {
-        id: "NOT-1005",
-        type: "Proof Rejected",
-        title: "Proof Rejected",
-        message: "The submitted income certificate was rejected because the document was unclear. Please upload a readable copy.",
-        timestamp: "01 Aug 2026, 11:20 AM",
-        read: true,
-    },
-];
+import { getUserNotifications, markNotificationAsRead } from "../../api/userApi";
 
 const filters = ["All", "Unread", "Payments", "Reminders", "Warnings"];
 
@@ -78,10 +36,68 @@ const notificationMeta = {
     },
 };
 
+const defaultNotificationMeta = {
+    icon: Bell,
+    className: "payment",
+};
+
+const formatTimestamp = (createdAt) => {
+    if (!createdAt) return "Date unavailable";
+
+    const date = new Date(createdAt);
+    return Number.isNaN(date.getTime())
+        ? "Date unavailable"
+        : new Intl.DateTimeFormat("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        }).format(date);
+};
+
+const mapNotification = (notification) => ({
+    id: notification.id,
+    type: notification.type,
+    title: notification.title,
+    message: notification.message,
+    read: notification.isRead,
+    timestamp: formatTimestamp(notification.createdAt),
+});
+
 function Notifications() {
-    const [notifications, setNotifications] = useState(initialNotifications);
+    const [notifications, setNotifications] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [activeFilter, setActiveFilter] = useState("All");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [isMarkingRead, setIsMarkingRead] = useState(false);
+
+    useEffect(() => {
+        const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+        const userId = storedUser?.userId ?? storedUser?.id;
+
+        if (userId == null) {
+            setError("We couldn't find your account details. Please sign in again.");
+            setLoading(false);
+            return;
+        }
+
+        const fetchNotifications = async () => {
+            try {
+                setLoading(true);
+                setError("");
+                const data = await getUserNotifications(userId);
+                setNotifications(Array.isArray(data) ? data.map(mapNotification) : []);
+            } catch {
+                setError("We couldn't load your notifications. Please try again later.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchNotifications();
+    }, []);
 
     const filteredNotifications = useMemo(() => {
         const query = searchTerm.trim().toLowerCase();
@@ -103,10 +119,22 @@ function Notifications() {
 
     const unreadCount = notifications.filter((notification) => !notification.read).length;
 
-    const markAllAsRead = () => {
-        setNotifications((currentNotifications) =>
-            currentNotifications.map((notification) => ({ ...notification, read: true }))
-        );
+    const markAllAsRead = async () => {
+        const unreadNotifications = notifications.filter((notification) => !notification.read);
+        if (unreadNotifications.length === 0) return;
+
+        try {
+            setIsMarkingRead(true);
+            setError("");
+            await Promise.all(unreadNotifications.map((notification) => markNotificationAsRead(notification.id)));
+            setNotifications((currentNotifications) =>
+                currentNotifications.map((notification) => ({ ...notification, read: true }))
+            );
+        } catch {
+            setError("We couldn't mark all notifications as read. Please try again.");
+        } finally {
+            setIsMarkingRead(false);
+        }
     };
 
     return (
@@ -513,9 +541,9 @@ function Notifications() {
                             <span className="notifications-section-kicker">Activity updates</span>
                             <h2>Recent Notifications</h2>
                         </div>
-                        <button className="mark-read-btn" type="button" onClick={markAllAsRead} disabled={unreadCount === 0}>
+                        <button className="mark-read-btn" type="button" onClick={markAllAsRead} disabled={unreadCount === 0 || loading || isMarkingRead}>
                             <MailCheck size={18} aria-hidden="true" />
-                            Mark All as Read
+                            {isMarkingRead ? "Marking as Read..." : "Mark All as Read"}
                         </button>
                     </div>
 
@@ -545,10 +573,26 @@ function Notifications() {
                         </div>
                     </div>
 
-                    {filteredNotifications.length > 0 ? (
+                    {loading ? (
+                        <div className="notifications-empty-state">
+                            <div className="notifications-empty-icon" aria-hidden="true">
+                                <Clock3 size={42} />
+                            </div>
+                            <h3>Loading notifications</h3>
+                            <p>Please wait while we retrieve your latest updates.</p>
+                        </div>
+                    ) : error ? (
+                        <div className="notifications-empty-state">
+                            <div className="notifications-empty-icon" aria-hidden="true">
+                                <TriangleAlert size={42} />
+                            </div>
+                            <h3>Unable to load notifications</h3>
+                            <p>{error}</p>
+                        </div>
+                    ) : filteredNotifications.length > 0 ? (
                         <div className="notifications-list">
                             {filteredNotifications.map((notification) => {
-                                const meta = notificationMeta[notification.type];
+                                const meta = notificationMeta[notification.type] || defaultNotificationMeta;
                                 const Icon = meta.icon;
 
                                 return (

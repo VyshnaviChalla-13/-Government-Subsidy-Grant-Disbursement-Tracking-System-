@@ -23,3 +23,27 @@ export async function deleteUser(userId) {
 
     return response.data;
 }
+
+export async function getUserNotifications(userId) {
+    const response = await axiosClient.get(`/notifications/user/${userId}`);
+
+    return response.data;
+}
+
+export async function getUnreadNotifications(userId) {
+    const response = await axiosClient.get(`/notifications/user/${userId}/unread`);
+
+    return response.data;
+}
+
+export async function getUnreadNotificationCount(userId) {
+    const response = await axiosClient.get(`/notifications/user/${userId}/count`);
+
+    return response.data;
+}
+
+export async function markNotificationAsRead(notificationId) {
+    const response = await axiosClient.put(`/notifications/${notificationId}/read`);
+
+    return response.data;
+}
