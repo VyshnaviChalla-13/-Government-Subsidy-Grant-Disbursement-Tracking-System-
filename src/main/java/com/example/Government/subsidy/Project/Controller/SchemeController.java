@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/superadmin/schemes")
+@RequestMapping("/departmentadmin/schemes")
 @CrossOrigin(origins = "*")
 public class SchemeController {
 
@@ -20,7 +20,7 @@ public class SchemeController {
         return schemeService.createScheme(scheme);
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public List<Scheme> getAllSchemes(){
         return schemeService.getAllSchemes();
     }
