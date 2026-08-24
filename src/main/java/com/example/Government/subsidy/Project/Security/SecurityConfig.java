@@ -50,7 +50,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/users/register",
                                 "/users/login",
-                                "/otp/**"
+                                "/otp/**",
+                                "/departmentadmin/schemes/all"
                         ).permitAll()
                         .requestMatchers("/superadmin/**")
                         .hasRole("SUPER_ADMIN")
