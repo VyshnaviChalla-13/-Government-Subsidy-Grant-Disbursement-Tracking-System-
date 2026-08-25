@@ -29,7 +29,6 @@ public class UserService {
     @Autowired
     private AuditLogService auditLogService;
 
-    // Notification service
     @Autowired
     private NotificationService notificationService;
 
@@ -92,12 +91,9 @@ public class UserService {
         auditLogService.log(
                 savedUser.getUserId(),
                 savedUser.getFullName(),
-                savedUser.getRole(),
                 "REGISTERED",
                 "USER_ACCOUNT",
-                "New beneficiary account created",
-                "SUCCESS",
-                null
+                "New beneficiary account created"
         );
 
 
@@ -181,12 +177,9 @@ public class UserService {
             auditLogService.log(
                     performedBy.getUserId(),
                     performedBy.getFullName(),
-                    performedBy.getRole(),
                     "DELETED_USER",
-                    targetUserName,
-                    "User account deleted",
-                    "SUCCESS",
-                    null
+                    "USER_ACCOUNT",
+                    "User account deleted: " + targetUserName
             );
 
         } else {
@@ -194,12 +187,9 @@ public class UserService {
             auditLogService.log(
                     null,
                     "SYSTEM",
-                    "SYSTEM",
                     "DELETED_USER",
-                    targetUserName,
-                    "User account deleted",
-                    "SUCCESS",
-                    null
+                    "USER_ACCOUNT",
+                    "User account deleted: " + targetUserName
             );
         }
 
@@ -216,7 +206,6 @@ public class UserService {
 
         User existing = userRepository.findById(id)
                 .orElse(null);
-
 
         if (existing == null) {
 
@@ -282,12 +271,10 @@ public class UserService {
             auditLogService.log(
                     performedBy.getUserId(),
                     performedBy.getFullName(),
-                    performedBy.getRole(),
                     "UPDATED_PROFILE",
-                    updatedUser.getFullName(),
-                    "Beneficiary profile updated",
-                    "SUCCESS",
-                    null
+                    "USER_ACCOUNT",
+                    "Beneficiary profile updated: "
+                            + updatedUser.getFullName()
             );
 
         } else {
@@ -295,12 +282,10 @@ public class UserService {
             auditLogService.log(
                     null,
                     "SYSTEM",
-                    "SYSTEM",
                     "UPDATED_PROFILE",
-                    updatedUser.getFullName(),
-                    "Beneficiary profile updated",
-                    "SUCCESS",
-                    null
+                    "USER_ACCOUNT",
+                    "Beneficiary profile updated: "
+                            + updatedUser.getFullName()
             );
         }
 
@@ -333,12 +318,9 @@ public class UserService {
             auditLogService.log(
                     null,
                     "Unknown User",
-                    "UNKNOWN",
                     "LOGIN_FAILED",
                     "USER_ACCOUNT",
-                    "Login failed - mobile number not registered",
-                    "FAILED",
-                    null
+                    "Login failed - mobile number not registered"
             );
 
             return "Mobile number not registered";
@@ -357,12 +339,9 @@ public class UserService {
             auditLogService.log(
                     user.getUserId(),
                     user.getFullName(),
-                    user.getRole(),
                     "LOGIN_FAILED",
                     "USER_ACCOUNT",
-                    "Login failed - invalid password",
-                    "FAILED",
-                    null
+                    "Login failed - invalid password"
             );
 
             return "Invalid Password";
@@ -387,12 +366,9 @@ public class UserService {
         auditLogService.log(
                 user.getUserId(),
                 user.getFullName(),
-                user.getRole(),
                 "LOGGED_IN",
                 "USER_ACCOUNT",
-                "Successful login",
-                "SUCCESS",
-                null
+                "Successful login"
         );
 
 
@@ -447,9 +423,11 @@ public class UserService {
                 return null;
             }
 
+
             return userRepository
                     .findBymobileNumber(mobileNumber)
                     .orElse(null);
+
         } catch (Exception e) {
 
             return null;

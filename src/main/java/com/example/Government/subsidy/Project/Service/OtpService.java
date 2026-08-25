@@ -66,12 +66,9 @@ public class OtpService {
             auditLogService.log(
                     user.getUserId(),
                     user.getFullName(),
-                    user.getRole(),
                     "OTP_REQUESTED",
                     "PASSWORD_RESET",
-                    "Password reset OTP requested",
-                    "SUCCESS",
-                    null
+                    "Password reset OTP requested"
             );
 
             return "OTP sent successfully";
@@ -219,12 +216,9 @@ public class OtpService {
         auditLogService.log(
                 user.getUserId(),
                 user.getFullName(),
-                user.getRole(),
+                "OTP_REQUESTED",
                 "PASSWORD_RESET",
-                "USER_ACCOUNT",
-                "Password reset successfully using OTP",
-                "SUCCESS",
-                null
+                "Password reset OTP requested"
         );
 
 

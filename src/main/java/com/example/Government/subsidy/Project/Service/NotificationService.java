@@ -15,7 +15,10 @@ public class NotificationService {
     private NotificationRepository notificationRepository;
 
 
-    // Create notification
+    // =====================================================
+    // CREATE NOTIFICATION
+    // =====================================================
+
     public Notification createNotification(
             Integer userId,
             String title,
@@ -38,7 +41,10 @@ public class NotificationService {
     }
 
 
-    // Get user's notifications
+    // =====================================================
+    // GET USER NOTIFICATIONS
+    // =====================================================
+
     public List<Notification> getUserNotifications(
             Integer userId
     ) {
@@ -48,7 +54,10 @@ public class NotificationService {
     }
 
 
-    // Get unread notifications
+    // =====================================================
+    // GET UNREAD NOTIFICATIONS
+    // =====================================================
+
     public List<Notification> getUnreadNotifications(
             Integer userId
     ) {
@@ -60,7 +69,10 @@ public class NotificationService {
     }
 
 
-    // Count unread notifications
+    // =====================================================
+    // COUNT UNREAD NOTIFICATIONS
+    // =====================================================
+
     public long getUnreadCount(
             Integer userId
     ) {
@@ -70,7 +82,10 @@ public class NotificationService {
     }
 
 
-    // Mark notification as read
+    // =====================================================
+    // MARK NOTIFICATION AS READ
+    // =====================================================
+
     public String markAsRead(
             Long notificationId
     ) {

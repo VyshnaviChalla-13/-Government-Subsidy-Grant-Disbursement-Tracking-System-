@@ -2,6 +2,7 @@ package com.example.Government.subsidy.Project.Controller;
 import com.example.Government.subsidy.Project.Entity.User;
 import com.example.Government.subsidy.Project.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,7 +16,9 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public String register(@RequestBody User user) {
+    public ResponseEntity<String> register(
+            @RequestBody User user
+    ) {
         return userService.register(user);
     }
 
