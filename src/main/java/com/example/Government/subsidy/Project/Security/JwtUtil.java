@@ -15,11 +15,12 @@ public class JwtUtil {
 
     private final SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
-    public String generateToken(String mobileNumber, String role) {
+    public String generateToken(String mobileNumber, String role, Integer userId) {
 
         return Jwts.builder()
                 .subject(mobileNumber)
                 .claim("role", role)
+                .claim("userId", userId)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(key)
@@ -35,6 +36,7 @@ public class JwtUtil {
                 .getPayload()
                 .getSubject();
     }
+
     public String extractRole(String token) {
 
         return Jwts.parser()
@@ -44,6 +46,17 @@ public class JwtUtil {
                 .getPayload()
                 .get("role", String.class);
     }
+
+    public Integer extractUserId(String token) {
+
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("userId", Integer.class);
+    }
+
     public boolean validateToken(String token){
 
         try{

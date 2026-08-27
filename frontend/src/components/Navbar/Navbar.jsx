@@ -1,6 +1,7 @@
 import "../../styles/navbar.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { getRoleHome } from "../../pages/auth/Login";
 
 function Navbar() {
 
@@ -103,38 +104,19 @@ function Navbar() {
                             </>
                         ) : (
                             <>
+                                <Link
+                                    to="/beneficiary/notifications"
+                                    className="btn btn-outline-primary position-relative me-2"
+                                    style={{ borderRadius: "50%", padding: "6px 10px" }}
+                                    title="Notifications"
+                                >
+                                    <i className="bi bi-bell-fill"></i>
+                                </Link>
+
                                 <button
                                     className="login-btn"
                                     onClick={() => {
-                                        switch (user?.role) {
-
-                                            case "ROLE_USER":
-                                                navigate("/dashboard");
-                                                break;
-
-                                            case "ROLE_SUPER_ADMIN":
-                                                navigate("/superadmin/dashboard");
-                                                break;
-
-                                            case "ROLE_DEPT_ADMIN":
-                                                navigate("/admin/dashboard");
-                                                break;
-
-                                            case "ROLE_FRONT_DESK_OFFICER":
-                                                navigate("/officer/frontdesk");
-                                                break;
-
-                                            case "ROLE_VERIFICATION_OFFICER":
-                                                navigate("/officer/verification");
-                                                break;
-
-                                            case "ROLE_FINANCE_OFFICER":
-                                                navigate("/finance");
-                                                break;
-
-                                            default:
-                                                navigate("/role-selection");
-                                        }
+                                        navigate(getRoleHome(user?.role));
                                     }}
                                 >
                                     Dashboard

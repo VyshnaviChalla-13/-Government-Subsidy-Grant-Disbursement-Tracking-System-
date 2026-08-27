@@ -193,13 +193,13 @@ function MyApplications() {
                                     </div>
                                     <div className="application-record-side">
                                         <span className={`application-status ${getStatusClass(app.status)}`}>{app.status}</span>
-                                        <button className="application-timeline-btn" onClick={() => navigate("/beneficiary/timeline")}>
+                                        <button className="application-timeline-btn" onClick={() => navigate(`/beneficiary/timeline/${app.applicationId || app.id}`)}>
                                             <Eye size={17} aria-hidden="true" />
                                             View Timeline
                                             <ArrowRight size={16} aria-hidden="true" />
                                         </button>
                                         {app.statusCode === "APPROVED" && (
-                                            <button className="application-timeline-btn" onClick={() => navigate(`/beneficiary/disbursement?applicationId=${app.applicationId}`)}>
+                                            <button className="application-timeline-btn" onClick={() => navigate(`/beneficiary/disbursement?applicationId=${app.applicationId || app.id}`)}>
                                                 <CheckCircle2 size={17} aria-hidden="true" />
                                                 Track Disbursement
                                                 <ArrowRight size={16} aria-hidden="true" />

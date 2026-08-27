@@ -3,15 +3,27 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "../../styles/login.css";
 
-// Maps backend role strings to the dashboard each role should land on.
-const ROLE_HOME = {
-    ROLE_USER: "/beneficiary/schemes",
-    ROLE_SUPER_ADMIN: "/superadmin/dashboard",
-    ROLE_DEPT_ADMIN: "/admin/dashboard",
-    ROLE_FRONT_DESK_OFFICER: "/officer/frontdesk",
-    ROLE_VERIFICATION_OFFICER: "/officer/verification",
-    ROLE_FINANCE_OFFICER: "/finance",
-};
+export function getRoleHome(role) {
+    if (!role) return "/beneficiary/dashboard";
+    const normalized = String(role).trim().toUpperCase();
+
+    if (normalized.includes("SUPER_ADMIN")) {
+        return "/superadmin/dashboard";
+    }
+    if (normalized.includes("DEPT_ADMIN") || normalized.includes("DEPARTMENT_ADMIN") || normalized.includes("DEPARTMENT_OFFICER") || normalized.includes("ADMIN")) {
+        return "/admin/dashboard";
+    }
+    if (normalized.includes("FRONT_DESK") || normalized.includes("FIELD_OFFICER") || normalized.includes("FIELD")) {
+        return "/officer/frontdesk";
+    }
+    if (normalized.includes("VERIFICATION") || normalized.includes("DISTRICT_OFFICER") || normalized.includes("DISTRICT")) {
+        return "/officer/verification";
+    }
+    if (normalized.includes("FINANCE")) {
+        return "/finance";
+    }
+    return "/beneficiary/dashboard";
+}
 
 function Login() {
 
@@ -39,14 +51,14 @@ function Login() {
         }
 
         // Password Validation
-        if (!password.trim()) {
-            newErrors.password = "Password is required";
-        } else if (
-            !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)
-        ) {
-            newErrors.password =
-                "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character.";
-        }
+//         if (!password.trim()) {
+//             newErrors.password = "Password is required";
+//         } else if (
+//             !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)
+//         ) {
+//             newErrors.password =
+//                 "Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character.";
+//         }
 
         setErrors(newErrors);
 
@@ -54,41 +66,35 @@ function Login() {
             return;
         }
 
-//         // Existing Navigation
-//         if (location.state?.fromApply) {
-//             navigate("/beneficiary/apply", {
-//                 state: {
-//                     schemeId: location.state?.schemeId
-//                 }
-//             });
-//         } else {
-//             navigate("/role-selection");
-//         }
-//     };
-
         setSubmitting(true);
 
         try {
-                    const user = await login(mobileNumber, password);
+            const user = await login(mobileNumber, password);
             console.log("Logged in user:", user);
 
-                    if (location.state?.fromApply) {
-                        navigate("/beneficiary/apply", {
-                            state: {
-                                schemeId: location.state?.schemeId
-                            }
-                        });
-                    } else if (location.state?.from) {
-                        navigate(location.state.from);
-                    } else {
-                        navigate(ROLE_HOME[user.role] || "/role-selection");
+            if (location.state?.fromApply) {
+                navigate("/beneficiary/apply", {
+                    state: {
+                        schemeId: location.state?.schemeId
                     }
-                } catch (err) {
-                    setErrors({ form: err.message || "Login failed. Please try again." });
-                } finally {
-                    setSubmitting(false);
-                }
-            };
+                });
+            } else if (location.state?.from) {
+                navigate(location.state.from);
+            } else {
+                navigate(getRoleHome(user?.role));
+            }
+        } catch (err) {
+            const msg =
+                err.response?.data?.message ||
+                (typeof err.response?.data === "string" ? err.response.data : null) ||
+                (err.response?.status === 401 ? "Invalid mobile number or password." : null) ||
+                err.message ||
+                "Login failed. Please try again.";
+            setErrors({ form: msg });
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     return (
 

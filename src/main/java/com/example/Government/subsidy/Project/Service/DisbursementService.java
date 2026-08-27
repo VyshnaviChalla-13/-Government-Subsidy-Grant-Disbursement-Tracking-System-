@@ -304,7 +304,7 @@ public class DisbursementService {
     }
 
     public List<ApplicationMilestone> getPendingFinanceQueue() {
-        return applicationMilestoneRepository.findByStatus(STATUS_COMPLETED);
+        return applicationMilestoneRepository.findByStatusIn(List.of(STATUS_PENDING, STATUS_COMPLETED, STATUS_OVERDUE));
     }
 
     // ---------------------------------------------------------------

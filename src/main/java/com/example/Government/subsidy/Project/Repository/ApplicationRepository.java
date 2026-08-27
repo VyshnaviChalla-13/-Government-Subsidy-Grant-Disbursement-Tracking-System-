@@ -18,6 +18,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Intege
 
     List<Application> findByStatus(String status);
 
+    List<Application> findByStatusIn(List<String> statuses);
+
     List<Application> findByBeneficiary_AadhaarNumberContaining(String aadhaar);
 
     List<Application> findByBeneficiary_FullNameContainingIgnoreCase(String name);

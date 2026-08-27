@@ -99,9 +99,29 @@ public class ApplicationService {
                 + " (score: " + application.getEligibilityScore() + ")";
     }
 
+    @Autowired
+    @org.springframework.context.annotation.Lazy
+    private DisbursementService disbursementService;
+
     public List<Application> getVisibleApplications() {
-        if (currentUserHasAnyRole("SUPER_ADMIN", "DEPT_ADMIN", "FIELD_OFFICER", "DISTRICT_OFFICER", "FINANCE_OFFICER")) {
+        if (currentUserHasAnyRole("SUPER_ADMIN", "DEPT_ADMIN")) {
             return applicationRepository.findAll();
+        }
+        if (currentUserHasAnyRole("FRONT_DESK_OFFICER")) {
+            return applicationRepository.findByStatusIn(List.of(
+                    STATUS_SUBMITTED, STATUS_RESUBMITTED, "PENDING_FIELD_REVIEW", "PENDING_FRONT_DESK",
+                    STATUS_RETURNED, STATUS_REJECTED
+            ));
+        }
+        if (currentUserHasAnyRole("VERIFICATION_OFFICER")) {
+            return applicationRepository.findByStatusIn(List.of(
+                    STATUS_PENDING_VERIFICATION, "FIELD_APPROVED", "UNDER_VERIFICATION"
+            ));
+        }
+        if (currentUserHasAnyRole("FINANCE_OFFICER")) {
+            return applicationRepository.findByStatusIn(List.of(
+                    STATUS_VERIFICATION_APPROVED, "PENDING_FINANCE", "APPROVED", "STAGE_RELEASED", "DISBURSED"
+            ));
         }
         String mobile = currentPrincipalMobile();
         return applicationRepository.findByBeneficiary_MobileNumber(mobile);
@@ -147,7 +167,7 @@ public class ApplicationService {
         application.setRemarks(remarks);
         applicationRepository.save(application);
 
-        return "Application approved by Field Officer and sent for verification";
+        return "Application approved by Field Officer and forwarded to District Officer for verification";
     }
 
     public String fieldReturn(Integer id, String remarks) {
@@ -191,7 +211,7 @@ public class ApplicationService {
     public String verifyApprove(Integer id, String remarks) {
         Application application = applicationRepository.findById(id).orElse(null);
         if (application == null) return "Application not found";
-        if (!STATUS_PENDING_VERIFICATION.equalsIgnoreCase(application.getStatus())) {
+        if (!STATUS_PENDING_VERIFICATION.equalsIgnoreCase(application.getStatus()) && !"FIELD_APPROVED".equalsIgnoreCase(application.getStatus())) {
             return "Application is not awaiting verification (current status: " + application.getStatus() + ")";
         }
 
@@ -199,7 +219,15 @@ public class ApplicationService {
         application.setRemarks(remarks);
         applicationRepository.save(application);
 
-        return "Application approved by Verification Officer";
+        try {
+            if (disbursementService != null) {
+                disbursementService.initializeApplicationMilestones(application.getApplicationId());
+            }
+        } catch (Exception e) {
+            // Milestone plan might not be configured yet or already initialized
+        }
+
+        return "Application approved by District Officer and forwarded to Finance Officer for disbursement";
     }
 
     public String verifyReturn(Integer id, String remarks) {

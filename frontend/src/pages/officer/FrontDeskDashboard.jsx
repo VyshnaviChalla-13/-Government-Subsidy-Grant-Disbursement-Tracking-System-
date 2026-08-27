@@ -289,9 +289,9 @@ function FrontDeskDashboard() {
 
                                 <button
                                     className="view-btn"
-                                    onClick={() => setSelectedApplication(app)}
+                                    onClick={() => navigate("/officer/frontdesk/application", { state: app })}
                                 >
-                                    View
+                                    Review Details
                                 </button>
 
                                 <button

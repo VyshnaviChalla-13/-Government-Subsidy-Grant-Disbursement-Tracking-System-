@@ -15,12 +15,6 @@ export async function updateApplicationStatus(applicationId, status, remarks) {
     return response.data;
 }
 
-export async function submitApplicationDetails(payload) {
-    const response = await axiosClient.post("/api/application/submit", payload);
-
-    return response.data;
-}
-
 export async function submitApplication(beneficiaryId, schemeId, payload) {
     const response = await axiosClient.post("/applications/submit", payload, {
         params: {
@@ -28,6 +22,12 @@ export async function submitApplication(beneficiaryId, schemeId, payload) {
             schemeId,
         },
     });
+
+    return response.data;
+}
+
+export async function getApplications() {
+    const response = await axiosClient.get("/applications");
 
     return response.data;
 }

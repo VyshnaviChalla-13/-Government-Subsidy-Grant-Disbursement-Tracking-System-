@@ -1,7 +1,10 @@
 import "./ApplyScheme.css";
-import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { submitApplication } from "../../api/applicationApi";
+import { getSchemeById, getAllSchemes } from "../../api/schemeApi";
+import { getUserById } from "../../api/userApi";
+import { uploadDocument } from "../../api/documentApi";
 import {
     AlertTriangle,
     Building2,
@@ -90,6 +93,7 @@ const validateDocument = (file) => {
 
 function ApplyScheme() {
     const location = useLocation();
+    const navigate = useNavigate();
     const [formValues, setFormValues] = useState(INITIAL_FORM_VALUES);
     const [documents, setDocuments] = useState({ aadhaarCard: null, incomeCertificate: null, bankPassbook: null });
     const [declaration, setDeclaration] = useState(false);
@@ -98,12 +102,52 @@ function ApplyScheme() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submissionSuccess, setSubmissionSuccess] = useState(false);
     const [submissionError, setSubmissionError] = useState("");
+    const [scheme, setScheme] = useState(null);
+
+    useEffect(() => {
+        async function loadInitialData() {
+            try {
+                const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+                const userId = storedUser?.userId ?? storedUser?.id;
+                if (userId) {
+                    const userProfile = await getUserById(userId);
+                    if (userProfile) {
+                        setFormValues((prev) => ({
+                            ...prev,
+                            fullName: userProfile.fullName || prev.fullName,
+                            mobileNumber: userProfile.mobileNumber || prev.mobileNumber,
+                            email: userProfile.email || prev.email,
+                            annualIncome: userProfile.annualIncome != null ? String(userProfile.annualIncome) : prev.annualIncome,
+                            occupation: userProfile.occupation || prev.occupation,
+                            address: userProfile.address || prev.address,
+                            pincode: userProfile.pincode || prev.pincode,
+                        }));
+                    }
+                }
+
+                const sId = location.state?.schemeId;
+                if (sId) {
+                    const sData = await getSchemeById(sId);
+                    setScheme(sData);
+                } else {
+                    const allSchemes = await getAllSchemes();
+                    if (Array.isArray(allSchemes) && allSchemes.length > 0) {
+                        setScheme(allSchemes[0]);
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading initial scheme or user data:", err);
+            }
+        }
+
+        loadInitialData();
+    }, [location.state]);
 
     const schemeDetails = [
-        { label: "Department", value: "Agriculture", icon: Building2 },
-        { label: "Grant Amount", value: "Up to ₹50,000", icon: IndianRupee },
-        { label: "Application Deadline", value: "31 Dec 2026", icon: CalendarDays },
-        { label: "Scheme Category", value: "Agricultural Subsidy", icon: FileText },
+        { label: "Department", value: scheme?.department?.departmentName || "General Welfare", icon: Building2 },
+        { label: "Grant Amount", value: scheme?.maxGrant ? `Up to ₹${Number(scheme.maxGrant).toLocaleString("en-IN")}` : "Up to ₹50,000", icon: IndianRupee },
+        { label: "Application Deadline", value: scheme?.applicationEndDate || "Open", icon: CalendarDays },
+        { label: "Scheme Category", value: scheme?.schemeName || "Government Subsidy", icon: FileText },
     ];
 
     const handleFieldChange = ({ target }) => {
@@ -171,17 +215,17 @@ function ApplyScheme() {
                 storedUser?.userId ??
                 storedUser?.id ??
                 localStorage.getItem("userId");
-            const schemeId = location.state?.schemeId;
+            const schemeId = scheme?.schemeId || location.state?.schemeId || 1;
 
-            if (!beneficiaryId || !schemeId) {
-                throw new Error("Unable to identify the beneficiary or selected scheme.");
+            if (!beneficiaryId) {
+                throw new Error("Unable to identify the beneficiary. Please sign in again.");
             }
 
             const documentNames = Object.fromEntries(
                 Object.entries(documents).map(([name, file]) => [name, file?.name])
             );
 
-            await submitApplication(beneficiaryId, schemeId, {
+            const result = await submitApplication(beneficiaryId, schemeId, {
                 ...formValues,
                 documents: documentNames,
                 declaration,
@@ -189,11 +233,12 @@ function ApplyScheme() {
 
             setSubmissionSuccess(true);
         } catch (err) {
-            setSubmissionError(err.message || "Unable to submit your application.");
+            setSubmissionError(err.response?.data || err.message || "Unable to submit your application.");
         } finally {
             setIsSubmitting(false);
         }
     };
+
 
     const getValidationClass = (name) => {
         if (!touched[name]) return "";

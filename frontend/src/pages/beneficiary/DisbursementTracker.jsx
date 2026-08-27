@@ -37,16 +37,31 @@ function DisbursementTracker() {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (!applicationId) {
-      setLoading(false);
-      return;
-    }
-
     const loadMilestones = async () => {
       try {
         setLoading(true);
         setError("");
-        const response = await getApplicationMilestones(applicationId);
+        let targetAppId = applicationId;
+
+        if (!targetAppId) {
+          try {
+            const myApps = await getMyApplications();
+            const list = Array.isArray(myApps) ? myApps : myApps?.applications;
+            if (list && list.length > 0) {
+              targetAppId = list[0].applicationId || list[0].id;
+            }
+          } catch (e) {
+            console.error("Failed to load user applications", e);
+          }
+        }
+
+        if (!targetAppId) {
+          setMilestones([]);
+          setLoading(false);
+          return;
+        }
+
+        const response = await getApplicationMilestones(targetAppId);
         const milestoneData = Array.isArray(response) ? response : response?.milestones;
 
         setMilestones(
@@ -54,21 +69,21 @@ function DisbursementTracker() {
             ? milestoneData.map((item, index) => ({
                 id: item?.applicationMilestoneId ?? `milestone-${index}`,
                 stage: index + 1,
-                title: item?.milestone?.milestoneName ?? "Milestone",
-                description: item?.milestone?.description ?? "No description available.",
-                amount: item?.amountToRelease ?? 0,
+                title: item?.schemeMilestone?.milestoneName ?? item?.milestone?.milestoneName ?? `Milestone #${index + 1}`,
+                description: item?.schemeMilestone?.description ?? item?.milestone?.description ?? "Stage fund release proof verification.",
+                amount: item?.amount ?? item?.amountToRelease ?? 0,
                 dueDate: item?.dueDate ?? "Not available",
                 status: item?.status?.toUpperCase?.() ?? "PENDING",
-                completedDate: item?.completedDate ?? null,
-                amountReleased: item?.amountReleased ?? 0,
-                releasedOn: item?.releaseDate ?? null,
+                completedDate: item?.disbursedAt ?? item?.completedDate ?? null,
+                amountReleased: item?.status === "RELEASED" ? (item?.amount ?? 0) : 0,
+                releasedOn: item?.disbursedAt ?? item?.releaseDate ?? null,
                 application: item?.application,
               }))
             : []
         );
       } catch (requestError) {
         setMilestones([]);
-        setError("We couldn't load your disbursement milestones. Please try again later.");
+        setError("No disbursement milestones found for this application yet.");
       } finally {
         setLoading(false);
       }

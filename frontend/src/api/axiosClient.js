@@ -13,23 +13,24 @@ const axiosClient = axios.create({
 
 // Attach the JWT (if present) to every outgoing request.
 axiosClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem("token");
+    let token = localStorage.getItem("token");
 
     if (token) {
+        // Strip any accidental enclosing quotes or spaces
+        token = token.replace(/^"(.*)"$/, "$1").trim();
         config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
 });
 
-// Centralized response handling: on 401/403 clear the stored session so the
-// UI can bounce the user back to login instead of showing broken pages.
+// Centralized response handling: on 401 (expired/invalid credentials) clear stored session
 axiosClient.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error.response?.status;
 
-        if (status === 401 || status === 403) {
+        if (status === 401) {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
         }

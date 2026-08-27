@@ -65,21 +65,21 @@ public class DisbursementController {
     }
 
     @GetMapping("/queue")
-    @PreAuthorize("hasRole('FINANCE_OFFICER')")
+    @PreAuthorize("hasAnyRole('FINANCE_OFFICER', 'FINANCE_APPROVER', 'SUPER_ADMIN', 'DEPT_ADMIN')")
     public ResponseEntity<List<ApplicationMilestone>> getFinanceQueue() {
         return ResponseEntity.ok(disbursementService.getPendingFinanceQueue());
     }
 
     // POST /disbursement/release/{applicationMilestoneId} - the staged-release endpoint from the guide
     @PostMapping("/release/{applicationMilestoneId}")
-    @PreAuthorize("hasRole('FINANCE_OFFICER')")
+    @PreAuthorize("hasAnyRole('FINANCE_OFFICER', 'FINANCE_APPROVER', 'SUPER_ADMIN', 'DEPT_ADMIN')")
     public ResponseEntity<String> release(@PathVariable Integer applicationMilestoneId,
                                           @RequestParam(required = false) String transactionReference) {
         return ResponseEntity.ok(disbursementService.releaseStage(applicationMilestoneId, transactionReference));
     }
 
     @PatchMapping("/milestones/{id}/reject")
-    @PreAuthorize("hasRole('FINANCE_OFFICER')")
+    @PreAuthorize("hasAnyRole('FINANCE_OFFICER', 'FINANCE_APPROVER', 'SUPER_ADMIN', 'DEPT_ADMIN')")
     public ResponseEntity<String> reject(@PathVariable Integer id, @RequestParam String reason) {
         return ResponseEntity.ok(disbursementService.rejectMilestone(id, reason));
     }

@@ -25,6 +25,11 @@ public class ApplicationController {
         return applicationService.submitApplication(beneficiaryId, schemeId, json);
     }
 
+    @GetMapping
+    public List<Application> getApplications() {
+        return applicationService.getVisibleApplications();
+    }
+
     @GetMapping("/all")
     public List<Application> getAllApplications() {
         return applicationService.getAllApplications();
@@ -60,19 +65,19 @@ public class ApplicationController {
     // ---------- Field Officer (front desk) stage ----------
 
     @PatchMapping("/{id}/field-approve")
-    @PreAuthorize("hasRole('FRONT_DESK_OFFICER')")
+    @PreAuthorize("hasAnyRole('FRONT_DESK_OFFICER','FIELD_OFFICER','SUPER_ADMIN','DEPT_ADMIN')")
     public String fieldApprove(@PathVariable Integer id, @RequestParam(required = false) String remarks) {
         return applicationService.fieldApprove(id, remarks);
     }
 
     @PatchMapping("/{id}/field-return")
-    @PreAuthorize("hasRole('FRONT_DESK_OFFICER')")
+    @PreAuthorize("hasAnyRole('FRONT_DESK_OFFICER','FIELD_OFFICER','SUPER_ADMIN','DEPT_ADMIN')")
     public String fieldReturn(@PathVariable Integer id, @RequestParam String remarks) {
         return applicationService.fieldReturn(id, remarks);
     }
 
     @PatchMapping("/{id}/field-reject")
-    @PreAuthorize("hasRole('FRONT_DESK_OFFICER')")
+    @PreAuthorize("hasAnyRole('FRONT_DESK_OFFICER','FIELD_OFFICER','SUPER_ADMIN','DEPT_ADMIN')")
     public String fieldReject(@PathVariable Integer id, @RequestParam String remarks) {
         return applicationService.fieldReject(id, remarks);
     }
@@ -80,19 +85,19 @@ public class ApplicationController {
     // ---------- Verification Officer stage ----------
 
     @PatchMapping("/{id}/verify-approve")
-    @PreAuthorize("hasRole('VERIFICATION_OFFICER')")
+    @PreAuthorize("hasAnyRole('VERIFICATION_OFFICER','DISTRICT_OFFICER','SUPER_ADMIN','DEPT_ADMIN')")
     public String verifyApprove(@PathVariable Integer id, @RequestParam(required = false) String remarks) {
         return applicationService.verifyApprove(id, remarks);
     }
 
     @PatchMapping("/{id}/verify-return")
-    @PreAuthorize("hasRole('VERIFICATION_OFFICER')")
+    @PreAuthorize("hasAnyRole('VERIFICATION_OFFICER','DISTRICT_OFFICER','SUPER_ADMIN','DEPT_ADMIN')")
     public String verifyReturn(@PathVariable Integer id, @RequestParam String remarks) {
         return applicationService.verifyReturn(id, remarks);
     }
 
     @PatchMapping("/{id}/verify-reject")
-    @PreAuthorize("hasRole('VERIFICATION_OFFICER')")
+    @PreAuthorize("hasAnyRole('VERIFICATION_OFFICER','DISTRICT_OFFICER','SUPER_ADMIN','DEPT_ADMIN')")
     public String verifyReject(@PathVariable Integer id, @RequestParam String remarks) {
         return applicationService.verifyReject(id, remarks);
     }

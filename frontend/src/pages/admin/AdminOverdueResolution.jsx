@@ -1,74 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./AdminOverdueResolution.css";
-
-const initialOverdueApplications = [
-    {
-        id: "APP-1001",
-        beneficiary: "Ravi Kumar",
-        scheme: "Farmer Assistance Scheme",
-        stage: "Field Verification",
-        officer: "Suresh Kumar",
-        daysPending: 10,
-        priority: "Critical",
-        status: "Overdue",
-        submittedDate: "01-08-2026",
-        remarks: "Field verification is pending.",
-    },
-    {
-        id: "APP-1002",
-        beneficiary: "Anitha Devi",
-        scheme: "Student Scholarship Scheme",
-        stage: "District Verification",
-        officer: "Priya Sharma",
-        daysPending: 7,
-        priority: "High",
-        status: "Overdue",
-        submittedDate: "04-08-2026",
-        remarks: "Waiting for district officer review.",
-    },
-    {
-        id: "APP-1003",
-        beneficiary: "Rahul Reddy",
-        scheme: "Affordable Housing Scheme",
-        stage: "Finance Approval",
-        officer: "Mahesh Kumar",
-        daysPending: 12,
-        priority: "Critical",
-        status: "Overdue",
-        submittedDate: "29-07-2026",
-        remarks: "Finance approval is pending.",
-    },
-    {
-        id: "APP-1004",
-        beneficiary: "Lakshmi Devi",
-        scheme: "Women Empowerment Scheme",
-        stage: "Field Verification",
-        officer: "Kavitha Rao",
-        daysPending: 5,
-        priority: "Medium",
-        status: "Overdue",
-        submittedDate: "06-08-2026",
-        remarks: "Officer has not completed verification.",
-    },
-    {
-        id: "APP-1005",
-        beneficiary: "Arun Kumar",
-        scheme: "Farmer Assistance Scheme",
-        stage: "District Verification",
-        officer: "Ramesh Kumar",
-        daysPending: 9,
-        priority: "High",
-        status: "Overdue",
-        submittedDate: "02-08-2026",
-        remarks: "Application awaiting district review.",
-    },
-];
+import { getOverdueReport, resolveOverdueMilestone } from "../../api/disbursementApi";
 
 function AdminOverdueResolution() {
-    const [applications, setApplications] = useState(
-        initialOverdueApplications
-    );
-
+    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
     const [search, setSearch] = useState("");
     const [schemeFilter, setSchemeFilter] = useState("");
     const [stageFilter, setStageFilter] = useState("");
@@ -77,12 +14,57 @@ function AdminOverdueResolution() {
     const [selectedApplication, setSelectedApplication] = useState(null);
     const [actionType, setActionType] = useState("");
     const [resolutionRemarks, setResolutionRemarks] = useState("");
+    const [submitting, setSubmitting] = useState(false);
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            setError("");
+            const data = await getOverdueReport();
+            if (Array.isArray(data)) {
+                setApplications(
+                    data.map((item) => {
+                        const days = Number(item.daysOverdue ?? 0);
+                        let priority = "Medium";
+                        if (days >= 10) priority = "Critical";
+                        else if (days >= 5) priority = "High";
+
+                        return {
+                            id: item.applicationNumber || `APP-${item.applicationId || item.applicationMilestoneId}`,
+                            applicationMilestoneId: item.applicationMilestoneId,
+                            applicationId: item.applicationId,
+                            beneficiary: item.beneficiaryName || "Beneficiary",
+                            scheme: item.schemeName || "Scheme",
+                            stage: item.milestoneName || "Disbursement Stage",
+                            officer: "Assigned Officer",
+                            daysPending: days,
+                            priority,
+                            status: "Overdue",
+                            submittedDate: item.dueDate || "-",
+                            remarks: `Milestone amount: ₹${Number(item.amountToRelease || 0).toLocaleString("en-IN")}`,
+                        };
+                    })
+                );
+            } else {
+                setApplications([]);
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || "Failed to load overdue report.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadData();
+    }, []);
 
     const filteredApplications = useMemo(() => {
         return applications.filter((app) => {
             const searchText = search.toLowerCase();
 
             const matchesSearch =
+                !search ||
                 app.id.toLowerCase().includes(searchText) ||
                 app.beneficiary.toLowerCase().includes(searchText);
 
@@ -105,36 +87,49 @@ function AdminOverdueResolution() {
         });
     }, [applications, search, schemeFilter, stageFilter, priorityFilter]);
 
-    const resolveApplication = () => {
+    const resolveApplication = async () => {
         if (!selectedApplication || !actionType) {
             return;
         }
 
         if (resolutionRemarks.trim() === "") {
+            alert("Please enter resolution remarks before submitting.");
             return;
         }
 
-        const updatedApplications = applications.map((app) =>
-            app.id === selectedApplication.id
-                ? {
-                    ...app,
-                    status: "Resolved",
-                    resolutionAction: actionType,
-                    resolutionRemarks: resolutionRemarks,
-                }
-                : app
-        );
+        setSubmitting(true);
+        try {
+            const mId = selectedApplication.applicationMilestoneId;
+            if (mId) {
+                await resolveOverdueMilestone(mId, `${actionType}: ${resolutionRemarks}`);
+            }
 
-        setApplications(updatedApplications);
+            const updatedApplications = applications.map((app) =>
+                app.id === selectedApplication.id
+                    ? {
+                        ...app,
+                        status: "Resolved",
+                        resolutionAction: actionType,
+                        resolutionRemarks: resolutionRemarks,
+                    }
+                    : app
+            );
 
-        setSelectedApplication(null);
-        setActionType("");
-        setResolutionRemarks("");
+            setApplications(updatedApplications);
+            setSelectedApplication(null);
+            setActionType("");
+            setResolutionRemarks("");
+            alert("Milestone overdue issue resolved successfully!");
+        } catch (err) {
+            alert(err.response?.data?.message || err.response?.data || err.message || "Resolution failed");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const openResolutionModal = (application) => {
         setSelectedApplication(application);
-        setActionType("");
+        setActionType("Grant Extension");
         setResolutionRemarks("");
     };
 
@@ -147,31 +142,27 @@ function AdminOverdueResolution() {
     ).length;
 
     const awaitingOfficer = applications.filter(
-        (app) =>
-            app.status === "Overdue" &&
-            app.stage === "Field Verification"
+        (app) => app.status === "Overdue"
     ).length;
 
     const resolvedCount = applications.filter(
         (app) => app.status === "Resolved"
     ).length;
 
+    const schemes = [...new Set(applications.map((a) => a.scheme).filter(Boolean))];
+    const stages = [...new Set(applications.map((a) => a.stage).filter(Boolean))];
+
     return (
         <div className="admin-overdue-page">
-
             {/* Header */}
-
             <div className="admin-overdue-header">
                 <div>
                     <span className="admin-overdue-kicker">
                         Department Administration
                     </span>
-
                     <h1>Overdue Resolution</h1>
-
                     <p>
-                        Monitor delayed applications and take appropriate
-                        administrative action.
+                        Monitor delayed applications and take appropriate administrative action.
                     </p>
                 </div>
 
@@ -181,9 +172,7 @@ function AdminOverdueResolution() {
             </div>
 
             {/* Summary Cards */}
-
             <div className="overdue-summary">
-
                 <div className="overdue-card">
                     <span>Total Overdue</span>
                     <strong>{totalOverdue}</strong>
@@ -197,9 +186,9 @@ function AdminOverdueResolution() {
                 </div>
 
                 <div className="overdue-card">
-                    <span>Awaiting Officer</span>
+                    <span>Awaiting Action</span>
                     <strong>{awaitingOfficer}</strong>
-                    <small>Pending field verification</small>
+                    <small>Pending stage resolution</small>
                 </div>
 
                 <div className="overdue-card resolved-card">
@@ -207,23 +196,16 @@ function AdminOverdueResolution() {
                     <strong>{resolvedCount}</strong>
                     <small>Issues resolved by admin</small>
                 </div>
-
             </div>
 
             {/* Filters */}
-
             <section className="overdue-filter-section">
-
                 <div className="filter-heading">
                     <h2>Overdue Applications</h2>
-
-                    <span>
-                        {filteredApplications.length} applications
-                    </span>
+                    <span>{filteredApplications.length} applications</span>
                 </div>
 
                 <div className="overdue-filters">
-
                     <input
                         type="text"
                         placeholder="Search by ID or beneficiary..."
@@ -233,376 +215,161 @@ function AdminOverdueResolution() {
 
                     <select
                         value={schemeFilter}
-                        onChange={(e) =>
-                            setSchemeFilter(e.target.value)
-                        }
+                        onChange={(e) => setSchemeFilter(e.target.value)}
                     >
                         <option value="">All Schemes</option>
-                        <option>Farmer Assistance Scheme</option>
-                        <option>Student Scholarship Scheme</option>
-                        <option>Affordable Housing Scheme</option>
-                        <option>Women Empowerment Scheme</option>
+                        {schemes.map((s) => (
+                            <option key={s} value={s}>{s}</option>
+                        ))}
                     </select>
 
                     <select
                         value={stageFilter}
-                        onChange={(e) =>
-                            setStageFilter(e.target.value)
-                        }
+                        onChange={(e) => setStageFilter(e.target.value)}
                     >
                         <option value="">All Stages</option>
-                        <option>Field Verification</option>
-                        <option>District Verification</option>
-                        <option>Finance Approval</option>
+                        {stages.map((st) => (
+                            <option key={st} value={st}>{st}</option>
+                        ))}
                     </select>
 
                     <select
                         value={priorityFilter}
-                        onChange={(e) =>
-                            setPriorityFilter(e.target.value)
-                        }
+                        onChange={(e) => setPriorityFilter(e.target.value)}
                     >
                         <option value="">All Priorities</option>
-                        <option>Critical</option>
-                        <option>High</option>
-                        <option>Medium</option>
+                        <option value="Critical">Critical</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
                     </select>
-
                 </div>
             </section>
 
+            {loading && <p style={{ padding: "20px" }}>Loading overdue applications...</p>}
+            {error && <div className="alert alert-danger" style={{ margin: "20px" }}>{error}</div>}
+
             {/* Applications Table */}
-
-            <div className="overdue-table-container">
-
-                <table className="overdue-table">
-
-                    <thead>
-                    <tr>
-                        <th>Application ID</th>
-                        <th>Beneficiary</th>
-                        <th>Scheme</th>
-                        <th>Current Stage</th>
-                        <th>Assigned Officer</th>
-                        <th>Days Pending</th>
-                        <th>Priority</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                    </thead>
-
-                    <tbody>
-
-                    {filteredApplications.length === 0 ? (
-
-                        <tr>
-                            <td
-                                colSpan="9"
-                                className="no-overdue-data"
-                            >
-                                No overdue applications found.
-                            </td>
-                        </tr>
-
-                    ) : (
-
-                        filteredApplications.map((app) => (
-
-                            <tr key={app.id}>
-
-                                <td className="application-id">
-                                    {app.id}
-                                </td>
-
-                                <td>
-                                    {app.beneficiary}
-                                </td>
-
-                                <td>
-                                    {app.scheme}
-                                </td>
-
-                                <td>
-                                        <span className="stage-badge">
-                                            {app.stage}
-                                        </span>
-                                </td>
-
-                                <td>
-                                    {app.officer}
-                                </td>
-
-                                <td>
-                                    <strong
-                                        className={
-                                            app.daysPending >= 10
-                                                ? "days-critical"
-                                                : "days-warning"
-                                        }
-                                    >
-                                        {app.daysPending} days
-                                    </strong>
-                                </td>
-
-                                <td>
-                                        <span
-                                            className={`priority-badge ${app.priority.toLowerCase()}`}
-                                        >
-                                            {app.priority}
-                                        </span>
-                                </td>
-
-                                <td>
-                                        <span
-                                            className={`overdue-status ${app.status.toLowerCase()}`}
-                                        >
-                                            {app.status}
-                                        </span>
-                                </td>
-
-                                <td>
-
-                                    {app.status === "Overdue" ? (
-
-                                        <button
-                                            className="resolve-btn"
-                                            onClick={() =>
-                                                openResolutionModal(app)
-                                            }
-                                        >
-                                            Resolve
-                                        </button>
-
-                                    ) : (
-
-                                        <span className="resolved-label">
-                                                Resolved
-                                            </span>
-
-                                    )}
-
-                                </td>
-
+            {!loading && !error && (
+                <div className="overdue-table-container">
+                    <table className="overdue-table">
+                        <thead>
+                            <tr>
+                                <th>Application ID</th>
+                                <th>Beneficiary</th>
+                                <th>Scheme</th>
+                                <th>Current Stage</th>
+                                <th>Days Overdue</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Action</th>
                             </tr>
+                        </thead>
 
-                        ))
-
-                    )}
-
-                    </tbody>
-
-                </table>
-
-            </div>
+                        <tbody>
+                            {filteredApplications.length === 0 ? (
+                                <tr>
+                                    <td colSpan="8" className="no-overdue-data">
+                                        No overdue applications found.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredApplications.map((app) => (
+                                    <tr key={app.id}>
+                                        <td className="application-id">{app.id}</td>
+                                        <td>{app.beneficiary}</td>
+                                        <td>{app.scheme}</td>
+                                        <td>
+                                            <span className="stage-badge">{app.stage}</span>
+                                        </td>
+                                        <td>
+                                            <strong
+                                                className={
+                                                    app.daysPending >= 10
+                                                        ? "days-critical"
+                                                        : "days-warning"
+                                                }
+                                            >
+                                                {app.daysPending} days
+                                            </strong>
+                                        </td>
+                                        <td>
+                                            <span className={`priority-badge ${app.priority.toLowerCase()}`}>
+                                                {app.priority}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span className={`overdue-status ${app.status.toLowerCase()}`}>
+                                                {app.status}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {app.status === "Overdue" ? (
+                                                <button
+                                                    className="resolve-btn"
+                                                    onClick={() => openResolutionModal(app)}
+                                                >
+                                                    Resolve
+                                                </button>
+                                            ) : (
+                                                <span className="resolved-label">Resolved</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
             {/* Resolution Modal */}
-
             {selectedApplication && (
+                <div className="modal-overlay">
+                    <div className="resolution-modal">
+                        <h2>Resolve Overdue Application</h2>
+                        <p>Application ID: {selectedApplication.id} ({selectedApplication.beneficiary})</p>
 
-                <div className="overdue-modal-overlay">
-
-                    <div className="overdue-modal">
-
-                        <div className="modal-header">
-
-                            <div>
-                                <span>
-                                    Administrative Action
-                                </span>
-
-                                <h2>
-                                    Resolve Overdue Application
-                                </h2>
-                            </div>
-
-                            <button
-                                className="modal-close"
-                                onClick={() =>
-                                    setSelectedApplication(null)
-                                }
+                        <div className="modal-field">
+                            <label>Resolution Action</label>
+                            <select
+                                value={actionType}
+                                onChange={(e) => setActionType(e.target.value)}
                             >
-                                ×
-                            </button>
-
+                                <option value="Grant Extension">Grant Deadline Extension</option>
+                                <option value="Admin Override">Override & Unblock Stage</option>
+                                <option value="Reassign Officer">Reassign Officer</option>
+                                <option value="Cancel Application">Cancel Milestone</option>
+                            </select>
                         </div>
 
-                        {/* Application Information */}
-
-                        <div className="application-info-grid">
-
-                            <div>
-                                <label>Application ID</label>
-                                <strong>
-                                    {selectedApplication.id}
-                                </strong>
-                            </div>
-
-                            <div>
-                                <label>Beneficiary</label>
-                                <strong>
-                                    {selectedApplication.beneficiary}
-                                </strong>
-                            </div>
-
-                            <div>
-                                <label>Scheme</label>
-                                <strong>
-                                    {selectedApplication.scheme}
-                                </strong>
-                            </div>
-
-                            <div>
-                                <label>Current Stage</label>
-                                <strong>
-                                    {selectedApplication.stage}
-                                </strong>
-                            </div>
-
-                            <div>
-                                <label>Assigned Officer</label>
-                                <strong>
-                                    {selectedApplication.officer}
-                                </strong>
-                            </div>
-
-                            <div>
-                                <label>Days Pending</label>
-                                <strong className="days-critical">
-                                    {selectedApplication.daysPending} days
-                                </strong>
-                            </div>
-
-                        </div>
-
-                        {/* Existing Remarks */}
-
-                        <div className="existing-remarks">
-
-                            <h3>Current Remarks</h3>
-
-                            <p>
-                                {selectedApplication.remarks}
-                            </p>
-
-                        </div>
-
-                        {/* Admin Action */}
-
-                        <div className="resolution-section">
-
-                            <h3>Administrative Action</h3>
-
-                            <div className="action-options">
-
-                                <button
-                                    className={
-                                        actionType === "Reassign Officer"
-                                            ? "action-option active"
-                                            : "action-option"
-                                    }
-                                    onClick={() =>
-                                        setActionType("Reassign Officer")
-                                    }
-                                >
-                                    Reassign Officer
-                                </button>
-
-                                <button
-                                    className={
-                                        actionType === "Escalate"
-                                            ? "action-option active"
-                                            : "action-option"
-                                    }
-                                    onClick={() =>
-                                        setActionType("Escalate")
-                                    }
-                                >
-                                    Escalate
-                                </button>
-
-                                <button
-                                    className={
-                                        actionType === "Send Reminder"
-                                            ? "action-option active"
-                                            : "action-option"
-                                    }
-                                    onClick={() =>
-                                        setActionType("Send Reminder")
-                                    }
-                                >
-                                    Send Reminder
-                                </button>
-
-                                <button
-                                    className={
-                                        actionType === "Mark Resolved"
-                                            ? "action-option active"
-                                            : "action-option"
-                                    }
-                                    onClick={() =>
-                                        setActionType("Mark Resolved")
-                                    }
-                                >
-                                    Mark Resolved
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                        {/* Remarks */}
-
-                        <div className="resolution-remarks">
-
-                            <label>
-                                Resolution Remarks
-                            </label>
-
+                        <div className="modal-field">
+                            <label>Resolution Remarks (Mandatory)</label>
                             <textarea
-                                rows="4"
                                 value={resolutionRemarks}
-                                onChange={(e) =>
-                                    setResolutionRemarks(e.target.value)
-                                }
-                                placeholder="Enter the reason or action taken..."
+                                onChange={(e) => setResolutionRemarks(e.target.value)}
+                                placeholder="Enter reason and administrative instructions..."
+                                rows="4"
                             />
-
                         </div>
 
-                        {/* Buttons */}
-
-                        <div className="resolution-buttons">
-
+                        <div className="modal-actions">
                             <button
-                                className="cancel-resolution-btn"
-                                onClick={() => {
-                                    setSelectedApplication(null);
-                                    setActionType("");
-                                    setResolutionRemarks("");
-                                }}
+                                className="submit-resolve-btn"
+                                onClick={resolveApplication}
+                                disabled={submitting}
+                            >
+                                {submitting ? "Resolving..." : "Confirm Resolution"}
+                            </button>
+                            <button
+                                className="cancel-resolve-btn"
+                                onClick={() => setSelectedApplication(null)}
                             >
                                 Cancel
                             </button>
-
-                            <button
-                                className="confirm-resolution-btn"
-                                disabled={
-                                    !actionType ||
-                                    resolutionRemarks.trim() === ""
-                                }
-                                onClick={resolveApplication}
-                            >
-                                Confirm Resolution
-                            </button>
-
                         </div>
-
                     </div>
-
                 </div>
-
             )}
-
         </div>
     );
 }

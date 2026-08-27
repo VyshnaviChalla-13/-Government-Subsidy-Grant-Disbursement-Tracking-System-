@@ -1,7 +1,7 @@
 import "./ApplicationTimeline.css";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { getApplicationById } from "../../api/applicationApi";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { getApplicationById, getMyApplications } from "../../api/applicationApi";
 import {
     Activity,
     ArrowLeft,
@@ -23,18 +23,23 @@ import {
 
 const STAGES = [
     { title: "Application Submitted", status: "SUBMITTED" },
-    { title: "Front Desk Review", status: "FIELD_APPROVED" },
-    { title: "Verification Officer Review", status: "VERIFICATION_APPROVED" },
-    { title: "Final Approval", status: "APPROVED" },
-    { title: "Grant Disbursed", status: "DISBURSED" },
+    { title: "Field Officer Review (Level 1)", status: "FIELD_APPROVED" },
+    { title: "District Officer Verification (Level 2)", status: "VERIFICATION_APPROVED" },
+    { title: "Finance Officer Sanction", status: "APPROVED" },
+    { title: "Milestone Fund Disbursement", status: "DISBURSED" },
 ];
 
 const STATUS_RANK = {
     SUBMITTED: 0,
     RESUBMITTED: 0,
+    PENDING_FRONT_DESK: 0,
+    PENDING_VERIFICATION: 1,
     FIELD_APPROVED: 1,
+    UNDER_VERIFICATION: 1,
     VERIFICATION_APPROVED: 2,
+    PENDING_FINANCE: 2,
     APPROVED: 3,
+    STAGE_RELEASED: 4,
     DISBURSED: 4,
 };
 
@@ -85,6 +90,7 @@ function buildTimeline(application) {
 
 function ApplicationTimeline() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { id } = useParams();
     const [application, setApplication] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -93,11 +99,21 @@ function ApplicationTimeline() {
     useEffect(() => {
         async function fetchApplication() {
             try {
-                if (!id) {
-                    throw new Error("Application ID is missing.");
+                let targetId = id || new URLSearchParams(window.location.search).get("id") || location.state?.applicationId;
+
+                if (!targetId) {
+                    const myApps = await getMyApplications();
+                    const list = Array.isArray(myApps) ? myApps : myApps?.applications;
+                    if (list && list.length > 0) {
+                        targetId = list[0].applicationId || list[0].id;
+                    }
                 }
 
-                const applicationData = await getApplicationById(id);
+                if (!targetId) {
+                    throw new Error("No application selected. Please select an application from My Applications.");
+                }
+
+                const applicationData = await getApplicationById(targetId);
 
                 if (!applicationData) {
                     throw new Error("Application not found.");
@@ -112,7 +128,7 @@ function ApplicationTimeline() {
         }
 
         fetchApplication();
-    }, [id]);
+    }, [id, location]);
 
     if (loading) {
         return (

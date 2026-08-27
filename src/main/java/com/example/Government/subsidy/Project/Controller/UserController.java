@@ -1,4 +1,7 @@
 package com.example.Government.subsidy.Project.Controller;
+
+import com.example.Government.subsidy.Project.DTO.LoginRequest;
+import com.example.Government.subsidy.Project.DTO.UserResponse;
 import com.example.Government.subsidy.Project.Entity.User;
 import com.example.Government.subsidy.Project.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,17 +36,25 @@ public class UserController {
     }
 
     @PutMapping("/update/{id}")
-    public String updateUser(@PathVariable Integer id,
-                             @RequestBody User user) {
+    public ResponseEntity<String> updateUser(
+            @PathVariable Integer id,
+            @RequestBody User user
+    ) {
         return userService.updateUser(id, user);
     }
 
     @DeleteMapping("/delete/{id}")
-    public String deleteUser(@PathVariable Integer id) {
+    public ResponseEntity<String> deleteUser(@PathVariable Integer id) {
         return userService.deleteUser(id);
     }
+
     @PostMapping("/login")
-    public String login(@RequestBody User user) {
-        return userService.login(user.getMobileNumber(), user.getPassword());
+    public ResponseEntity<UserResponse> login(
+            @RequestBody LoginRequest loginRequest
+    ) {
+        return userService.login(
+                loginRequest.getMobileNumber(),
+                loginRequest.getPassword()
+        );
     }
 }

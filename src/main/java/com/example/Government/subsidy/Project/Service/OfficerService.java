@@ -20,8 +20,25 @@ public class OfficerService {
     private DepartmentRepository departmentRepository;
 
     private static final Set<String> VALID_ROLES = Set.of(
-            "FIELD_OFFICER", "DISTRICT_OFFICER", "FINANCE_OFFICER", "DEPT_ADMIN"
+            "FRONT_DESK_OFFICER", "VERIFICATION_OFFICER", "FINANCE_OFFICER", "DEPT_ADMIN",
+            "ROLE_FRONT_DESK_OFFICER", "ROLE_VERIFICATION_OFFICER", "ROLE_FINANCE_OFFICER", "ROLE_DEPT_ADMIN",
+            "FIELD_OFFICER", "DISTRICT_OFFICER"
     );
+
+    private String canonicalRole(String role) {
+        if (role == null) return null;
+        String upper = role.toUpperCase();
+        if (upper.startsWith("ROLE_")) {
+            upper = upper.substring(5);
+        }
+        if ("FIELD_OFFICER".equals(upper)) {
+            return "FRONT_DESK_OFFICER";
+        }
+        if ("DISTRICT_OFFICER".equals(upper)) {
+            return "VERIFICATION_OFFICER";
+        }
+        return upper;
+    }
 
     public String createOfficer(Officer officer) {
         if (officerRepository.existsByEmployeeCode(officer.getEmployeeCode())) {
@@ -43,14 +60,15 @@ public class OfficerService {
             return "Invalid designation. Must be one of: " + VALID_ROLES;
         }
 
-        user.setRole(designation.toUpperCase());
+        String canonical = canonicalRole(designation);
+        user.setRole("ROLE_" + canonical);
         userRepository.save(user);
 
         officer.setUser(user);
         officer.setDepartment(department);
-        officer.setDesignation(designation.toUpperCase());
+        officer.setDesignation(canonical);
         officerRepository.save(officer);
-        return "Officer created successfully with role " + designation.toUpperCase();
+        return "Officer created successfully with role ROLE_" + canonical;
     }
 
     public List<Officer> getAllOfficers() {
@@ -71,10 +89,11 @@ public class OfficerService {
             if (!VALID_ROLES.contains(designation)) {
                 return "Invalid designation. Must be one of: " + VALID_ROLES;
             }
-            existing.setDesignation(designation);
+            String canonical = canonicalRole(designation);
+            existing.setDesignation(canonical);
             User user = existing.getUser();
             if (user != null) {
-                user.setRole(designation);
+                user.setRole("ROLE_" + canonical);
                 userRepository.save(user);
             }
         }

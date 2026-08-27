@@ -20,13 +20,13 @@ public class DashboardController {
     private DashboardService dashboardService;
 
     @GetMapping("/regions")
-    @PreAuthorize("hasAnyRole('DEPT_ADMIN','SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('DEPT_ADMIN','SUPER_ADMIN','VERIFICATION_OFFICER')")
     public List<RegionSummaryDTO> getRegionSummary() {
         return dashboardService.getRegionSummary();
     }
 
     @GetMapping("/schemes")
-    @PreAuthorize("hasAnyRole('DEPT_ADMIN','SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('DEPT_ADMIN','SUPER_ADMIN','FINANCE_OFFICER')")
     public List<SchemeSummaryDTO> getSchemeSummary() {
         return dashboardService.getSchemeSummary();
     }
@@ -38,7 +38,7 @@ public class DashboardController {
     }
 
     @GetMapping("/overview")
-    @PreAuthorize("hasAnyRole('DEPT_ADMIN','SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('DEPT_ADMIN','SUPER_ADMIN','FINANCE_OFFICER')")
     public SystemOverviewDTO getSystemOverview() {
         return dashboardService.getSystemOverview();
     }

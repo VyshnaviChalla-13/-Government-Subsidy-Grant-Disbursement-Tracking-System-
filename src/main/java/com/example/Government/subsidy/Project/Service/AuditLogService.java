@@ -5,6 +5,8 @@ import com.example.Government.subsidy.Project.Repository.AuditLogRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AuditLogService {
 
@@ -18,7 +20,6 @@ public class AuditLogService {
             String entityType,
             String details
     ) {
-
         AuditLog auditLog = AuditLog.builder()
                 .action(action)
                 .entityType(entityType)
@@ -28,5 +29,13 @@ public class AuditLogService {
                 .build();
 
         auditLogRepository.save(auditLog);
+    }
+
+    public List<AuditLog> getAllLogs() {
+        return auditLogRepository.findAll();
+    }
+
+    public List<AuditLog> getLogsForEntity(String entityType, Integer entityId) {
+        return auditLogRepository.findByEntityTypeAndEntityIdOrderByPerformedAtAsc(entityType, entityId);
     }
 }

@@ -1,54 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./ManageOfficers.css";
+import {
+    getAllOfficers,
+    createOfficer,
+    updateOfficer,
+    deleteOfficer,
+} from "../../api/officerApi";
+import { getAllDepartments } from "../../api/departmentApi";
+import { getAllUsers } from "../../api/userApi";
 
 function ManageOfficers() {
-
-    const [officers, setOfficers] = useState([
-        {
-            id: "OFF001",
-            name: "Rajesh Kumar",
-            role: "Field Officer",
-            department: "Agriculture",
-            region: "Chittoor",
-            email: "rajesh.kumar@gov.in",
-            phone: "9876543210",
-            status: "Active"
-        },
-        {
-            id: "OFF002",
-            name: "Anjali Sharma",
-            role: "District Officer",
-            department: "Education",
-            region: "Tirupati",
-            email: "anjali.sharma@gov.in",
-            phone: "9876543211",
-            status: "Active"
-        },
-        {
-            id: "OFF003",
-            name: "Suresh Reddy",
-            role: "Field Officer",
-            department: "Housing",
-            region: "Nellore",
-            email: "suresh.reddy@gov.in",
-            phone: "9876543212",
-            status: "Active"
-        },
-        {
-            id: "OFF004",
-            name: "Priya Nair",
-            role: "District Officer",
-            department: "Social Welfare",
-            region: "Salem",
-            email: "priya.nair@gov.in",
-            phone: "9876543213",
-            status: "Active"
-        }
-    ]);
+    const [officers, setOfficers] = useState([]);
+    const [departments, setDepartments] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     const [selectedOfficer, setSelectedOfficer] = useState(null);
     const [viewMode, setViewMode] = useState(false);
     const [editMode, setEditMode] = useState(false);
+    const [showAddForm, setShowAddForm] = useState(false);
+
+    // Form fields for Add / Edit
+    const [employeeCode, setEmployeeCode] = useState("");
+    const [selectedUserId, setSelectedUserId] = useState("");
+    const [selectedDeptId, setSelectedDeptId] = useState("");
+    const [designation, setDesignation] = useState("FRONT_DESK_OFFICER");
+    const [submitting, setSubmitting] = useState(false);
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            setError("");
+            const [officersData, deptData, usersData] = await Promise.all([
+                getAllOfficers().catch(() => []),
+                getAllDepartments().catch(() => []),
+                getAllUsers().catch(() => []),
+            ]);
+
+            setOfficers(Array.isArray(officersData) ? officersData : []);
+            setDepartments(Array.isArray(deptData) ? deptData : []);
+            setUsers(Array.isArray(usersData) ? usersData : []);
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || "Failed to load officers.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadData();
+    }, []);
 
     // ---------------- VIEW ----------------
     const handleView = (officer) => {
@@ -59,61 +61,78 @@ function ManageOfficers() {
 
     // ---------------- EDIT ----------------
     const handleEdit = (officer) => {
-        setSelectedOfficer({ ...officer });
+        setSelectedOfficer(officer);
+        setEmployeeCode(officer.employeeCode || "");
+        setSelectedDeptId(officer.department?.departmentId || "");
+        setSelectedUserId(officer.user?.userId || "");
+        setDesignation(officer.designation || "FRONT_DESK_OFFICER");
         setEditMode(true);
         setViewMode(false);
     };
 
-    // ---------------- SAVE EDIT ----------------
-    const handleSave = () => {
+    // ---------------- SAVE ADD / EDIT ----------------
+    const handleSaveOfficer = async () => {
+        if (!employeeCode.trim()) {
+            alert("Please enter employee code.");
+            return;
+        }
 
-        setOfficers(
-            officers.map((officer) =>
-                officer.id === selectedOfficer.id
-                    ? selectedOfficer
-                    : officer
-            )
-        );
+        setSubmitting(true);
+        try {
+            if (editMode && selectedOfficer) {
+                await updateOfficer(selectedOfficer.officerId, {
+                    employeeCode,
+                    designation,
+                    department: { departmentId: Number(selectedDeptId) || departments[0]?.departmentId },
+                });
+                alert("Officer updated successfully!");
+            } else {
+                if (!selectedUserId) {
+                    alert("Please select a user account to designate as officer.");
+                    setSubmitting(false);
+                    return;
+                }
+                await createOfficer({
+                    employeeCode,
+                    designation,
+                    user: { userId: Number(selectedUserId) },
+                    department: { departmentId: Number(selectedDeptId) || departments[0]?.departmentId },
+                });
+                alert("Officer created successfully!");
+            }
 
-        setSelectedOfficer(null);
-        setEditMode(false);
+            setShowAddForm(false);
+            setEditMode(false);
+            setSelectedOfficer(null);
+            setEmployeeCode("");
+            await loadData();
+        } catch (err) {
+            alert(err.response?.data?.message || err.response?.data || err.message || "Operation failed");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
-    // ---------------- DISABLE / ENABLE ----------------
-    const handleToggleStatus = (id) => {
+    // ---------------- DELETE ----------------
+    const handleDeleteOfficer = async (officerId) => {
+        if (!window.confirm("Are you sure you want to remove this officer assignment?")) return;
 
-        setOfficers(
-            officers.map((officer) =>
-                officer.id === id
-                    ? {
-                        ...officer,
-                        status:
-                            officer.status === "Active"
-                                ? "Disabled"
-                                : "Active"
-                    }
-                    : officer
-            )
-        );
+        try {
+            await deleteOfficer(officerId);
+            await loadData();
+        } catch (err) {
+            alert(err.response?.data?.message || err.message || "Failed to delete officer.");
+        }
     };
 
     return (
-
         <div className="officers-page">
-
             {/* Header */}
             <div className="officers-header">
-
                 <div>
-                    <p className="page-subtitle">
-                        Department Administration
-                    </p>
-
+                    <p className="page-subtitle">Department Administration</p>
                     <h1>Manage Officers</h1>
-
-                    <p>
-                        View, update and manage Field Officers and District Officers.
-                    </p>
+                    <p>View, update and manage Front Desk, Verification, and Finance Officers.</p>
                 </div>
 
                 <div className="officer-count">
@@ -123,434 +142,245 @@ function ManageOfficers() {
                         <small>Total Officers</small>
                     </div>
                 </div>
-
             </div>
 
-
-            {/* Officer Table */}
+            {/* Officer Table Card */}
             <div className="officers-card">
-
-                <div className="table-header">
-
+                <div className="table-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
                         <h2>Department Officers</h2>
-                        <p>
-                            Manage officers assigned to your department.
-                        </p>
+                        <p>Manage officers assigned to your department.</p>
                     </div>
 
+                    <button
+                        className="add-officer-btn"
+                        style={{
+                            background: "#2563eb",
+                            color: "#fff",
+                            border: "none",
+                            padding: "8px 16px",
+                            borderRadius: "8px",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                        }}
+                        onClick={() => {
+                            setSelectedOfficer(null);
+                            setEditMode(false);
+                            setViewMode(false);
+                            setEmployeeCode("");
+                            setSelectedUserId(users[0]?.userId || "");
+                            setSelectedDeptId(departments[0]?.departmentId || "");
+                            setDesignation("FRONT_DESK_OFFICER");
+                            setShowAddForm(true);
+                        }}
+                    >
+                        + Add Officer
+                    </button>
                 </div>
 
+                {loading && <p style={{ padding: "20px" }}>Loading officers...</p>}
+                {error && <div className="alert alert-danger" style={{ margin: "20px" }}>{error}</div>}
 
-                <div className="table-wrapper">
+                {/* Add / Edit Form Card */}
+                {(showAddForm || editMode) && (
+                    <div style={{ background: "#f8fafc", padding: "20px", borderRadius: "12px", margin: "20px 0", border: "1px solid #e2e8f0" }}>
+                        <h3>{editMode ? "Edit Officer" : "Add New Officer"}</h3>
 
-                    <table className="officers-table">
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", marginTop: "15px" }}>
+                            <div>
+                                <label style={{ display: "block", marginBottom: "5px", fontWeight: 600 }}>Employee Code</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. EMP-2026-01"
+                                    value={employeeCode}
+                                    onChange={(e) => setEmployeeCode(e.target.value)}
+                                    style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #cbd5e1" }}
+                                />
+                            </div>
 
-                        <thead>
-
-                        <tr>
-                            <th>Officer ID</th>
-                            <th>Name</th>
-                            <th>Role</th>
-                            <th>Department</th>
-                            <th>Region</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-
-                        </thead>
-
-
-                        <tbody>
-
-                        {officers.map((officer) => (
-
-                            <tr key={officer.id}>
-
-                                <td>
-                                    <strong className="officer-id">
-                                        {officer.id}
-                                    </strong>
-                                </td>
-
-                                <td>
-                                    <div className="name-cell">
-                                        <div className="avatar">
-                                            {officer.name.charAt(0)}
-                                        </div>
-
-                                        <strong>
-                                            {officer.name}
-                                        </strong>
-                                    </div>
-                                </td>
-
-                                <td>
-                                    <span className="role-badge">
-                                        {officer.role}
-                                    </span>
-                                </td>
-
-                                <td>
-                                    {officer.department}
-                                </td>
-
-                                <td>
-                                    {officer.region}
-                                </td>
-
-                                <td>
-
-                                    <span
-                                        className={
-                                            officer.status === "Active"
-                                                ? "status-badge active"
-                                                : "status-badge disabled"
-                                        }
+                            {!editMode && (
+                                <div>
+                                    <label style={{ display: "block", marginBottom: "5px", fontWeight: 600 }}>Select User Account</label>
+                                    <select
+                                        value={selectedUserId}
+                                        onChange={(e) => setSelectedUserId(e.target.value)}
+                                        style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #cbd5e1" }}
                                     >
-                                        {officer.status}
-                                    </span>
-
-                                </td>
-
-
-                                <td>
-
-                                    <div className="action-buttons">
-
-                                        {/* View */}
-                                        <button
-                                            className="action-btn view"
-                                            onClick={() =>
-                                                handleView(officer)
-                                            }
-                                        >
-                                            👁 View
-                                        </button>
-
-
-                                        {/* Edit */}
-                                        <button
-                                            className="action-btn edit"
-                                            onClick={() =>
-                                                handleEdit(officer)
-                                            }
-                                        >
-                                            ✏ Edit
-                                        </button>
-
-
-                                        {/* Disable / Enable */}
-                                        <button
-                                            className={
-                                                officer.status === "Active"
-                                                    ? "action-btn disable"
-                                                    : "action-btn enable"
-                                            }
-                                            onClick={() =>
-                                                handleToggleStatus(officer.id)
-                                            }
-                                        >
-                                            {officer.status === "Active"
-                                                ? "⛔ Disable"
-                                                : "✓ Enable"}
-                                        </button>
-
-                                    </div>
-
-                                </td>
-
-                            </tr>
-
-                        ))}
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
-
-            {/* ================= VIEW MODAL ================= */}
-
-            {viewMode && selectedOfficer && (
-
-                <div className="modal-overlay">
-
-                    <div className="officer-modal">
-
-                        <div className="modal-header">
+                                        <option value="">-- Choose User --</option>
+                                        {users.map((u) => (
+                                            <option key={u.userId} value={u.userId}>
+                                                {u.fullName} ({u.mobileNumber} - {u.role})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div>
-                                <h2>Officer Details</h2>
-                                <p>
-                                    Complete information about the officer
-                                </p>
-                            </div>
-
-                            <button
-                                className="modal-close"
-                                onClick={() => {
-                                    setViewMode(false);
-                                    setSelectedOfficer(null);
-                                }}
-                            >
-                                ×
-                            </button>
-
-                        </div>
-
-
-                        <div className="profile-section">
-
-                            <div className="large-avatar">
-                                {selectedOfficer.name.charAt(0)}
-                            </div>
-
-                            <div>
-                                <h3>{selectedOfficer.name}</h3>
-
-                                <span className="role-badge">
-                                    {selectedOfficer.role}
-                                </span>
-                            </div>
-
-                        </div>
-
-
-                        <div className="details-grid">
-
-                            <div>
-                                <label>Officer ID</label>
-                                <strong>{selectedOfficer.id}</strong>
-                            </div>
-
-                            <div>
-                                <label>Department</label>
-                                <strong>{selectedOfficer.department}</strong>
-                            </div>
-
-                            <div>
-                                <label>Region</label>
-                                <strong>{selectedOfficer.region}</strong>
-                            </div>
-
-                            <div>
-                                <label>Status</label>
-                                <strong>{selectedOfficer.status}</strong>
-                            </div>
-
-                            <div>
-                                <label>Email</label>
-                                <strong>{selectedOfficer.email}</strong>
-                            </div>
-
-                            <div>
-                                <label>Phone</label>
-                                <strong>{selectedOfficer.phone}</strong>
-                            </div>
-
-                        </div>
-
-
-                        <div className="modal-footer">
-
-                            <button
-                                className="close-btn"
-                                onClick={() => {
-                                    setViewMode(false);
-                                    setSelectedOfficer(null);
-                                }}
-                            >
-                                Close
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            )}
-
-
-            {/* ================= EDIT MODAL ================= */}
-
-            {editMode && selectedOfficer && (
-
-                <div className="modal-overlay">
-
-                    <div className="officer-modal">
-
-                        <div className="modal-header">
-
-                            <div>
-                                <h2>Edit Officer</h2>
-                                <p>
-                                    Update officer information
-                                </p>
-                            </div>
-
-                            <button
-                                className="modal-close"
-                                onClick={() => {
-                                    setEditMode(false);
-                                    setSelectedOfficer(null);
-                                }}
-                            >
-                                ×
-                            </button>
-
-                        </div>
-
-
-                        <div className="edit-form">
-
-                            <div className="form-group">
-
-                                <label>Officer Name</label>
-
-                                <input
-                                    type="text"
-                                    value={selectedOfficer.name}
-                                    onChange={(e) =>
-                                        setSelectedOfficer({
-                                            ...selectedOfficer,
-                                            name: e.target.value
-                                        })
-                                    }
-                                />
-
-                            </div>
-
-
-                            <div className="form-group">
-
-                                <label>Role</label>
-
+                                <label style={{ display: "block", marginBottom: "5px", fontWeight: 600 }}>Designation / Role</label>
                                 <select
-                                    value={selectedOfficer.role}
-                                    onChange={(e) =>
-                                        setSelectedOfficer({
-                                            ...selectedOfficer,
-                                            role: e.target.value
-                                        })
-                                    }
+                                    value={designation}
+                                    onChange={(e) => setDesignation(e.target.value)}
+                                    style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #cbd5e1" }}
                                 >
-                                    <option>Field Officer</option>
-                                    <option>District Officer</option>
+                                    <option value="FRONT_DESK_OFFICER">Front Desk Officer</option>
+                                    <option value="VERIFICATION_OFFICER">Verification Officer</option>
+                                    <option value="FINANCE_OFFICER">Finance Officer</option>
+                                    <option value="DEPT_ADMIN">Department Admin</option>
                                 </select>
-
                             </div>
 
-
-                            <div className="form-group">
-
-                                <label>Department</label>
-
+                            <div>
+                                <label style={{ display: "block", marginBottom: "5px", fontWeight: 600 }}>Department</label>
                                 <select
-                                    value={selectedOfficer.department}
-                                    onChange={(e) =>
-                                        setSelectedOfficer({
-                                            ...selectedOfficer,
-                                            department: e.target.value
-                                        })
-                                    }
+                                    value={selectedDeptId}
+                                    onChange={(e) => setSelectedDeptId(e.target.value)}
+                                    style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #cbd5e1" }}
                                 >
-                                    <option>Agriculture</option>
-                                    <option>Education</option>
-                                    <option>Housing</option>
-                                    <option>Social Welfare</option>
+                                    {departments.map((d) => (
+                                        <option key={d.departmentId} value={d.departmentId}>
+                                            {d.departmentName}
+                                        </option>
+                                    ))}
                                 </select>
-
                             </div>
-
-
-                            <div className="form-group">
-
-                                <label>Region</label>
-
-                                <input
-                                    type="text"
-                                    value={selectedOfficer.region}
-                                    onChange={(e) =>
-                                        setSelectedOfficer({
-                                            ...selectedOfficer,
-                                            region: e.target.value
-                                        })
-                                    }
-                                />
-
-                            </div>
-
-
-                            <div className="form-group">
-
-                                <label>Email</label>
-
-                                <input
-                                    type="email"
-                                    value={selectedOfficer.email}
-                                    onChange={(e) =>
-                                        setSelectedOfficer({
-                                            ...selectedOfficer,
-                                            email: e.target.value
-                                        })
-                                    }
-                                />
-
-                            </div>
-
-
-                            <div className="form-group">
-
-                                <label>Phone</label>
-
-                                <input
-                                    type="text"
-                                    value={selectedOfficer.phone}
-                                    onChange={(e) =>
-                                        setSelectedOfficer({
-                                            ...selectedOfficer,
-                                            phone: e.target.value
-                                        })
-                                    }
-                                />
-
-                            </div>
-
                         </div>
 
-
-                        <div className="modal-footer">
-
+                        <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
                             <button
-                                className="cancel-btn"
+                                style={{ background: "#16a34a", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "6px", fontWeight: 600, cursor: "pointer" }}
+                                onClick={handleSaveOfficer}
+                                disabled={submitting}
+                            >
+                                {submitting ? "Saving..." : editMode ? "Update Officer" : "Save Officer"}
+                            </button>
+                            <button
+                                style={{ background: "#64748b", color: "#fff", border: "none", padding: "8px 16px", borderRadius: "6px", cursor: "pointer" }}
                                 onClick={() => {
+                                    setShowAddForm(false);
                                     setEditMode(false);
-                                    setSelectedOfficer(null);
                                 }}
                             >
                                 Cancel
                             </button>
+                        </div>
+                    </div>
+                )}
 
-                            <button
-                                className="save-btn"
-                                onClick={handleSave}
-                            >
-                                Save Changes
-                            </button>
+                {!loading && !error && (
+                    <div className="table-wrapper">
+                        <table className="officers-table">
+                            <thead>
+                                <tr>
+                                    <th>Officer ID</th>
+                                    <th>Name</th>
+                                    <th>Role / Designation</th>
+                                    <th>Department</th>
+                                    <th>Employee Code</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
 
+                            <tbody>
+                                {officers.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
+                                            No officers found. Add one above.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    officers.map((officer) => {
+                                        const name = officer.user?.fullName || "Officer";
+                                        const role = officer.designation || officer.user?.role || "OFFICER";
+                                        const dept = officer.department?.departmentName || "General";
+
+                                        return (
+                                            <tr key={officer.officerId || officer.id}>
+                                                <td>
+                                                    <strong className="officer-id">
+                                                        {officer.officerId || officer.id}
+                                                    </strong>
+                                                </td>
+
+                                                <td>
+                                                    <div className="name-cell">
+                                                        <div className="avatar">
+                                                            {name.charAt(0)}
+                                                        </div>
+                                                        <strong>{name}</strong>
+                                                    </div>
+                                                </td>
+
+                                                <td>
+                                                    <span className="role-badge">
+                                                        {role}
+                                                    </span>
+                                                </td>
+
+                                                <td>{dept}</td>
+
+                                                <td>{officer.employeeCode || "-"}</td>
+
+                                                <td>
+                                                    <div className="action-buttons">
+                                                        <button
+                                                            className="action-btn view"
+                                                            onClick={() => handleView(officer)}
+                                                        >
+                                                            👁 View
+                                                        </button>
+
+                                                        <button
+                                                            className="action-btn edit"
+                                                            onClick={() => handleEdit(officer)}
+                                                        >
+                                                            ✏ Edit
+                                                        </button>
+
+                                                        <button
+                                                            className="action-btn disable"
+                                                            onClick={() => handleDeleteOfficer(officer.officerId || officer.id)}
+                                                        >
+                                                            🗑 Remove
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {/* ---------------- VIEW MODAL ---------------- */}
+            {viewMode && selectedOfficer && (
+                <div className="modal-backdrop">
+                    <div className="modal-card">
+                        <h2>Officer Details</h2>
+
+                        <div className="modal-body">
+                            <p><strong>Name:</strong> {selectedOfficer.user?.fullName}</p>
+                            <p><strong>Email:</strong> {selectedOfficer.user?.email || "-"}</p>
+                            <p><strong>Phone:</strong> {selectedOfficer.user?.mobileNumber || "-"}</p>
+                            <p><strong>Role:</strong> {selectedOfficer.designation || selectedOfficer.user?.role}</p>
+                            <p><strong>Department:</strong> {selectedOfficer.department?.departmentName}</p>
+                            <p><strong>Employee Code:</strong> {selectedOfficer.employeeCode}</p>
                         </div>
 
+                        <div className="modal-actions">
+                            <button
+                                className="action-btn close"
+                                onClick={() => setViewMode(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
-
                 </div>
-
             )}
-
         </div>
     );
 }

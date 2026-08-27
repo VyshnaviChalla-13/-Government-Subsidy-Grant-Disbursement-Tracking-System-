@@ -13,17 +13,20 @@ export function AuthProvider({ children }) {
     const [token, setToken] = useState(() => localStorage.getItem("token"));
 
     const login = async (mobileNumber, password) => {
-        const { token: jwt, mobileNumber: mob, role } = await loginRequest(
-            mobileNumber,
-            password
-        );
+        const loginData = await loginRequest(mobileNumber, password);
 
-        const nextUser = { mobileNumber: mob, role };
+        const nextUser = {
+            userId: loginData.userId,
+            mobileNumber: loginData.mobileNumber,
+            role: loginData.role,
+            fullName: loginData.fullName,
+            email: loginData.email,
+        };
 
-        localStorage.setItem("token", jwt);
+        localStorage.setItem("token", loginData.token);
         localStorage.setItem("user", JSON.stringify(nextUser));
 
-        setToken(jwt);
+        setToken(loginData.token);
         setUser(nextUser);
 
         return nextUser;

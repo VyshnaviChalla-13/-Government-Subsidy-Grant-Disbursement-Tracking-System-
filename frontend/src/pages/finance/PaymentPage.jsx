@@ -1,75 +1,126 @@
 import "./PaymentPage.css";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { getApplicationById } from "../../api/applicationApi";
+import { releaseMilestone, getApplicationMilestones } from "../../api/disbursementApi";
+
+function formatCurrency(amount) {
+    if (amount == null) return "₹0";
+    return `₹${Number(amount).toLocaleString("en-IN")}`;
+}
 
 function PaymentPage() {
-
     const { id } = useParams();
     const navigate = useNavigate();
-    const payment = {
-        id: id,
-        beneficiary: "Rahul Kumar",
-        scheme: "Farmer Scheme",
-        amount: "₹25,000",
-        bank: "State Bank of India",
-        account: "XXXX1234",
-        ifsc: "SBIN0001234",
-        date: "12-07-2026"
+    const location = useLocation();
+
+    const [paymentData, setPaymentData] = useState(location.state || null);
+    const [loading, setLoading] = useState(!location.state);
+    const [processing, setProcessing] = useState(false);
+
+    useEffect(() => {
+        if (!location.state && id) {
+            async function fetchDetails() {
+                try {
+                    setLoading(true);
+                    const app = await getApplicationById(id);
+                    let milestones = [];
+                    try {
+                        milestones = await getApplicationMilestones(id);
+                    } catch {
+                        milestones = [];
+                    }
+
+                    const pendingMilestone = Array.isArray(milestones)
+                        ? milestones.find((m) => m.status === "PENDING") || milestones[0]
+                        : null;
+
+                    setPaymentData({
+                        id: app.applicationId || id,
+                        milestoneId: pendingMilestone?.applicationMilestoneId || pendingMilestone?.id,
+                        beneficiary: app.beneficiary?.fullName || "Beneficiary",
+                        scheme: app.scheme?.schemeName || "Welfare Scheme",
+                        amount: formatCurrency(pendingMilestone?.amount || app.scheme?.maxGrant || 25000),
+                        bank: app.beneficiary?.bankName || "State Bank of India",
+                        account: app.beneficiary?.accountNumber
+                            ? `XXXX${String(app.beneficiary.accountNumber).slice(-4)}`
+                            : "XXXX1234",
+                        ifsc: app.beneficiary?.ifscCode || "SBIN0001234",
+                        date: new Date().toLocaleDateString("en-IN"),
+                    });
+                } catch (err) {
+                    console.error("Failed to load payment details:", err);
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            fetchDetails();
+        }
+    }, [id, location.state]);
+
+    const handleConfirmPayment = async () => {
+        setProcessing(true);
+        try {
+            const txRef = `TXN-${Date.now()}`;
+            if (paymentData?.milestoneId) {
+                await releaseMilestone(paymentData.milestoneId, txRef);
+            }
+            alert(`Payment released successfully!\nTransaction Reference: ${txRef}`);
+            navigate("/finance");
+        } catch (err) {
+            alert(err.response?.data?.message || err.response?.data || err.message || "Failed to process payment");
+        } finally {
+            setProcessing(false);
+        }
     };
 
+    if (loading) {
+        return (
+            <div className="payment-page">
+                <div className="payment-card text-center">
+                    <p>Loading payment details for Application #{id}...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-
         <div className="payment-page">
-
-            <h1>Payment Processing</h1>
-
-            <p>
-                Verify the beneficiary details before processing the payment.
-            </p>
+            <h1>Grant Payment Processing</h1>
+            <p>Verify the beneficiary account details before authorizing fund transfer.</p>
 
             <div className="payment-card">
-
                 <h2>Application Details</h2>
 
-                <p><strong>Application ID:</strong> {payment.id}</p>
+                <p><strong>Application ID:</strong> #{paymentData?.id || id}</p>
+                <p><strong>Beneficiary Name:</strong> {paymentData?.beneficiary || "-"}</p>
+                <p><strong>Scheme Name:</strong> {paymentData?.scheme || "-"}</p>
+                <p><strong>Sanctioned Amount:</strong> <span style={{ color: "#16a34a", fontWeight: "700" }}>{paymentData?.amount || "₹0"}</span></p>
+                <p><strong>Bank Name:</strong> {paymentData?.bank || "-"}</p>
+                <p><strong>Account Number:</strong> {paymentData?.account || "-"}</p>
+                <p><strong>IFSC Code:</strong> {paymentData?.ifsc || "-"}</p>
+                <p><strong>Processing Date:</strong> {paymentData?.date || new Date().toLocaleDateString()}</p>
 
-            <p><strong>Beneficiary:</strong> {payment.beneficiary}</p>
-
-            <p><strong>Scheme:</strong> {payment.scheme}</p>
-
-            <p><strong>Amount:</strong> {payment.amount}</p>
-
-            <p><strong>Bank Name:</strong> {payment.bank}</p>
-
-            <p><strong>Account Number:</strong> {payment.account}</p>
-
-            <p><strong>IFSC Code:</strong> {payment.ifsc}</p>
-
-            <p><strong>Payment Date:</strong> {payment.date}</p>
                 <div className="payment-actions">
-
                     <button
                         className="confirm-btn"
-                        onClick={() => {
-                            alert("Payment processed successfully!");
-                            navigate("/finance");
-                        }}
+                        disabled={processing}
+                        onClick={handleConfirmPayment}
                     >
-                        ✅ Confirm Payment
+                        {processing ? "Authorizing Transfer..." : "✅ Confirm & Disburse Funds"}
                     </button>
 
                     <button
                         className="cancel-btn"
+                        disabled={processing}
                         onClick={() => navigate("/finance")}
                     >
                         Cancel
                     </button>
-
                 </div>
-
             </div>
-
         </div>
-
     );
 }
 

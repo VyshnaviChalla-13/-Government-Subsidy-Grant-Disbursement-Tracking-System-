@@ -25,7 +25,7 @@ public class ReportController {
 
     // GET /reports/overdue - beneficiary, scheme, milestone, due date, days overdue
     @GetMapping("/overdue")
-    @PreAuthorize("hasAnyRole('DEPT_ADMIN','SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('DEPT_ADMIN','SUPER_ADMIN','VERIFICATION_OFFICER','FINANCE_OFFICER')")
     public ResponseEntity<List<OverdueMilestoneDTO>> getOverdueReport() {
         return ResponseEntity.ok(disbursementService.getOverdueReport());
     }

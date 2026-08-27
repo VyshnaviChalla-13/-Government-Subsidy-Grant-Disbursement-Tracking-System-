@@ -1,5 +1,6 @@
 package com.example.Government.subsidy.Project.Service;
 
+import com.example.Government.subsidy.Project.DTO.UserResponse;
 import com.example.Government.subsidy.Project.Entity.User;
 import com.example.Government.subsidy.Project.Repository.UserRepository;
 import com.example.Government.subsidy.Project.Security.JwtUtil;
@@ -140,14 +141,15 @@ public class UserService {
     // DELETE USER
     // =========================================================
 
-    public String deleteUser(Integer id) {
+    public ResponseEntity<String> deleteUser(Integer id) {
 
         User user = userRepository.findById(id)
                 .orElse(null);
 
         if (user == null) {
 
-            return "User Not Found";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("User Not Found");
         }
 
 
@@ -194,7 +196,7 @@ public class UserService {
         }
 
 
-        return "User Deleted Successfully";
+        return ResponseEntity.ok("User Deleted Successfully");
     }
 
 
@@ -202,14 +204,15 @@ public class UserService {
     // UPDATE USER
     // =========================================================
 
-    public String updateUser(Integer id, User user) {
+    public ResponseEntity<String> updateUser(Integer id, User user) {
 
         User existing = userRepository.findById(id)
                 .orElse(null);
 
         if (existing == null) {
 
-            return "User Not Found";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("User Not Found");
         }
 
 
@@ -290,7 +293,7 @@ public class UserService {
         }
 
 
-        return "User Updated Successfully";
+        return ResponseEntity.ok("User Updated Successfully");
     }
 
 
@@ -298,7 +301,7 @@ public class UserService {
     // LOGIN
     // =========================================================
 
-    public String login(
+    public ResponseEntity<UserResponse> login(
             String mobileNumber,
             String password
     ) {
@@ -323,7 +326,8 @@ public class UserService {
                     "Login failed - mobile number not registered"
             );
 
-            return "Mobile number not registered";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .build();
         }
 
 
@@ -344,18 +348,20 @@ public class UserService {
                     "Login failed - invalid password"
             );
 
-            return "Invalid Password";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .build();
         }
 
 
         // =====================================================
-        // GENERATE JWT
+        // GENERATE JWT  (now embeds userId as a claim)
         // =====================================================
 
         String token =
                 jwtUtil.generateToken(
                         user.getMobileNumber(),
-                        user.getRole()
+                        user.getRole(),
+                        user.getUserId()
                 );
 
 
@@ -372,7 +378,19 @@ public class UserService {
         );
 
 
-        return token;
+        // =====================================================
+        // BUILD AND RETURN RESPONSE
+        // =====================================================
+
+        UserResponse response = new UserResponse();
+        response.setToken(token);
+        response.setUserId(user.getUserId());
+        response.setFullName(user.getFullName());
+        response.setRole(user.getRole());
+        response.setMobileNumber(user.getMobileNumber());
+        response.setEmail(user.getEmail());
+
+        return ResponseEntity.ok(response);
     }
 
 

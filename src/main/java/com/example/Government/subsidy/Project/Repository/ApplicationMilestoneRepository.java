@@ -13,6 +13,8 @@ public interface ApplicationMilestoneRepository extends JpaRepository<Applicatio
 
     List<ApplicationMilestone> findByStatus(String status);
 
+    List<ApplicationMilestone> findByStatusIn(List<String> statuses);
+
     // The stage immediately before this one in the same application's plan
     // (milestoneOrder - 1). Used to enforce the sequential release rule.
     Optional<ApplicationMilestone> findByApplication_ApplicationIdAndMilestone_MilestoneOrder(

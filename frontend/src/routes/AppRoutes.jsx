@@ -56,11 +56,13 @@ function AppRoutes() {
 
                 {/* Beneficiary */}
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/beneficiary/dashboard" element={<Dashboard />} />
                 <Route path="/beneficiary/schemes" element={<BrowseSchemes />} />
                 <Route path="/beneficiary/schemes/:id" element={<SchemeDetails />} />
                 <Route path="/beneficiary/apply" element={<ApplyScheme />} />
                 <Route path="/beneficiary/my-applications" element={<MyApplications />} />
                 <Route path="/beneficiary/timeline" element={<ApplicationTimeline />} />
+                <Route path="/beneficiary/timeline/:id" element={<ApplicationTimeline />} />
                 <Route path="/beneficiary/profile" element={<Profile />} />
                 <Route path="/beneficiary/disbursement"element={<DisbursementTracker />}/>
                 <Route path="/beneficiary/notifications"element={<Notifications />}/>
@@ -68,35 +70,24 @@ function AppRoutes() {
                 {/* Officer */}
                 <Route path="/officer/frontdesk" element={<FrontDeskDashboard />} />
                 <Route path="/officer/frontdesk/application" element={<FrontDeskApplicationDetails />} />
+                <Route path="/officer/frontdesk/application/:id" element={<FrontDeskApplicationDetails />} />
                 <Route path="/officer/verification" element={<VerificationDashboard />} />
+                <Route path="/officer/verification/review" element={<OfficerMilestoneVerification />} />
+                <Route path="/officer/verification/review/:id" element={<OfficerMilestoneVerification />} />
+                <Route path="/officer/verification/milestone" element={<OfficerMilestoneVerification />} />
 
                 {/* Finance */}
                 <Route path="/finance" element={<FinanceDashboard />} />
+                <Route path="/finance/dashboard" element={<FinanceDashboard />} />
                 <Route path="/payment/:id" element={<PaymentPage />} />
-
-                {/* Department Admin */}
-                <Route path="/admin/dashboard" element={<DepartmentAdminDashboard />} />
-                <Route path="/admin/create-scheme" element={<CreateScheme />} />
-                <Route path="/admin/manage-schemes" element={<ManageSchemes />} />
-                <Route path="/admin/manage-officers" element={<ManageOfficers />} />
-                <Route path="/admin/reports" element={<DepartmentReports />} />
-
-                {/* Super Admin */}
-                <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
-                <Route path="/superadmin/departments" element={<DepartmentManagement />} />
-                <Route path="/superadmin/users" element={<ManageUsers />} />
-                <Route path="/superadmin/reports" element={<AnalyticsDashboard />} />
-                <Route path="/superadmin/audit-logs" element={<AuditLogViewer />} />
-
-                {/* Finance / Officer / Admin */}
+                <Route path="/finance/payment/:id" element={<PaymentPage />} />
                 <Route
                     path="/finance/disbursement/:id"
                     element={<FinanceDisbursementConsole />}
                 />
-
                 <Route
-                    path="/officer/verification/milestone"
-                    element={<OfficerMilestoneVerification />}
+                    path="/finance/disbursement"
+                    element={<FinanceDisbursementConsole />}
                 />
 
                 <Route

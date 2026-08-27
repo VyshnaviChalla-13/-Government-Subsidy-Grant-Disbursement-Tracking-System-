@@ -1,496 +1,306 @@
 import "./FinanceDisbursementConsole.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getApplicationById, getApplications } from "../../api/applicationApi";
+import { getApplicationMilestones, releaseMilestone, completeMilestone, initMilestones } from "../../api/disbursementApi";
 
 function FinanceDisbursementConsole() {
-    const [plan, setPlan] = useState({
-        applicationId: "APP1002",
-        beneficiary: "Anjali Sharma",
-        scheme: "Student Scholarship Scheme",
-        approvedGrant: 50000,
+    const { id } = useParams();
+    const navigate = useNavigate();
 
-        stages: [
-            {
-                id: 1,
-                name: "Initial Documentation Proof",
-                amount: 20000,
-                dueDate: "2026-08-10",
-                status: "PENDING"
-            },
-            {
-                id: 2,
-                name: "Ground Verification Complete",
-                amount: 15000,
-                dueDate: "2026-08-20",
-                status: "BLOCKED"
-            },
-            {
-                id: 3,
-                name: "Final Utilization Proof",
-                amount: 15000,
-                dueDate: "2026-08-30",
-                status: "BLOCKED"
+    const [loading, setLoading] = useState(true);
+    const [processing, setProcessing] = useState(false);
+    const [application, setApplication] = useState(null);
+    const [stages, setStages] = useState([]);
+    const [error, setError] = useState("");
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            setError("");
+            let targetId = id;
+
+            if (!targetId) {
+                const apps = await getApplications();
+                const approved = Array.isArray(apps)
+                    ? apps.find((a) => a.status === "VERIFICATION_APPROVED" || a.status === "APPROVED" || a.status === "STAGE_RELEASED" || a.status === "DISBURSED") || apps[0]
+                    : null;
+                if (approved) {
+                    targetId = approved.applicationId || approved.id;
+                }
             }
-        ]
-    });
 
-    const totalStageAmount = plan.stages.reduce(
-        (total, stage) => total + stage.amount,
-        0
-    );
+            if (!targetId) {
+                setError("No application selected for disbursement.");
+                setLoading(false);
+                return;
+            }
 
-    const releasedAmount = plan.stages
-        .filter(
-            stage =>
-                stage.status === "RELEASED" ||
-                stage.status === "COMPLETE"
-        )
+            const appData = await getApplicationById(targetId);
+            setApplication(appData);
+
+            let milestoneData = [];
+            try {
+                milestoneData = await getApplicationMilestones(targetId);
+            } catch {
+                milestoneData = [];
+            }
+
+            if ((!Array.isArray(milestoneData) || milestoneData.length === 0) && appData) {
+                try {
+                    await initMilestones(targetId);
+                    milestoneData = await getApplicationMilestones(targetId);
+                } catch {
+                    // Scheme may not have milestones configured
+                }
+            }
+
+            if (Array.isArray(milestoneData)) {
+                setStages(
+                    milestoneData.map((m, index) => ({
+                        id: m.applicationMilestoneId || m.id,
+                        order: m.schemeMilestone?.milestoneOrder || m.milestone?.milestoneOrder || index + 1,
+                        name: m.schemeMilestone?.milestoneName || m.milestone?.milestoneName || `Milestone #${index + 1}`,
+                        amount: Number(m.amount || m.amountToRelease || 0),
+                        dueDate: m.dueDate || "-",
+                        status: m.status || "PENDING",
+                        completedDate: m.disbursedAt || m.releaseDate || m.completedDate || null,
+                    }))
+                );
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || err.message || "Failed to load disbursement details");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadData();
+    }, [id]);
+
+    const approvedGrant = Number(application?.scheme?.maxGrant || 0);
+    const totalStageAmount = stages.reduce((total, stage) => total + stage.amount, 0);
+    const releasedAmount = stages
+        .filter((stage) => stage.status === "RELEASED")
         .reduce((total, stage) => total + stage.amount, 0);
 
-    const amountValid =
-        totalStageAmount === plan.approvedGrant;
+    const amountValid = totalStageAmount > 0 ? totalStageAmount === approvedGrant : true;
 
-    const isOverdue = (dueDate, status) => {
-        if (status === "COMPLETE" || status === "RELEASED") {
-            return false;
+    const handleReleaseStage = async (stage) => {
+        if (stage.status !== "PENDING" && stage.status !== "COMPLETED") {
+            alert(`Stage is in ${stage.status} status and cannot be released.`);
+            return;
         }
 
-        return new Date(dueDate) < new Date();
+        setProcessing(true);
+        try {
+            // First ensure it's marked completed if pending
+            if (stage.status === "PENDING") {
+                try {
+                    await completeMilestone(stage.id);
+                } catch {
+                    // Ignore if backend requires direct release
+                }
+            }
+
+            const txRef = `TXN-${Date.now()}`;
+            await releaseMilestone(stage.id, txRef);
+            alert(`Stage "${stage.name}" payment of ₹${stage.amount.toLocaleString("en-IN")} released successfully!\nReference: ${txRef}`);
+            await loadData();
+        } catch (err) {
+            alert(err.response?.data?.message || err.response?.data || err.message || "Payment release failed");
+        } finally {
+            setProcessing(false);
+        }
     };
 
-    const getStageStatus = (stage, index) => {
-        if (isOverdue(stage.dueDate, stage.status)) {
-            return "OVERDUE";
+    const handleCompleteMilestone = async (stage) => {
+        setProcessing(true);
+        try {
+            await completeMilestone(stage.id);
+            alert(`Milestone "${stage.name}" verification marked as COMPLETE.`);
+            await loadData();
+        } catch (err) {
+            alert(err.response?.data?.message || err.response?.data || err.message || "Operation failed");
+        } finally {
+            setProcessing(false);
         }
-
-        return stage.status;
     };
 
-    const releaseStage = (index) => {
-        if (!amountValid) {
-            alert(
-                "Cannot release payment. Stage amounts must equal the approved grant."
-            );
-            return;
-        }
-
-        const stage = plan.stages[index];
-
-        if (isOverdue(stage.dueDate, stage.status)) {
-            alert(
-                "This milestone is overdue. Resolve the milestone before releasing funds."
-            );
-            return;
-        }
-
-        if (stage.status === "BLOCKED") {
-            alert(
-                "This stage is blocked. Complete the previous milestone first."
-            );
-            return;
-        }
-
-        if (
-            stage.status !== "PENDING"
-        ) {
-            return;
-        }
-
-        const updatedStages = [...plan.stages];
-
-        updatedStages[index] = {
-            ...updatedStages[index],
-            status: "RELEASED"
-        };
-
-        setPlan({
-            ...plan,
-            stages: updatedStages
-        });
-
-        alert(
-            `Stage ${stage.id} payment of ₹${stage.amount.toLocaleString(
-                "en-IN"
-            )} released successfully.`
+    if (loading) {
+        return (
+            <div className="disbursement-console text-center py-5">
+                <p>Loading disbursement console...</p>
+            </div>
         );
-    };
+    }
 
-    const completeMilestone = (index) => {
-        const stage = plan.stages[index];
-
-        if (stage.status !== "RELEASED") {
-            alert(
-                "The milestone can be completed only after its payment is released."
-            );
-            return;
-        }
-
-        const updatedStages = [...plan.stages];
-
-        updatedStages[index] = {
-            ...updatedStages[index],
-            status: "COMPLETE"
-        };
-
-        if (index + 1 < updatedStages.length) {
-            updatedStages[index + 1] = {
-                ...updatedStages[index + 1],
-                status: "PENDING"
-            };
-        }
-
-        setPlan({
-            ...plan,
-            stages: updatedStages
-        });
-
-        alert(`Stage ${stage.id} milestone marked as COMPLETE.`);
-    };
+    if (!application) {
+        return (
+            <div className="disbursement-console py-5">
+                <button className="btn btn-secondary mb-3" onClick={() => navigate("/finance")}>
+                    ← Back to Finance Queue
+                </button>
+                <div className="alert alert-warning">
+                    {error || "No application found for disbursement."}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="disbursement-console">
-
             {/* Header */}
-
             <div className="console-header">
-
                 <div>
                     <h1>Finance Disbursement Console</h1>
-
-                    <p>
-                        Manage staged subsidy releases and monitor milestone
-                        compliance.
-                    </p>
+                    <p>Manage staged subsidy releases and monitor milestone compliance.</p>
                 </div>
 
-                <span className="console-badge">
-                    Finance Officer
-                </span>
-
+                <div className="d-flex gap-2 align-items-center">
+                    <button className="btn btn-outline-secondary btn-sm" onClick={() => navigate("/finance")}>
+                        ← Back to Queue
+                    </button>
+                    <span className="console-badge">Finance Officer</span>
+                </div>
             </div>
 
-
             {/* Application Information */}
-
             <div className="application-card">
-
                 <div className="application-title">
                     <div>
-                        <h2>{plan.applicationId}</h2>
-                        <p>{plan.beneficiary}</p>
+                        <h2>Application #{application.applicationId || application.id}</h2>
+                        <p>{application.beneficiary?.fullName || "Applicant"}</p>
                     </div>
 
                     <span className="approved-badge">
-                        Fully Approved
+                        {application.status}
                     </span>
                 </div>
 
                 <div className="application-details">
-
                     <div>
                         <span>Beneficiary</span>
-                        <strong>{plan.beneficiary}</strong>
+                        <strong>{application.beneficiary?.fullName || "-"}</strong>
                     </div>
 
                     <div>
                         <span>Scheme</span>
-                        <strong>{plan.scheme}</strong>
+                        <strong>{application.scheme?.schemeName || "-"}</strong>
                     </div>
 
                     <div>
                         <span>Approved Grant</span>
-                        <strong>
-                            ₹{plan.approvedGrant.toLocaleString("en-IN")}
-                        </strong>
+                        <strong>₹{approvedGrant.toLocaleString("en-IN")}</strong>
                     </div>
 
                     <div>
                         <span>Released</span>
-                        <strong>
-                            ₹{releasedAmount.toLocaleString("en-IN")}
-                        </strong>
+                        <strong style={{ color: "#16a34a" }}>₹{releasedAmount.toLocaleString("en-IN")}</strong>
                     </div>
 
                     <div>
                         <span>Remaining</span>
-                        <strong>
-                            ₹{(
-                            plan.approvedGrant - releasedAmount
-                        ).toLocaleString("en-IN")}
-                        </strong>
+                        <strong style={{ color: "#e11d48" }}>₹{Math.max(0, approvedGrant - releasedAmount).toLocaleString("en-IN")}</strong>
                     </div>
-
-                </div>
-
-            </div>
-
-
-            {/* Amount Validation */}
-
-            <div
-                className={
-                    amountValid
-                        ? "amount-validation valid"
-                        : "amount-validation invalid"
-                }
-            >
-
-                <div>
-                    <span>Total Stage Amount</span>
-
-                    <strong>
-                        ₹{totalStageAmount.toLocaleString("en-IN")}
-                    </strong>
-                </div>
-
-                <div>
-                    <span>Approved Grant</span>
-
-                    <strong>
-                        ₹{plan.approvedGrant.toLocaleString("en-IN")}
-                    </strong>
-                </div>
-
-                <div className="validation-message">
-
-                    {amountValid
-                        ? "✓ Stage amounts match the approved grant"
-                        : "⚠ Stage amounts do not match the approved grant"}
-
-                </div>
-
-            </div>
-
-
-            {/* Milestone Section */}
-
-            <div className="milestone-section">
-
-                <div className="section-heading">
 
                     <div>
-                        <h2>Disbursement Plan</h2>
-
-                        <p>
-                            Funds are released only after the required
-                            milestone conditions are satisfied.
-                        </p>
+                        <span>Bank & Account</span>
+                        <strong>{application.beneficiary?.bankName ? `${application.beneficiary.bankName} (${application.beneficiary.accountNumber})` : "Not Provided"}</strong>
                     </div>
-
-                    <span className="stage-count">
-                        {plan.stages.length} Stages
-                    </span>
-
                 </div>
-
-
-                <div className="milestone-list">
-
-                    {plan.stages.map((stage, index) => {
-
-                        const status = getStageStatus(stage, index);
-
-                        const previousStage =
-                            index > 0
-                                ? plan.stages[index - 1]
-                                : null;
-
-                        const canRelease =
-                            status === "PENDING" &&
-                            (index === 0 ||
-                                previousStage?.status === "COMPLETE");
-
-                        return (
-
-                            <div
-                                key={stage.id}
-                                className={`milestone-card ${status.toLowerCase()}`}
-                            >
-
-                                <div className="stage-number">
-                                    {stage.id}
-                                </div>
-
-
-                                <div className="stage-content">
-
-                                    <div className="stage-top">
-
-                                        <div>
-                                            <span className="stage-label">
-                                                STAGE {stage.id}
-                                            </span>
-
-                                            <h3>
-                                                {stage.name}
-                                            </h3>
-                                        </div>
-
-                                        <span
-                                            className={`stage-status ${status.toLowerCase()}`}
-                                        >
-                                            {status}
-                                        </span>
-
-                                    </div>
-
-
-                                    <div className="stage-details">
-
-                                        <div>
-                                            <span>Release Amount</span>
-
-                                            <strong>
-                                                ₹{stage.amount.toLocaleString(
-                                                "en-IN"
-                                            )}
-                                            </strong>
-                                        </div>
-
-                                        <div>
-                                            <span>Due Date</span>
-
-                                            <strong>
-                                                {new Date(
-                                                    stage.dueDate
-                                                ).toLocaleDateString(
-                                                    "en-IN"
-                                                )}
-                                            </strong>
-                                        </div>
-
-                                        <div>
-                                            <span>Trigger</span>
-
-                                            <strong>
-                                                {index === 0
-                                                    ? "Final approval"
-                                                    : "Previous milestone complete"}
-                                            </strong>
-                                        </div>
-
-                                    </div>
-
-
-                                    {status === "OVERDUE" && (
-
-                                        <div className="overdue-warning">
-                                            ⚠ This milestone is overdue.
-                                            Further disbursement is paused
-                                            until it is resolved.
-                                        </div>
-
-                                    )}
-
-
-                                    {status === "BLOCKED" && (
-
-                                        <div className="blocked-message">
-                                            🔒 Complete Stage {stage.id - 1}
-                                            before releasing this stage.
-                                        </div>
-
-                                    )}
-
-
-                                    {status === "RELEASED" && (
-
-                                        <div className="released-message">
-                                            ✓ Payment released. Milestone
-                                            verification is now required.
-                                        </div>
-
-                                    )}
-
-
-                                    {status === "COMPLETE" && (
-
-                                        <div className="complete-message">
-                                            ✓ Milestone completed successfully.
-                                        </div>
-
-                                    )}
-
-
-                                    <div className="stage-actions">
-
-                                        {status === "PENDING" && (
-
-                                            <button
-                                                className="release-button"
-                                                disabled={!canRelease}
-                                                onClick={() =>
-                                                    releaseStage(index)
-                                                }
-                                            >
-                                                💰 Release ₹
-                                                {stage.amount.toLocaleString(
-                                                    "en-IN"
-                                                )}
-                                            </button>
-
-                                        )}
-
-
-                                        {status === "RELEASED" && (
-
-                                            <button
-                                                className="complete-button"
-                                                onClick={() =>
-                                                    completeMilestone(index)
-                                                }
-                                            >
-                                                ✓ Complete Milestone
-                                            </button>
-
-                                        )}
-
-                                        {status === "BLOCKED" && (
-
-                                            <button
-                                                className="blocked-button"
-                                                disabled
-                                            >
-                                                🔒 Stage Blocked
-                                            </button>
-
-                                        )}
-
-                                        {status === "OVERDUE" && (
-
-                                            <button
-                                                className="resolve-button"
-                                                onClick={() =>
-                                                    alert(
-                                                        "Overdue resolution will be connected to the Admin module."
-                                                    )
-                                                }
-                                            >
-                                                Resolve Overdue
-                                            </button>
-
-                                        )}
-
-                                        {status === "COMPLETE" && (
-
-                                            <span className="completed-label">
-                                                ✓ Completed
-                                            </span>
-
-                                        )}
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        );
-                    })}
-
-                </div>
-
             </div>
 
+            {/* Amount Validation */}
+            <div className={amountValid ? "amount-validation valid" : "amount-validation invalid"}>
+                <div>
+                    <span>Total Stages Configured</span>
+                    <strong>₹{totalStageAmount.toLocaleString("en-IN")}</strong>
+                </div>
+
+                <div>
+                    <span>Approved Scheme Grant</span>
+                    <strong>₹{approvedGrant.toLocaleString("en-IN")}</strong>
+                </div>
+
+                <span className="validation-status">
+                    {amountValid ? "✓ Stage Totals Reconciled" : "⚠ Stage Totals Mismatch"}
+                </span>
+            </div>
+
+            {/* Stages Section */}
+            <div className="stages-container">
+                <div className="stages-header">
+                    <h2>Disbursement Milestones ({stages.length})</h2>
+                    <p>Sequential releases enforce verified milestone completion before subsequent transfers.</p>
+                </div>
+
+                {stages.length === 0 ? (
+                    <div className="alert alert-info mt-3">
+                        No individual milestones scheduled for this scheme. You can disburse the full grant directly from the Payment page.
+                        <div className="mt-3">
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => navigate(`/payment/${application.applicationId || application.id}`, { state: application })}
+                            >
+                                💳 Go to One-Time Payment Page
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="stages-grid">
+                        {stages.map((stage, index) => (
+                            <div key={stage.id} className="stage-card">
+                                <div className="stage-header">
+                                    <span className="stage-number">Stage {stage.order || index + 1}</span>
+                                    <span className={`stage-status ${stage.status.toLowerCase()}`}>
+                                        {stage.status}
+                                    </span>
+                                </div>
+
+                                <div className="stage-body">
+                                    <h3>{stage.name}</h3>
+
+                                    <div className="stage-amount">
+                                        ₹{stage.amount.toLocaleString("en-IN")}
+                                    </div>
+
+                                    <div className="stage-date">
+                                        Due Date: {stage.dueDate}
+                                    </div>
+
+                                    {stage.completedDate && (
+                                        <div className="stage-date text-success">
+                                            Disbursed on: {new Date(stage.completedDate).toLocaleDateString()}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="stage-actions">
+                                    <button
+                                        className="release-btn"
+                                        disabled={processing || stage.status === "RELEASED"}
+                                        onClick={() => handleReleaseStage(stage)}
+                                    >
+                                        {stage.status === "RELEASED" ? "✓ Released" : "💰 Disburse Stage"}
+                                    </button>
+
+                                    {stage.status === "PENDING" && (
+                                        <button
+                                            className="complete-btn"
+                                            disabled={processing}
+                                            onClick={() => handleCompleteMilestone(stage)}
+                                        >
+                                            ✓ Verify Proof
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
