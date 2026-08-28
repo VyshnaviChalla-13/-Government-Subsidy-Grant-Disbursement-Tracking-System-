@@ -72,19 +72,38 @@ public class Scheme {
 
     @PrePersist
     public void prePersist() {
-
         createdAt = LocalDateTime.now();
 
         if (budgetUsed == null) {
             budgetUsed = BigDecimal.ZERO;
         }
 
-        if (status == null) {
+        if (status == null || status.isBlank()) {
             status = "ACTIVE";
         }
 
         if (minimumScore == null) {
             minimumScore = 50;
+        }
+
+        if (minGrant == null) {
+            minGrant = BigDecimal.ZERO;
+        }
+
+        if (maxGrant == null) {
+            maxGrant = totalBudget != null ? totalBudget : BigDecimal.ZERO;
+        }
+
+        if (applicationStartDate == null) {
+            applicationStartDate = LocalDate.now();
+        }
+
+        if (applicationEndDate == null) {
+            applicationEndDate = LocalDate.now().plusMonths(3);
+        }
+
+        if (eligibilityScore == null) {
+            eligibilityScore = BigDecimal.valueOf(50);
         }
     }
 }

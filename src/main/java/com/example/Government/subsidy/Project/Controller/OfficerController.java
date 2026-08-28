@@ -8,13 +8,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/superadmin/officers")
 @CrossOrigin(origins = "*")
-@PreAuthorize("hasAnyRole('SUPER_ADMIN','DEPT_ADMIN')")
 public class OfficerController {
     @Autowired
     private OfficerService officerService;
     @PostMapping
-    public String createOfficer(@RequestBody Officer officer) {
-        return officerService.createOfficer(officer);
+    public org.springframework.http.ResponseEntity<String> createOfficer(@RequestBody Officer officer) {
+        String result = officerService.createOfficer(officer);
+        if (result != null && result.startsWith("Officer created successfully")) {
+            return org.springframework.http.ResponseEntity.ok(result);
+        }
+        return org.springframework.http.ResponseEntity.badRequest().body(result);
     }
     @GetMapping
     public List<Officer> getAllOfficers() {

@@ -90,10 +90,24 @@ function AppRoutes() {
                     element={<FinanceDisbursementConsole />}
                 />
 
+                {/* Department Admin */}
+                <Route path="/admin/dashboard" element={<DepartmentAdminDashboard />} />
+                <Route path="/admin/create-scheme" element={<CreateScheme />} />
+                <Route path="/admin/manage-schemes" element={<ManageSchemes />} />
+                <Route path="/admin/manage-officers" element={<ManageOfficers />} />
+                <Route path="/admin/reports" element={<DepartmentReports />} />
                 <Route
                     path="/admin/overdue-resolution"
                     element={<AdminOverdueResolution />}
                 />
+
+                {/* Super Admin */}
+                <Route path="/superadmin/dashboard" element={<SuperAdminDashboard />} />
+                <Route path="/superadmin/departments" element={<DepartmentManagement />} />
+                <Route path="/superadmin/schemes" element={<ManageSchemes />} />
+                <Route path="/superadmin/users" element={<ManageUsers />} />
+                <Route path="/superadmin/reports" element={<AnalyticsDashboard />} />
+                <Route path="/superadmin/audit-logs" element={<AuditLogViewer />} />
 
                 {/* Common Pages */}
                 <Route path="/contact" element={<Contact />} />

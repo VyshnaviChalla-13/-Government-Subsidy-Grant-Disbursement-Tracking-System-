@@ -63,9 +63,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/departmentadmin/schemes/**").permitAll()
 
                         // Admin scoped endpoints
-                        .requestMatchers("/superadmin/officers/**").hasAnyRole("SUPER_ADMIN", "DEPT_ADMIN")
-                        .requestMatchers("/superadmin/**").hasRole("SUPER_ADMIN")
-                        .requestMatchers("/departmentadmin/**", "/schemes/**").hasAnyRole("DEPT_ADMIN", "SUPER_ADMIN")
+                        .requestMatchers("/superadmin/**").hasAnyRole("SUPER_ADMIN", "DEPT_ADMIN", "ADMIN", "SUPERADMIN", "DEPTADMIN")
+                        .requestMatchers("/departmentadmin/**", "/schemes/**").hasAnyRole("DEPT_ADMIN", "SUPER_ADMIN", "ADMIN", "DEPTADMIN", "SUPERADMIN")
 
                         // Authenticated application and beneficiary/officer workflows
                         .requestMatchers("/applications/**", "/documents/**", "/notifications/**", "/disbursement/**", "/reports/**", "/audit-logs/**", "/dashboard/**").authenticated()

@@ -16,8 +16,12 @@ public class SchemeController {
     private SchemeService schemeService;
 
     @PostMapping
-    public String createScheme(@RequestBody Scheme scheme){
-        return schemeService.createScheme(scheme);
+    public org.springframework.http.ResponseEntity<String> createScheme(@RequestBody Scheme scheme) {
+        String result = schemeService.createScheme(scheme);
+        if ("Scheme created successfully".equals(result)) {
+            return org.springframework.http.ResponseEntity.ok(result);
+        }
+        return org.springframework.http.ResponseEntity.badRequest().body(result);
     }
 
     @GetMapping("/all")

@@ -19,3 +19,5 @@ export async function markAsRead(notificationId) {
     const response = await axiosClient.put(`/notifications/${notificationId}/read`);
     return response.data;
 }
+
+export const markNotificationAsRead = markAsRead;

@@ -38,10 +38,29 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 String mobileNumber = jwtUtil.extractmobileNumber(token);
                 String role = jwtUtil.extractRole(token);
-                String authority = (role != null && !role.startsWith("ROLE_")) ? "ROLE_" + role : role;
 
-                List<GrantedAuthority> authorities =
-                        authority != null ? List.of(new SimpleGrantedAuthority(authority)) : List.of();
+                java.util.List<GrantedAuthority> authorities = new java.util.ArrayList<>();
+                if (role != null && !role.isBlank()) {
+                    String clean = role.trim().toUpperCase();
+                    String withRole = clean.startsWith("ROLE_") ? clean : "ROLE_" + clean;
+                    String withoutRole = clean.startsWith("ROLE_") ? clean.substring(5) : clean;
+
+                    authorities.add(new SimpleGrantedAuthority(withRole));
+                    authorities.add(new SimpleGrantedAuthority(withoutRole));
+
+                    if (clean.contains("SUPER") && clean.contains("ADMIN")) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_SUPER_ADMIN"));
+                        authorities.add(new SimpleGrantedAuthority("SUPER_ADMIN"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_SUPERADMIN"));
+                        authorities.add(new SimpleGrantedAuthority("SUPERADMIN"));
+                    }
+                    if ((clean.contains("DEPT") || clean.contains("DEPARTMENT")) && clean.contains("ADMIN")) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_DEPT_ADMIN"));
+                        authorities.add(new SimpleGrantedAuthority("DEPT_ADMIN"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_DEPTADMIN"));
+                        authorities.add(new SimpleGrantedAuthority("DEPTADMIN"));
+                    }
+                }
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(

@@ -8,14 +8,23 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class TwilioConfig {
 
-    @Value("${twilio.account.sid}")
+    @Value("${twilio.account.sid:}")
     private String accountSid;
 
-    @Value("${twilio.auth.token}")
+    @Value("${twilio.auth.token:}")
     private String authToken;
 
     @PostConstruct
     public void initTwilio() {
-        Twilio.init(accountSid, authToken);
+        if (accountSid != null && !accountSid.isBlank() && authToken != null && !authToken.isBlank()) {
+            try {
+                Twilio.init(accountSid, authToken);
+                System.out.println("Twilio initialized successfully.");
+            } catch (Exception e) {
+                System.err.println("Twilio initialization skipped: " + e.getMessage());
+            }
+        } else {
+            System.out.println("Twilio credentials not provided. Twilio integration is disabled in local dev mode.");
+        }
     }
 }
