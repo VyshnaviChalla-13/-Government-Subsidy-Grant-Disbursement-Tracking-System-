@@ -1,164 +1,393 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./VerificationDashboard.css";
 
-import defaultApplications from "../../data/applications";
-
 import {
     getApplications,
-    saveApplications,
-} from "../../utils/applicationStorage";
+    approveApplication,
+    returnApplication,
+    rejectApplication
+} from "../../api/verificationApi";
+
 function VerificationDashboard() {
+
     const navigate = useNavigate();
 
-    const [applications, setApplications] = useState(() => {
-        const stored = getApplications();
+    // Applications from backend
+    const [applications, setApplications] = useState([]);
 
-        if (stored.length > 0) {
-            return stored;
-        }
-
-        saveApplications(defaultApplications);
-        return defaultApplications;
-    });
-
+    // Search and filters
     const [search, setSearch] = useState("");
     const [schemeFilter, setSchemeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
+
+    // Return / Reject popup
     const [selectedApplication, setSelectedApplication] = useState(null);
     const [actionType, setActionType] = useState("");
     const [reason, setReason] = useState("");
 
+    // ============================
+    // FETCH APPLICATIONS
+    // ============================
+
+    useEffect(() => {
+        fetchApplications();
+    }, []);
+
+    const fetchApplications = async () => {
+        try {
+
+            const data = await getApplications();
+
+            console.log("Verification applications:", data);
+
+            setApplications(data);
+
+        } catch (error) {
+
+            console.error("Failed to fetch applications:", error);
+
+            if (error.response) {
+                console.log("Status:", error.response.status);
+                console.log("Response:", error.response.data);
+            }
+        }
+    };
+
+
+    // ============================
+    // SEARCH + FILTER
+    // ============================
+
     const filteredApplications = applications.filter((app) => {
 
+        const applicationNumber =
+            app.applicationNumber?.toLowerCase() || "";
+
+        const beneficiaryName =
+            app.beneficiary?.fullName?.toLowerCase() || "";
+
+        const searchValue =
+            search.toLowerCase();
+
         const matchesSearch =
-            app.id.toLowerCase().includes(search.toLowerCase()) ||
-            app.name.toLowerCase().includes(search.toLowerCase());
+            applicationNumber.includes(searchValue) ||
+            beneficiaryName.includes(searchValue);
 
         const matchesScheme =
-            schemeFilter === "" || app.scheme === schemeFilter;
+            schemeFilter === "" ||
+            app.scheme?.schemeName === schemeFilter;
 
         const matchesStatus =
             statusFilter === "" ||
-            (statusFilter === "Pending Verification"
-                ? app.status === "Forwarded"
-                : app.status === statusFilter);
+            app.status === statusFilter;
 
-        return matchesSearch && matchesScheme && matchesStatus;
-
+        return (
+            matchesSearch &&
+            matchesScheme &&
+            matchesStatus
+        );
     });
 
-    const updateStatus = (id, status) => {
 
-        const updated = applications.map((app) =>
-            app.id === id
-                ? {
-                    ...app,
-                    status,
-                }
-                : app
-        );
+    // ============================
+    // RETURN / REJECT POPUP
+    // ============================
 
-        setApplications(updated);
-
-        saveApplications(updated);
-
-    };
     const openReasonPopup = (application, action) => {
+
         setSelectedApplication(application);
+
         setActionType(action);
+
         setReason("");
     };
 
-    const submitReason = () => {
 
-        const updated = applications.map((app) =>
-            app.id === selectedApplication.id
-                ? {
-                    ...app,
-                    status: actionType,
-                    reason: reason
-                }
-                : app
-        );
+    // ============================
+    // SUBMIT RETURN / REJECT
+    // ============================
 
-        setApplications(updated);
-        saveApplications(updated);
+    const submitReason = async () => {
 
-        setSelectedApplication(null);
-        setReason("");
-        setActionType("");
+        if (reason.trim() === "") {
+            return;
+        }
+
+        try {
+
+            if (actionType === "RETURNED") {
+
+                await returnApplication(
+                    selectedApplication.applicationId,
+                    reason
+                );
+
+            }
+
+            if (actionType === "REJECTED") {
+
+                await rejectApplication(
+                    selectedApplication.applicationId,
+                    reason
+                );
+
+            }
+
+            // Refresh data from backend
+            await fetchApplications();
+
+            // Close popup
+            setSelectedApplication(null);
+            setReason("");
+            setActionType("");
+
+            alert(
+                `Application ${actionType.toLowerCase()} successfully`
+            );
+
+        } catch (error) {
+
+            console.error("Operation failed:", error);
+
+            if (error.response) {
+
+                console.log(
+                    "Status:",
+                    error.response.status
+                );
+
+                console.log(
+                    "Response:",
+                    error.response.data
+                );
+            }
+
+            alert("Operation failed");
+        }
     };
+
+
+    // ============================
+    // APPROVE APPLICATION
+    // ============================
+
+    const handleApprove = async (applicationId) => {
+
+        try {
+
+            await approveApplication(applicationId);
+
+            await fetchApplications();
+
+            alert(
+                "Application approved successfully"
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Failed to approve application:",
+                error
+            );
+
+            if (error.response) {
+
+                console.log(
+                    "Status:",
+                    error.response.status
+                );
+
+                console.log(
+                    "Response:",
+                    error.response.data
+                );
+            }
+
+            alert(
+                "Failed to approve application"
+            );
+        }
+    };
+
+
+    // ============================
+    // STATUS DISPLAY
+    // ============================
+
+    const getStatusLabel = (status) => {
+
+        switch (status) {
+
+            case "FIELD_APPROVED":
+                return "Pending Verification";
+
+            case "VERIFICATION_APPROVED":
+                return "Verification Approved";
+
+            case "RETURNED":
+                return "Returned";
+
+            case "REJECTED":
+                return "Rejected";
+
+            case "SUBMITTED":
+                return "Submitted";
+
+            case "RESUBMITTED":
+                return "Resubmitted";
+
+            default:
+                return status || "-";
+        }
+    };
+
+
+    const getStatusClass = (status) => {
+
+        switch (status) {
+
+            case "VERIFICATION_APPROVED":
+                return "status approved";
+
+            case "REJECTED":
+                return "status rejected";
+
+            case "RETURNED":
+                return "status returned";
+
+            case "FIELD_APPROVED":
+                return "status pending";
+
+            default:
+                return "status pending";
+        }
+    };
+
+
     return (
 
         <div className="verification-dashboard">
 
+            {/* ============================
+                TOP BAR
+            ============================ */}
+
             <div className="topbar">
-                <h1>Verification Officer Dashboard</h1>
+
+                <h1>
+                    Verification Officer Dashboard
+                </h1>
+
                 <div className="officer-name">
                     Verification Officer
                 </div>
+
             </div>
+
 
             <p className="welcome">
                 Verify beneficiary applications and uploaded documents.
             </p>
 
-            {/* Dashboard Cards */}
+
+            {/* ============================
+                DASHBOARD CARDS
+            ============================ */}
 
             <div className="dashboard-cards">
 
                 <div className="card">
-                    <h3>Total Applications</h3>
-                    <p>{applications.length}</p>
+
+                    <h3>
+                        Total Applications
+                    </h3>
+
+                    <p>
+                        {applications.length}
+                    </p>
+
                 </div>
 
+
                 <div className="card">
-                    <h3>Pending Verification</h3>
+
+                    <h3>
+                        Pending Verification
+                    </h3>
+
                     <p>
                         {
                             applications.filter(
-                                a => a.status === "Forwarded"
+                                (a) =>
+                                    a.status === "FIELD_APPROVED"
                             ).length
                         }
                     </p>
+
                 </div>
 
+
                 <div className="card">
-                    <h3>Approved</h3>
+
+                    <h3>
+                        Approved
+                    </h3>
+
                     <p>
                         {
                             applications.filter(
-                                a => a.status === "Approved"
+                                (a) =>
+                                    a.status ===
+                                    "VERIFICATION_APPROVED"
                             ).length
                         }
                     </p>
+
                 </div>
 
+
                 <div className="card">
-                    <h3>Returned</h3>
+
+                    <h3>
+                        Returned
+                    </h3>
+
                     <p>
                         {
                             applications.filter(
-                                a => a.status === "Returned"
+                                (a) =>
+                                    a.status === "RETURNED"
                             ).length
                         }
                     </p>
+
                 </div>
 
+
                 <div className="card">
-                    <h3>Rejected</h3>
+
+                    <h3>
+                        Rejected
+                    </h3>
+
                     <p>
                         {
                             applications.filter(
-                                a => a.status === "Rejected"
+                                (a) =>
+                                    a.status === "REJECTED"
                             ).length
                         }
                     </p>
+
                 </div>
 
             </div>
-            {/* Search & Filters */}
+
+
+            {/* ============================
+                SEARCH + FILTERS
+            ============================ */}
 
             <div className="filter-section">
 
@@ -166,110 +395,251 @@ function VerificationDashboard() {
                     type="text"
                     placeholder="Search by ID or Name..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) =>
+                        setSearch(e.target.value)
+                    }
                 />
+
 
                 <select
                     value={schemeFilter}
-                    onChange={(e) => setSchemeFilter(e.target.value)}
+                    onChange={(e) =>
+                        setSchemeFilter(e.target.value)
+                    }
                 >
-                    <option value="">All Schemes</option>
-                    <option>Farmer Assistance Scheme</option>
-                    <option>Student Scholarship Scheme</option>
-                    <option>Affordable Housing Scheme</option>
-                    <option>Women Empowerment Scheme</option>
+
+                    <option value="">
+                        All Schemes
+                    </option>
+
+                    <option value="Farmer Assistance Scheme">
+                        Farmer Assistance Scheme
+                    </option>
+
+                    <option value="Student Scholarship Scheme">
+                        Student Scholarship Scheme
+                    </option>
+
+                    <option value="Affordable Housing Scheme">
+                        Affordable Housing Scheme
+                    </option>
+
+                    <option value="Women Empowerment Scheme">
+                        Women Empowerment Scheme
+                    </option>
+
                 </select>
+
 
                 <select
                     value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
+                    onChange={(e) =>
+                        setStatusFilter(e.target.value)
+                    }
                 >
-                    <option value="">All Status</option>
-                    <option>Pending Verification</option>
-                    <option>Approved</option>
-                    <option>Returned</option>
-                    <option>Rejected</option>
+
+                    <option value="">
+                        All Status
+                    </option>
+
+                    <option value="FIELD_APPROVED">
+                        Pending Verification
+                    </option>
+
+                    <option value="VERIFICATION_APPROVED">
+                        Approved
+                    </option>
+
+                    <option value="RETURNED">
+                        Returned
+                    </option>
+
+                    <option value="REJECTED">
+                        Rejected
+                    </option>
+
                 </select>
 
             </div>
 
-            {/* Table */}
+
+            {/* ============================
+                APPLICATION TABLE
+            ============================ */}
 
             <table className="application-table">
 
                 <thead>
 
                 <tr>
-                    <th>ID</th>
-                    <th>Beneficiary</th>
-                    <th>Scheme</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+
+                    <th>
+                        ID
+                    </th>
+
+                    <th>
+                        Beneficiary
+                    </th>
+
+                    <th>
+                        Scheme
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th>
+                        Actions
+                    </th>
+
                 </tr>
 
                 </thead>
+
 
                 <tbody>
 
                 {filteredApplications.map((app) => (
 
-                    <tr key={app.id}>
+                    <tr
+                        key={app.applicationId}
+                    >
 
-                        <td>{app.id}</td>
-                        <td>{app.applicant}</td>
-                        <td>{app.scheme}</td>
-                        <td>{app.submittedDate}</td>
+                        {/* Application Number */}
+
                         <td>
-    <span
-        className={
-            app.status === "Approved"
-                ? "status approved"
-                : app.status === "Rejected"
-                    ? "status rejected"
-                    : app.status === "Returned"
-                        ? "status returned"
-                        : "status pending"
-        }
-    >
-        {app.status === "Forwarded"
-            ? "Pending Verification"
-            : app.status}
-    </span>
+                            {app.applicationNumber}
                         </td>
 
+
+                        {/* Beneficiary */}
+
                         <td>
+                            {app.beneficiary?.fullName || "-"}
+                        </td>
+
+
+                        {/* Scheme */}
+
+                        <td>
+                            {app.scheme?.schemeName || "-"}
+                        </td>
+
+
+                        {/* Date */}
+
+                        <td>
+
+                            {app.submittedAt
+                                ? new Date(
+                                    app.submittedAt
+                                ).toLocaleDateString()
+                                : "-"}
+
+                        </td>
+
+
+                        {/* Status */}
+
+                        <td>
+
+                                <span
+                                    className={getStatusClass(
+                                        app.status
+                                    )}
+                                >
+                                    {getStatusLabel(
+                                        app.status
+                                    )}
+                                </span>
+
+                        </td>
+
+
+                        {/* Actions */}
+
+                        <td>
+
+                            {/* VIEW */}
 
                             <button
                                 className="view-btn"
-                                onClick={() =>
-                                    navigate("/officer/verification/milestone", {
-                                        state: app,
-                                    })
-                                }
+                                onClick={() => {
+                                    console.log("ACTUAL VERIFICATION APPLICATION:", app);
+                                    console.log(
+                                        "BENEFICIARY OBJECT:",
+                                        app.beneficiary
+                                    );
+
+                                    navigate(
+                                        "/officer/verification/milestone",
+                                        {
+                                            state: app
+                                        }
+                                    );
+                                }}
                             >
                                 👁 View
                             </button>
 
-                            <button
-                                className="approve-btn"
-                                onClick={() => updateStatus(app.id, "Approved")}
-                            >
-                                ✅ Approve
-                            </button>
 
-                            <button
-                                className="return-btn"
-                                onClick={() => openReasonPopup(app, "Returned")}
-                            >
-                                ↩ Return
-                            </button>
-                            <button
-                                className="reject-btn"
-                                onClick={() => openReasonPopup(app, "Rejected")}
-                            >
-                                ❌ Reject
-                            </button>
+                            {/* VERIFICATION ACTIONS
+                                    ONLY FOR FIELD_APPROVED
+                                */}
+
+                            {app.status === "FIELD_APPROVED" && (
+                                <>
+
+                                    {/* APPROVE */}
+
+                                    <button
+                                        className="approve-btn"
+                                        onClick={() =>
+                                            handleApprove(
+                                                app.applicationId
+                                            )
+                                        }
+                                    >
+                                        ✅ Approve
+                                    </button>
+
+
+                                    {/* RETURN */}
+
+                                    <button
+                                        className="return-btn"
+                                        onClick={() =>
+                                            openReasonPopup(
+                                                app,
+                                                "RETURNED"
+                                            )
+                                        }
+                                    >
+                                        ↩ Return
+                                    </button>
+
+
+                                    {/* REJECT */}
+
+                                    <button
+                                        className="reject-btn"
+                                        onClick={() =>
+                                            openReasonPopup(
+                                                app,
+                                                "REJECTED"
+                                            )
+                                        }
+                                    >
+                                        ❌ Reject
+                                    </button>
+
+                                </>
+                            )}
 
                         </td>
 
@@ -277,184 +647,93 @@ function VerificationDashboard() {
 
                 ))}
 
+
+                {/* No applications */}
+
+                {filteredApplications.length === 0 && (
+
+                    <tr>
+
+                        <td
+                            colSpan="6"
+                            style={{
+                                textAlign: "center",
+                                padding: "30px"
+                            }}
+                        >
+                            No applications found
+                        </td>
+
+                    </tr>
+
+                )}
+
                 </tbody>
 
             </table>
 
-            {/* View Modal */}
 
-            {selectedApplication && (
+            {/* ============================
+                RETURN / REJECT REASON MODAL
+            ============================ */}
 
-                <div className="modal-overlay">
-
-                    <div className="modal">
-
-                        <h2>Application Details</h2>
-
-                        <div className="details-grid">
-
-                            <div>
-                                <strong>Application ID</strong>
-                                <p>{selectedApplication.id}</p>
-                            </div>
-
-                            <div>
-                                <strong>Beneficiary Name</strong>
-                                <p>{selectedApplication.applicant}</p>
-                            </div>
-
-                            <div>
-                                <strong>Father Name</strong>
-                                <p>Ramesh Kumar</p>
-                            </div>
-
-                            <div>
-                                <strong>Mobile</strong>
-                                <p>9876543210</p>
-                            </div>
-
-                            <div>
-                                <strong>Aadhaar</strong>
-                                <p>XXXX XXXX 4567</p>
-                            </div>
-
-                            <div>
-                                <strong>Address</strong>
-                                <p>Tirupati, Andhra Pradesh</p>
-                            </div>
-
-                            <div>
-                                <strong>Scheme</strong>
-                                <p>{selectedApplication.scheme}</p>
-                            </div>
-
-                            <div>
-                                <strong>Status</strong>
-                                <span className="status pending">
-                        {selectedApplication.status}
-                    </span>
-                            </div>
-
-                        </div>
-
-                        <hr />
-
-                        <h3>Uploaded Documents</h3>
-
-                        <table className="document-table">
-
-                            <thead>
-
-                            <tr>
-                                <th>Document</th>
-                                <th>Status</th>
-                                <th>Preview</th>
-                            </tr>
-
-                            </thead>
-
-                            <tbody>
-
-                            <tr>
-                                <td>Aadhaar Card</td>
-                                <td><span className="verified">Verified</span></td>
-                                <td><button>View</button></td>
-                            </tr>
-
-                            <tr>
-                                <td>Income Certificate</td>
-                                <td><span className="verified">Verified</span></td>
-                                <td><button>View</button></td>
-                            </tr>
-
-                            <tr>
-                                <td>Residence Certificate</td>
-                                <td><span className="verified">Verified</span></td>
-                                <td><button>View</button></td>
-                            </tr>
-
-                            <tr>
-                                <td>Bank Passbook</td>
-                                <td><span className="pending-doc">Pending</span></td>
-                                <td><button>View</button></td>
-                            </tr>
-
-                            </tbody>
-
-
-                        </table>
-
-                        <h3>Verification Remarks</h3>
-
-                        <textarea
-                            placeholder="Enter verification remarks..."
-                            rows="4"
-                        ></textarea>
-
-                        <div className="modal-buttons">
-
-                            <button className="approve-btn">
-                                Approve
-                            </button>
-
-                            <button className="return-btn">
-                                Return
-                            </button>
-
-                            <button className="reject-btn">
-                                Reject
-                            </button>
-
-                            <button
-                                className="close-btn"
-                                onClick={() => setSelectedApplication(null)}
-                            >
-                                Close
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            )}
             {selectedApplication &&
-                (actionType === "Returned" || actionType === "Rejected") && (
+                (
+                    actionType === "RETURNED" ||
+                    actionType === "REJECTED"
+                ) && (
 
                     <div className="modal-overlay">
 
                         <div className="reason-modal">
 
-                            <h2>{actionType} Application</h2>
+                            <h2>
+                                {actionType === "RETURNED"
+                                    ? "Return Application"
+                                    : "Reject Application"}
+                            </h2>
+
 
                             <p>
                                 Please provide the reason before continuing.
                             </p>
 
+
                             <textarea
                                 value={reason}
-                                onChange={(e) => setReason(e.target.value)}
+                                onChange={(e) =>
+                                    setReason(e.target.value)
+                                }
                                 placeholder="Enter reason..."
                                 rows="5"
                             />
+
 
                             <div className="reason-buttons">
 
                                 <button
                                     className="submit-btn"
-                                    disabled={reason.trim() === ""}
+                                    disabled={
+                                        reason.trim() === ""
+                                    }
                                     onClick={submitReason}
                                 >
                                     Submit
                                 </button>
 
+
                                 <button
                                     className="cancel-btn"
                                     onClick={() => {
-                                        setSelectedApplication(null);
+
+                                        setSelectedApplication(
+                                            null
+                                        );
+
                                         setReason("");
+
                                         setActionType("");
+
                                     }}
                                 >
                                     Cancel
@@ -467,6 +746,7 @@ function VerificationDashboard() {
                     </div>
 
                 )}
+
         </div>
 
     );
