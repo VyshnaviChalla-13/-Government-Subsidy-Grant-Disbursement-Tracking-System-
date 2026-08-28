@@ -7,20 +7,20 @@ function OfficerMilestoneVerification() {
     const navigate = useNavigate();
 
     const application = location.state;
+    console.log("APPLICATION DATA:", application);
 
     const [remarks, setRemarks] = useState("");
-    const [documentStatus, setDocumentStatus] = useState({
-        aadhaar: "Verified",
-        income: "Verified",
-        bank: "Pending",
-        residence: "Verified",
-    });
 
+
+
+    // No application selected
     if (!application) {
         return (
             <div className="milestone-page">
                 <div className="milestone-empty">
+
                     <h2>Application Not Found</h2>
+
                     <p>
                         No application was selected for verification.
                     </p>
@@ -32,68 +32,36 @@ function OfficerMilestoneVerification() {
                     >
                         Back to Verification Dashboard
                     </button>
+
                 </div>
             </div>
         );
     }
 
-    const verifyDocument = (documentName) => {
-        setDocumentStatus((previous) => ({
-            ...previous,
-            [documentName]: "Verified",
-        }));
-    };
 
-    const handleApprove = () => {
-        if (remarks.trim() === "") {
-            alert("Please enter verification remarks before approving.");
-            return;
-        }
-
-        alert("Application approved by Verification Officer.");
-
-        navigate("/officer/verification");
-    };
-
-    const handleReturn = () => {
-        if (remarks.trim() === "") {
-            alert("Please enter a reason before returning the application.");
-            return;
-        }
-
-        alert("Application returned for re-verification.");
-
-        navigate("/officer/verification");
-    };
-
-    const handleReject = () => {
-        if (remarks.trim() === "") {
-            alert("Please enter a rejection reason.");
-            return;
-        }
-
-        alert("Application rejected.");
-
-        navigate("/officer/verification");
-    };
 
     return (
         <div className="milestone-page">
 
-            {/* Header */}
+            {/* HEADER */}
+
             <div className="milestone-header">
 
                 <div>
+
                     <span className="milestone-eyebrow">
                         Verification Workflow
                     </span>
 
-                    <h1>Officer Milestone Verification</h1>
+                    <h1>
+                        Officer Milestone Verification
+                    </h1>
 
                     <p>
                         Review the beneficiary application, verify
                         supporting documents and record your decision.
                     </p>
+
                 </div>
 
                 <button
@@ -107,190 +75,216 @@ function OfficerMilestoneVerification() {
 
             </div>
 
-            {/* Application Summary */}
+
+            {/* APPLICATION OVERVIEW */}
+
             <section className="milestone-card">
 
                 <div className="section-heading">
+
                     <div>
-                        <span>Application Overview</span>
-                        <h2>Application Details</h2>
+
+                        <span>
+                            Application Overview
+                        </span>
+
+                        <h2>
+                            Application Details
+                        </h2>
+
                     </div>
 
                     <span className="application-status">
-                        {application.status === "Forwarded"
+                        {application.status === "FIELD_APPROVED"
                             ? "Pending Verification"
                             : application.status}
                     </span>
+
                 </div>
+
 
                 <div className="application-grid">
 
                     <div>
                         <label>Application ID</label>
-                        <strong>{application.id}</strong>
+
+                        <strong>
+                            {application.applicationNumber || "-"}
+                        </strong>
                     </div>
+
 
                     <div>
                         <label>Beneficiary Name</label>
-                        <strong>{application.applicant}</strong>
+
+                        <strong>
+                            {application.beneficiary?.fullName || "-"}
+                        </strong>
                     </div>
+
 
                     <div>
                         <label>Scheme</label>
-                        <strong>{application.scheme}</strong>
+
+                        <strong>
+                            {application.scheme?.schemeName || "-"}
+                        </strong>
                     </div>
+
 
                     <div>
                         <label>Submitted Date</label>
-                        <strong>{application.submittedDate}</strong>
+
+                        <strong>
+                            {application.submittedAt
+                                ? new Date(
+                                    application.submittedAt
+                                ).toLocaleDateString()
+                                : "-"}
+                        </strong>
                     </div>
 
                 </div>
 
             </section>
 
-            {/* Workflow Timeline */}
+
+            {/* WORKFLOW */}
+
             <section className="milestone-card">
 
                 <div className="section-heading">
+
                     <div>
-                        <span>Application Journey</span>
-                        <h2>Verification Milestones</h2>
+
+                        <span>
+                            Application Journey
+                        </span>
+
+                        <h2>
+                            Verification Milestones
+                        </h2>
+
                     </div>
+
                 </div>
+
 
                 <div className="workflow">
 
                     <div className="workflow-step completed">
-                        <div className="workflow-circle">✓</div>
+
+                        <div className="workflow-circle">
+                            ✓
+                        </div>
 
                         <div>
-                            <strong>Application Submitted</strong>
-                            <p>Beneficiary submitted the application.</p>
+                            <strong>
+                                Application Submitted
+                            </strong>
+
+                            <p>
+                                Beneficiary submitted the application.
+                            </p>
                         </div>
+
                     </div>
+
 
                     <div className="workflow-line completed-line"></div>
 
+
                     <div className="workflow-step completed">
-                        <div className="workflow-circle">✓</div>
+
+                        <div className="workflow-circle">
+                            ✓
+                        </div>
 
                         <div>
-                            <strong>Field Officer Review</strong>
-                            <p>Application passed field-level review.</p>
+                            <strong>
+                                Field Officer Review
+                            </strong>
+
+                            <p>
+                                Application passed field-level review.
+                            </p>
                         </div>
+
                     </div>
+
 
                     <div className="workflow-line active-line"></div>
 
+
                     <div className="workflow-step active">
-                        <div className="workflow-circle">3</div>
+
+                        <div className="workflow-circle">
+                            3
+                        </div>
 
                         <div>
-                            <strong>Verification Officer</strong>
-                            <p>Current verification stage.</p>
+                            <strong>
+                                Verification Officer
+                            </strong>
+
+                            <p>
+                                Current verification stage.
+                            </p>
                         </div>
+
                     </div>
+
 
                     <div className="workflow-line"></div>
 
+
                     <div className="workflow-step">
-                        <div className="workflow-circle">4</div>
+
+                        <div className="workflow-circle">
+                            4
+                        </div>
 
                         <div>
-                            <strong>District Officer</strong>
-                            <p>Pending next-level review.</p>
+                            <strong>
+                                District Officer
+                            </strong>
+
+                            <p>
+                                Pending next-level review.
+                            </p>
                         </div>
+
                     </div>
+
 
                     <div className="workflow-line"></div>
 
+
                     <div className="workflow-step">
-                        <div className="workflow-circle">5</div>
+
+                        <div className="workflow-circle">
+                            5
+                        </div>
 
                         <div>
-                            <strong>Finance Approver</strong>
-                            <p>Final approval and disbursement.</p>
+                            <strong>
+                                Finance Approver
+                            </strong>
+
+                            <p>
+                                Final approval and disbursement.
+                            </p>
                         </div>
+
                     </div>
 
                 </div>
 
             </section>
 
-            {/* Eligibility Score */}
-            <section className="milestone-card">
 
-                <div className="section-heading">
-                    <div>
-                        <span>Automated Assessment</span>
-                        <h2>Eligibility Score</h2>
-                    </div>
+            {/* BENEFICIARY DETAILS */}
 
-                    <div className="score-circle">
-                        <strong>78</strong>
-                        <span>/100</span>
-                    </div>
-                </div>
-
-                <div className="score-message">
-                    <strong>Eligible for further verification</strong>
-
-                    <p>
-                        The application has crossed the configured
-                        eligibility threshold.
-                    </p>
-                </div>
-
-                <div className="score-breakdown">
-
-                    <div className="score-item">
-                        <div>
-                            <strong>Income Level</strong>
-                            <span>24 / 30</span>
-                        </div>
-
-                        <div className="score-bar">
-                            <div
-                                className="score-fill"
-                                style={{ width: "80%" }}
-                            ></div>
-                        </div>
-                    </div>
-
-                    <div className="score-item">
-                        <div>
-                            <strong>Category Match</strong>
-                            <span>34 / 40</span>
-                        </div>
-
-                        <div className="score-bar">
-                            <div
-                                className="score-fill"
-                                style={{ width: "85%" }}
-                            ></div>
-                        </div>
-                    </div>
-
-                    <div className="score-item">
-                        <div>
-                            <strong>Documents Complete</strong>
-                            <span>20 / 30</span>
-                        </div>
-
-                        <div className="score-bar">
-                            <div
-                                className="score-fill"
-                                style={{ width: "67%" }}
-                            ></div>
-                        </div>
-                    </div>
-
-                </div>
-
-            </section>
-
-            {/* Beneficiary Details */}
             <section className="milestone-card">
 
                 <div className="section-heading">
@@ -304,152 +298,322 @@ function OfficerMilestoneVerification() {
 
                     <div>
                         <label>Full Name</label>
-                        <strong>{application.applicant}</strong>
+                        <strong>
+                            {application.beneficiary?.fullName || "-"}
+                        </strong>
                     </div>
 
                     <div>
-                        <label>Father Name</label>
-                        <strong>Ramesh Kumar</strong>
+                        <label>Date of Birth</label>
+                        <strong>
+                            {application.beneficiary?.dateOfBirth || "-"}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <label>Gender</label>
+                        <strong>
+                            {application.beneficiary?.gender || "-"}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <label>Marital Status</label>
+                        <strong>
+                            {application.beneficiary?.maritalStatus || "-"}
+                        </strong>
                     </div>
 
                     <div>
                         <label>Mobile Number</label>
-                        <strong>9876543210</strong>
+                        <strong>
+                            {application.beneficiary?.mobileNumber || "-"}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <label>Email</label>
+                        <strong>
+                            {application.beneficiary?.email || "-"}
+                        </strong>
                     </div>
 
                     <div>
                         <label>Aadhaar Number</label>
-                        <strong>XXXX XXXX 4567</strong>
+                        <strong>
+                            {application.beneficiary?.aadhaarNumber
+                                ? `XXXX XXXX ${application.beneficiary.aadhaarNumber.slice(-4)}`
+                                : "-"}
+                        </strong>
                     </div>
 
                     <div>
                         <label>Annual Income</label>
-                        <strong>₹2,40,000</strong>
+                        <strong>
+                            {application.beneficiary?.annualIncome != null
+                                ? `₹${application.beneficiary.annualIncome.toLocaleString("en-IN")}`
+                                : "-"}
+                        </strong>
                     </div>
 
                     <div>
                         <label>Occupation</label>
-                        <strong>Farmer</strong>
+                        <strong>
+                            {application.beneficiary?.occupation || "-"}
+                        </strong>
                     </div>
 
                     <div>
-                        <label>District</label>
-                        <strong>Tirupati</strong>
+                        <label>Category</label>
+                        <strong>
+                            {application.beneficiary?.category || "-"}
+                        </strong>
                     </div>
 
                     <div>
-                        <label>State</label>
-                        <strong>Andhra Pradesh</strong>
+                        <label>Disability Status</label>
+                        <strong>
+                            {application.beneficiary?.disabilityStatus || "-"}
+                        </strong>
                     </div>
 
-                    <div className="full-width-detail">
+                    <div>
                         <label>Address</label>
                         <strong>
-                            Tirupati, Andhra Pradesh
+                            {application.beneficiary?.address || "-"}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <label>District ID</label>
+                        <strong>
+                            {application.beneficiary?.districtId || "-"}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <label>State ID</label>
+                        <strong>
+                            {application.beneficiary?.stateId || "-"}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <label>Taluka ID</label>
+                        <strong>
+                            {application.beneficiary?.talukaId || "-"}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <label>Village ID</label>
+                        <strong>
+                            {application.beneficiary?.villageId || "-"}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <label>Pincode</label>
+                        <strong>
+                            {application.beneficiary?.pincode || "-"}
                         </strong>
                     </div>
 
                 </div>
 
             </section>
+            {/* DOCUMENT VERIFICATION */}
 
-            {/* Document Verification */}
             <section className="milestone-card">
 
                 <div className="section-heading">
+
                     <div>
                         <span>Supporting Evidence</span>
                         <h2>Document Verification</h2>
                     </div>
+
                 </div>
 
                 <div className="document-list">
 
-                    <div className="document-row">
-
-                        <div>
-                            <strong>Aadhaar Card</strong>
-                            <p>Identity verification document</p>
-                        </div>
-
-                        <span className="document-status verified">
-                            {documentStatus.aadhaar}
-                        </span>
-
-                        <button className="preview-btn">
-                            View
-                        </button>
-
-                    </div>
+                    {/* AADHAAR CARD */}
 
                     <div className="document-row">
 
-                        <div>
-                            <strong>Income Certificate</strong>
-                            <p>Latest household income certificate</p>
+                        <div className="document-info">
+
+                            <div className="document-icon">
+                                📄
+                            </div>
+
+                            <div>
+                                <strong>Aadhaar Card</strong>
+
+                                <p>
+                                    Identity verification document
+                                </p>
+
+                                <small>
+                                    Aadhaar:{" "}
+                                    {application.beneficiary?.aadhaarNumber
+                                        ? `XXXX XXXX ${application.beneficiary.aadhaarNumber.slice(-4)}`
+                                        : "Not available"}
+                                </small>
+                            </div>
+
                         </div>
 
-                        <span className="document-status verified">
-                            {documentStatus.income}
-                        </span>
-
-                        <button className="preview-btn">
-                            View
-                        </button>
-
-                    </div>
-
-                    <div className="document-row">
-
-                        <div>
-                            <strong>Bank Passbook</strong>
-                            <p>Beneficiary bank account details</p>
-                        </div>
-
-                        <span
-                            className={`document-status ${
-                                documentStatus.bank === "Verified"
-                                    ? "verified"
-                                    : "pending"
-                            }`}
+                        <button
+                            className="preview-btn"
+                            onClick={() =>
+                                alert(
+                                    "Aadhaar document preview is not available because the backend response does not contain a document file or URL."
+                                )
+                            }
                         >
-                            {documentStatus.bank}
-                        </span>
-
-                        <div className="document-actions">
-
-                            <button className="preview-btn">
-                                View
-                            </button>
-
-                            {documentStatus.bank === "Pending" && (
-                                <button
-                                    className="verify-btn"
-                                    onClick={() =>
-                                        verifyDocument("bank")
-                                    }
-                                >
-                                    Verify
-                                </button>
-                            )}
-
-                        </div>
+                            👁 View
+                        </button>
 
                     </div>
 
+
+                    {/* INCOME CERTIFICATE */}
+
                     <div className="document-row">
 
-                        <div>
-                            <strong>Residence Certificate</strong>
-                            <p>Proof of residential address</p>
+                        <div className="document-info">
+
+                            <div className="document-icon">
+                                📄
+                            </div>
+
+                            <div>
+                                <strong>Income Certificate</strong>
+
+                                <p>
+                                    Income eligibility supporting document
+                                </p>
+
+                                <small>
+                                    Annual Income:{" "}
+                                    {application.beneficiary?.annualIncome != null
+                                        ? `₹${application.beneficiary.annualIncome.toLocaleString("en-IN")}`
+                                        : "Not available"}
+                                </small>
+                            </div>
+
                         </div>
 
-                        <span className="document-status verified">
-                            {documentStatus.residence}
-                        </span>
 
-                        <button className="preview-btn">
-                            View
+
+                        <button
+                            className="preview-btn"
+                            onClick={() =>
+                                alert(
+                                    "Income Certificate preview is not available because the backend response does not contain a document file or URL."
+                                )
+                            }
+                        >
+                            👁 View
+                        </button>
+
+                    </div>
+
+
+                    {/* BANK PASSBOOK */}
+
+                    <div className="document-row">
+
+                        <div className="document-info">
+
+                            <div className="document-icon">
+                                📄
+                            </div>
+
+                            <div>
+                                <strong>Bank Passbook</strong>
+
+                                <p>
+                                    Beneficiary bank account verification
+                                </p>
+
+                                <small>
+                                    Bank:{" "}
+                                    {application.beneficiary?.bankName || "Not available"}
+                                </small>
+
+                                <small>
+                                    Account:{" "}
+                                    {application.beneficiary?.accountNumber
+                                        ? `XXXXXX${application.beneficiary.accountNumber.slice(-4)}`
+                                        : "Not available"}
+                                </small>
+
+                                <small>
+                                    IFSC:{" "}
+                                    {application.beneficiary?.ifscCode || "Not available"}
+                                </small>
+                            </div>
+
+                        </div>
+                        {/* VIEW BUTTON */}
+                        <button
+                            className="preview-btn"
+                            onClick={() =>
+                                alert(
+                                    "Bank Passbook preview is not available because the backend response does not contain a document file or URL."
+                                )
+                            }
+                        >
+                            👁 View
+                        </button>
+
+
+
+                    </div>
+
+
+                    {/* RESIDENCE CERTIFICATE */}
+
+                    <div className="document-row">
+
+                        <div className="document-info">
+
+                            <div className="document-icon">
+                                📄
+                            </div>
+
+                            <div>
+                                <strong>Residence Certificate</strong>
+
+                                <p>
+                                    Proof of residential address
+                                </p>
+
+                                <small>
+                                    Address:{" "}
+                                    {application.beneficiary?.address || "Not available"}
+                                </small>
+
+                                <small>
+                                    Pincode:{" "}
+                                    {application.beneficiary?.pincode || "Not available"}
+                                </small>
+                            </div>
+
+                        </div>
+
+
+                        <button
+                            className="preview-btn"
+                            onClick={() =>
+                                alert(
+                                    "Residence Certificate preview is not available because the backend response does not contain a document file or URL."
+                                )
+                            }
+                        >
+                            👁 View
                         </button>
 
                     </div>
@@ -458,15 +622,26 @@ function OfficerMilestoneVerification() {
 
             </section>
 
-            {/* Verification Remarks */}
+            {/* REMARKS */}
+
             <section className="milestone-card">
 
                 <div className="section-heading">
+
                     <div>
-                        <span>Officer Decision</span>
-                        <h2>Verification Remarks</h2>
+
+                        <span>
+                            Officer Decision
+                        </span>
+
+                        <h2>
+                            Verification Remarks
+                        </h2>
+
                     </div>
+
                 </div>
+
 
                 <textarea
                     className="remarks-box"
@@ -474,34 +649,89 @@ function OfficerMilestoneVerification() {
                     onChange={(e) =>
                         setRemarks(e.target.value)
                     }
-                    placeholder="Enter your verification remarks, observations or reason for returning/rejecting the application..."
+                    placeholder="Enter verification remarks..."
                     rows="6"
                 />
 
+
                 <p className="remarks-note">
-                    Remarks are mandatory before approving, returning or
-                    rejecting an application.
+                    Remarks are mandatory before approving,
+                    returning or rejecting an application.
                 </p>
+
 
                 <div className="decision-buttons">
 
                     <button
                         className="approve-button"
-                        onClick={handleApprove}
+                        onClick={() => {
+
+                            if (!remarks.trim()) {
+                                alert(
+                                    "Please enter verification remarks."
+                                );
+                                return;
+                            }
+
+                            alert(
+                                "Application approved."
+                            );
+
+                            navigate(
+                                "/officer/verification"
+                            );
+
+                        }}
                     >
                         ✓ Approve
                     </button>
 
+
                     <button
                         className="return-button"
-                        onClick={handleReturn}
+                        onClick={() => {
+
+                            if (!remarks.trim()) {
+                                alert(
+                                    "Please enter a reason."
+                                );
+                                return;
+                            }
+
+                            alert(
+                                "Application returned for re-verification."
+                            );
+
+                            navigate(
+                                "/officer/verification"
+                            );
+
+                        }}
                     >
                         ↩ Return for Re-verification
                     </button>
 
+
                     <button
                         className="reject-button"
-                        onClick={handleReject}
+                        onClick={() => {
+
+                            if (!remarks.trim()) {
+                                alert(
+                                    "Please enter a rejection reason."
+                                );
+                                return;
+                            }
+
+                            alert(
+                                "Application rejected."
+                            );
+
+                            navigate(
+                                "/officer/verification"
+                            );
+
+                        }}
                     >
                         ✕ Reject
                     </button>

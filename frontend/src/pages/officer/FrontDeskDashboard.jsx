@@ -6,6 +6,7 @@ import {
 } from "../../api/frontDeskApi";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Sidebar from "../../components/Sidebar/Sidebar";
 import "./FrontDeskDashboard.css";
 import { useEffect } from "react";
 
@@ -15,7 +16,7 @@ function FrontDeskDashboard() {
     const [search, setSearch] = useState("");
     const [schemeFilter, setSchemeFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
-    const [selectedApplication, setSelectedApplication] = useState(null);
+    const [actionApplication, setActionApplication] = useState(null);
     const [actionType, setActionType] = useState("");
     const [reason, setReason] = useState("");
     const navigate = useNavigate();
@@ -65,47 +66,49 @@ function FrontDeskDashboard() {
 
 
     const openReasonPopup = (application, action) => {
-        setSelectedApplication(application);
+        setActionApplication(application);
         setActionType(action);
         setReason("");
     };
+
     const submitReason = async () => {
         try {
-
             if (actionType === "RETURNED") {
-                await returnApplication(selectedApplication.applicationId, reason);
+                await returnApplication(
+                    actionApplication.applicationId,
+                    reason
+                );
             }
 
             if (actionType === "REJECTED") {
-                await rejectApplication(selectedApplication.applicationId, reason);
+                await rejectApplication(
+                    actionApplication.applicationId,
+                    reason
+                );
             }
 
             await fetchApplications();
 
-            setSelectedApplication(null);
+            setActionApplication(null);
             setReason("");
             setActionType("");
 
-            alert(`Application ${actionType.toLowerCase()} successfully`);
+            alert(
+                `Application ${actionType.toLowerCase()} successfully`
+            );
 
         } catch (err) {
             console.error(err);
             alert("Operation failed");
         }
     };
-    return (
 
+    return (
         <div className="dashboard-layout">
 
-
-
-
-
-
-
+            <Sidebar />
 
             {/* Main Content */}
-
             <main className="main-content">
 
                 <div className="topbar">
@@ -286,42 +289,58 @@ function FrontDeskDashboard() {
                             </td>
 
                             <td>
-
                                 <button
                                     className="view-btn"
-                                    onClick={() => setSelectedApplication(app)}
+                                    onClick={() => {
+                                        console.log("Opening application:", app);
+                                        navigate(
+                                            `/officer/frontdesk/application/${app.applicationId}`,
+                                            {
+                                                state: app
+                                            }
+                                        );
+                                    }}
                                 >
                                     View
                                 </button>
 
-                                <button
-                                    onClick={async () => {
-                                        try {
-                                            await forwardApplication(app.applicationId);
-                                            await fetchApplications();
-                                            alert("Application forwarded successfully");
-                                        } catch (err) {
-                                            console.error(err);
-                                            alert("Failed to forward application");
-                                        }
-                                    }}
-                                >
-                                    Forward
-                                </button>
+                                {(app.status === "SUBMITTED" ||
+                                    app.status === "RESUBMITTED") && (
+                                    <>
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    await forwardApplication(app.applicationId);
+                                                    await fetchApplications();
+                                                    alert("Application forwarded successfully");
+                                                } catch (err) {
+                                                    console.error(err);
+                                                    alert("Failed to forward application");
+                                                }
+                                            }}
+                                        >
+                                            Forward
+                                        </button>
 
-                                <button
-                                    className="return-btn"
-                                    onClick={() => openReasonPopup(app, "RETURNED")}
-                                >
-                                    ↩ Return
-                                </button>
+                                        <button
+                                            className="return-btn"
+                                            onClick={() =>
+                                                openReasonPopup(app, "RETURNED")
+                                            }
+                                        >
+                                            ↩ Return
+                                        </button>
 
-                                <button
-                                    className="reject-btn"
-                                    onClick={() => openReasonPopup(app, "REJECTED")}
-                                >
-                                    ❌ Reject
-                                </button>
+                                        <button
+                                            className="reject-btn"
+                                            onClick={() =>
+                                                openReasonPopup(app, "REJECTED")
+                                            }
+                                        >
+                                            ❌ Reject
+                                        </button>
+                                    </>
+                                )}
                             </td>
 
                         </tr>
@@ -331,108 +350,8 @@ function FrontDeskDashboard() {
                     </tbody>
 
                 </table>
-                {selectedApplication && (
 
-                    <div className="modal-overlay">
-
-                        <div className="modal">
-
-                            <h2>Application Details</h2>
-
-                            <div className="details-grid">
-
-                                <div>
-                                    <strong>Application ID</strong>
-                                    <p>{selectedApplication.applicationId}</p>
-                                </div>
-
-                                <div>
-                                    <strong>Beneficiary Name</strong>
-                                    <p>{selectedApplication.beneficiary?.fullName}</p>
-                                </div>
-
-                                <div>
-                                    <strong>Scheme</strong>
-                                    <p>{selectedApplication.scheme?.schemeName}</p>
-                                </div>
-
-                                <div>
-                                    <strong>Date</strong>
-                                    <p>{new Date(selectedApplication.submittedAt).toLocaleDateString()}</p>
-                                </div>
-
-                                <div>
-                                    <strong>Status</strong>
-                                    <p>{selectedApplication.status}</p>
-                                </div>
-
-                                <div>
-                                    <strong>Mobile</strong>
-                                    <p>{selectedApplication.beneficiary?.mobileNumber}</p>
-                                </div>
-
-                                <div>
-                                    <strong>Email</strong>
-                                    <p>{selectedApplication.beneficiary?.email}</p>
-                                </div>
-
-                                <div>
-                                    <strong>Aadhaar</strong>
-                                    <p>{selectedApplication.beneficiary?.aadhaarNumber}</p>
-                                </div>
-
-                                <div>
-                                    <strong>Address</strong>
-                                    <p>{selectedApplication.beneficiary?.address}</p>
-                                </div>
-
-                                <div>
-                                    <strong>Income</strong>
-                                    <p>{selectedApplication.beneficiary?.annualIncome}</p>
-                                </div>
-
-                                <div>
-                                    <strong>Bank</strong>
-                                    <p>{selectedApplication.beneficiary?.bankName}</p>
-                                </div>
-
-                                <div>
-                                    <strong>Account Status</strong>
-                                    <p>Verified</p>
-                                </div>
-
-                            </div>
-
-                            <div className="document-section">
-
-                                <h3>Uploaded Documents</h3>
-
-                                <ul>
-                                    <li>✔ Aadhaar Card</li>
-                                    <li>✔ Income Certificate</li>
-                                    <li>✔ Bank Passbook</li>
-                                    <li>✔ Residence Certificate</li>
-                                </ul>
-
-                            </div>
-
-                            <div className="modal-buttons">
-
-                                <button
-                                    className="close-btn"
-                                    onClick={() => setSelectedApplication(null)}
-                                >
-                                    Close
-                                </button>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                )}
-                {selectedApplication &&
+                {actionApplication &&
                     (actionType === "RETURNED" || actionType === "REJECTED") && (
 
                         <div className="modal-overlay">
@@ -465,7 +384,7 @@ function FrontDeskDashboard() {
                                     <button
                                         className="cancel-btn"
                                         onClick={() => {
-                                            setSelectedApplication(null);
+                                            setActionApplication(null);
                                             setReason("");
                                             setActionType("");
                                         }}

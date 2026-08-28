@@ -67,7 +67,10 @@ function AppRoutes() {
 
                 {/* Officer */}
                 <Route path="/officer/frontdesk" element={<FrontDeskDashboard />} />
-                <Route path="/officer/frontdesk/application" element={<FrontDeskApplicationDetails />} />
+                <Route
+                    path="/officer/frontdesk/application/:applicationId"
+                    element={<FrontDeskApplicationDetails />}
+                />
                 <Route path="/officer/verification" element={<VerificationDashboard />} />
 
                 {/* Finance */}
