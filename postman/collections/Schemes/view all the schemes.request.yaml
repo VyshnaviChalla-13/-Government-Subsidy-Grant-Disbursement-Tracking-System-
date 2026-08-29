@@ -1,0 +1,43 @@
+$kind: http-request
+name: view all the schemes
+description: ""
+url: http://localhost:8080/superadmin/schemes
+method: GET
+body:
+  type: json
+  content: "{\r
+
+    \    \"department\": {\r
+
+    \        \"departmentId\": 2\r
+
+    \    },\r
+
+    \    \"user\": {\r
+
+    \        \"userId\": 3\r
+
+    \    },\r
+
+    \    \"schemeName\": \"Women Entrepreneurship Support Scheme\",\r
+
+    \    \"description\": \"Provides financial assistance and training support to women starting small businesses.\",\r
+
+    \    \"totalBudget\": 25000000,\r
+
+    \    \"minGrant\": 5000,\r
+
+    \    \"maxGrant\": 100000,\r
+
+    \    \"applicationStartDate\": \"2026-08-01\",\r
+
+    \    \"applicationEndDate\": \"2027-01-31\",\r
+
+    \    \"eligibilityScore\": 75\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfU1VQRVJfQURNSU4iLCJpYXQiOjE3ODU1NzY2NDIsImV4cCI6MTc4NTY2MzA0Mn0.4JTuv7qVbJdEFO8K-ImP0QZhqqqQP9p9hUz4JItmAAVz_OQ9_2zG6vXmHQGup7Mr
+order: 1784956501922

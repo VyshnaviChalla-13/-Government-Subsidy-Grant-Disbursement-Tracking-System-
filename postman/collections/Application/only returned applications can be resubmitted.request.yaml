@@ -1,0 +1,13 @@
+$kind: http-request
+description: ""
+url: http://localhost:8080/applications/1/resubmit
+method: PUT
+body:
+  type: json
+  content: "{\r\n    \"income\":1000000\r\n}"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfQURNSU4iLCJpYXQiOjE3ODQ5MjI2NzgsImV4cCI6MTc4NTAwOTA3OH0.OYua0WXA4J93NueGh5Qv7OAQyawXotRALS-JnLIuVSmZyc0cs68xfD__JUPwdD2h
+examples: .resources/only returned applications can be resubmitted.resources/examples
+order: 4503390917355252

@@ -1,0 +1,55 @@
+$kind: http-request
+name: Benefiaciary Registration
+description: ""
+url: http://localhost:8080/users/register
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"fullName\": \"Kajal Parekh\",\r
+
+    \    \"email\": \"kajal@gmail.com\",\r
+
+    \    \"mobileNumber\": \"1212121212\",\r
+
+    \    \"aadhaarNumber\": \"121212121212\",\r
+
+    \    \"password\": \"password123\",\r
+
+    \    \"dateOfBirth\": \"2004-01-01\",\r
+
+    \    \"gender\": \"FEMALE\",\r
+
+    \    \"address\": \"Ahmedabad\",\r
+
+    \    \"districtId\": \"1\",\r
+
+    \    \"stateId\": \"1\",\r
+
+    \    \"talukaId\": \"1\",\r
+
+    \    \"villageId\": \"1\",\r
+
+    \    \"pincode\": \"380001\",\r
+
+    \    \"occupation\": \"Student\",\r
+
+    \    \"disabilityStatus\": \"NO\",\r
+
+    \    \"maritalStatus\": \"SINGLE\",\r
+
+    \    \"annualIncome\": 50000,\r
+
+    \    \"category\": \"GENERAL\",\r
+
+    \    \"bankName\": \"SBI\",\r
+
+    \    \"accountHolderName\": \"Krina Patel\",\r
+
+    \    \"accountNumber\": \"1212121212\",\r
+
+    \    \"ifscCode\": \"SBIN0001234\"\r
+
+    }"
+order: 1784916043582

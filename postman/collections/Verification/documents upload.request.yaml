@@ -1,0 +1,28 @@
+$kind: http-request
+description: ""
+url: http://localhost:8080/documents/upload
+method: POST
+body:
+  type: formdata
+  content:
+    - type: text
+      key: applicationId
+      value: "2"
+      description: ""
+      disabled: false
+    - type: text
+      key: documentType
+      value: '"Aadhaar Card"'
+      description: ""
+      disabled: false
+    - type: file
+      key: file
+      src:
+        - /C:/Users/krish/OneDrive/Pictures/Screenshots/Screenshot 2026-05-24 100101.png
+      description: ""
+      disabled: false
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI4NDg4ODg4ODg4Iiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTc4NTU4OTYyMCwiZXhwIjoxNzg1Njc2MDIwfQ.EtGym7bKsrt7bXh3crv036o5iCEvzl6dbpSbQ0-PwZzXtm0zdgaw4VTjk_LmRkhf
+order: 1785590015451

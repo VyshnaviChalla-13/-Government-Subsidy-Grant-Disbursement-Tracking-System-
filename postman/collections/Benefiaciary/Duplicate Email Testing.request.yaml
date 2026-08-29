@@ -1,0 +1,39 @@
+$kind: http-request
+name: Duplicate Email Testing
+description: ""
+url: http://localhost:8080/users/register
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"fullName\":\"Krina\",\r
+
+    \    \"email\":\"krina@gmail.com\",\r
+
+    \    \"mobileNumber\":\"9876543210\",\r
+
+    \    \"address\":\"Patan\",\r
+
+    \    \"districtId\":\"2\",\r
+
+    \    \"stateId\":\"1\",\r
+
+    \    \"pincode\":\"384265\",\r
+
+    \    \"occupation\":\"Engineer\",\r
+
+    \    \"annualIncome\":100000,\r
+
+    \    \"category\":\"OBC\",\r
+
+    \    \"bankName\":\"HDFC\",\r
+
+    \    \"accountHolderName\":\"Krina Patel\",\r
+
+    \    \"accountNumber\":\"1234567890\",\r
+
+    \    \"ifscCode\":\"HDFC0001234\"\r
+
+    }"
+order: 4461520772180369

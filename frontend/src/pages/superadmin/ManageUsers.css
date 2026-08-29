@@ -1,0 +1,201 @@
+.manage-users-page {
+    background: #f4f8fc;
+    min-height: 100vh;
+    padding: 16px 0 50px;
+    color: #1e293b;
+}
+
+/* 1. Page Hero */
+.users-hero {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: #ffffff;
+    border-radius: 20px;
+    padding: 24px 30px;
+    margin-bottom: 20px;
+}
+
+.users-hero-title {
+    font-size: 26px;
+    font-weight: 800;
+    margin: 8px 0 4px;
+    color: #ffffff;
+}
+
+.users-hero-subtitle {
+    font-size: 13.5px;
+    color: #e2e8f0;
+    margin: 0;
+    max-width: 620px;
+    line-height: 1.45;
+}
+
+.users-hero-tag {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+/* 2. Stat Cards */
+.user-stat-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid #eef2f6;
+    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.04);
+    height: 100%;
+    transition: transform 0.2s ease;
+}
+
+.user-stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.user-icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+
+.user-icon-circle.blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.user-icon-circle.green { background: linear-gradient(135deg, #10b981, #047857); }
+.user-icon-circle.purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+
+.user-stat-card h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+/* 3. Toolbar & Table */
+.users-toolbar {
+    background: #fafbfc;
+}
+
+.users-search-wrapper {
+    position: relative;
+    width: 320px;
+    max-width: 100%;
+}
+
+.users-search-wrapper i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.users-search-wrapper input {
+    padding-left: 34px;
+    border-radius: 20px;
+    border: 1px solid #cbd5e1;
+    font-size: 13px;
+}
+
+.custom-users-table {
+    margin-bottom: 0;
+}
+
+.custom-users-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 12px 18px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.custom-users-table tbody td {
+    padding: 12px 18px;
+    font-size: 13px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    vertical-align: middle;
+}
+
+.user-id-badge {
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    border: 1px solid #dbeafe;
+}
+
+.user-avatar-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #e0e7ff;
+    color: #3730a3;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Empty State */
+.users-empty-state {
+    padding: 40px 20px;
+}
+
+/* 4. Modals */
+.users-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.users-modal-card {
+    background: #ffffff;
+    border-radius: 18px;
+    width: 560px;
+    max-width: 100%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: usersModalScale 0.2s ease-out;
+}
+
+@keyframes usersModalScale {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.users-modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
