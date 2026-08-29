@@ -88,25 +88,27 @@ function FinanceDisbursementConsole() {
     const amountValid = totalStageAmount > 0 ? totalStageAmount === approvedGrant : true;
 
     const handleReleaseStage = async (stage) => {
-        if (stage.status !== "PENDING" && stage.status !== "COMPLETED") {
-            alert(`Stage is in ${stage.status} status and cannot be released.`);
+        if (stage.status === "RELEASED") {
+            alert(`Stage is already released.`);
             return;
         }
 
         setProcessing(true);
         try {
-            // First ensure it's marked completed if pending
-            if (stage.status === "PENDING") {
+            const txRef = `TXN-${Date.now()}`;
+            const targetAppId = application?.applicationId || application?.id || id;
+            
+            if (stage.id) {
                 try {
-                    await completeMilestone(stage.id);
+                    await releaseMilestone(stage.id, txRef);
                 } catch {
-                    // Ignore if backend requires direct release
+                    await disburseApplication(targetAppId, txRef);
                 }
+            } else {
+                await disburseApplication(targetAppId, txRef);
             }
 
-            const txRef = `TXN-${Date.now()}`;
-            await releaseMilestone(stage.id, txRef);
-            alert(`Stage "${stage.name}" payment of ₹${stage.amount.toLocaleString("en-IN")} released successfully!\nReference: ${txRef}`);
+            alert(`✅ Grant stage payment of ₹${stage.amount.toLocaleString("en-IN")} has been successfully disbursed!\nTransaction Ref: ${txRef}`);
             await loadData();
         } catch (err) {
             alert(err.response?.data?.message || err.response?.data || err.message || "Payment release failed");

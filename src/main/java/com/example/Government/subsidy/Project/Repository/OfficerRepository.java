@@ -11,4 +11,6 @@ public interface OfficerRepository extends JpaRepository<Officer, Integer> {
     Optional<Officer> findByEmployeeCode(String employeeCode);
 
     boolean existsByEmployeeCode(String employeeCode);
+
+    Optional<Officer> findByUser_UserId(Integer userId);
 }

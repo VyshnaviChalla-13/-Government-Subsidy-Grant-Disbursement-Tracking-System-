@@ -60,6 +60,28 @@ public class JwtFilter extends OncePerRequestFilter {
                         authorities.add(new SimpleGrantedAuthority("ROLE_DEPTADMIN"));
                         authorities.add(new SimpleGrantedAuthority("DEPTADMIN"));
                     }
+                    if (clean.contains("VERIF") || clean.contains("DISTRICT") || clean.equals("ROLE_OFFICER") || clean.equals("OFFICER")) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_VERIFICATION_OFFICER"));
+                        authorities.add(new SimpleGrantedAuthority("VERIFICATION_OFFICER"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_DISTRICT_OFFICER"));
+                        authorities.add(new SimpleGrantedAuthority("DISTRICT_OFFICER"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_OFFICER"));
+                        authorities.add(new SimpleGrantedAuthority("OFFICER"));
+                    }
+                    if (clean.contains("FRONT") || clean.contains("FIELD")) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_FRONT_DESK_OFFICER"));
+                        authorities.add(new SimpleGrantedAuthority("FRONT_DESK_OFFICER"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_FIELD_OFFICER"));
+                        authorities.add(new SimpleGrantedAuthority("FIELD_OFFICER"));
+                    }
+                    if (clean.contains("FINANCE")) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_FINANCE_OFFICER"));
+                        authorities.add(new SimpleGrantedAuthority("FINANCE_OFFICER"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_FINANCE_APPROVER"));
+                        authorities.add(new SimpleGrantedAuthority("FINANCE_APPROVER"));
+                        authorities.add(new SimpleGrantedAuthority("ROLE_FINANCE"));
+                        authorities.add(new SimpleGrantedAuthority("FINANCE"));
+                    }
                 }
 
                 UsernamePasswordAuthenticationToken authentication =

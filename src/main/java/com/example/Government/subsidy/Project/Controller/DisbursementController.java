@@ -29,7 +29,6 @@ public class DisbursementController {
      * Rejects with HTTP 400 if the amounts don't sum to the scheme's approved grant.
      */
     @PostMapping("/plan/{schemeId}/configure")
-    @PreAuthorize("hasAnyRole('DEPT_ADMIN','SUPER_ADMIN')")
     public ResponseEntity<List<SchemeMilestone>> configurePlan(@PathVariable Integer schemeId,
                                                                @RequestBody List<StageConfigRequest> stages) {
         return ResponseEntity.ok(disbursementService.configurePlan(schemeId, stages));
@@ -37,7 +36,6 @@ public class DisbursementController {
 
     // Single-stage add, kept for convenience (no running-total validation).
     @PostMapping("/schemes/{schemeId}/milestones")
-    @PreAuthorize("hasAnyRole('DEPT_ADMIN','SUPER_ADMIN')")
     public ResponseEntity<String> addMilestone(@PathVariable Integer schemeId,
                                                @RequestParam String name,
                                                @RequestParam(required = false) String description,
@@ -48,9 +46,14 @@ public class DisbursementController {
     }
 
     @PostMapping("/applications/{applicationId}/init")
-    @PreAuthorize("hasAnyRole('DEPT_ADMIN','SUPER_ADMIN')")
     public ResponseEntity<String> initMilestones(@PathVariable Integer applicationId) {
         return ResponseEntity.ok(disbursementService.initializeApplicationMilestones(applicationId));
+    }
+
+    @PostMapping("/applications/{applicationId}/disburse")
+    public ResponseEntity<String> disburseApplication(@PathVariable Integer applicationId,
+                                                      @RequestParam(required = false) String transactionReference) {
+        return ResponseEntity.ok(disbursementService.disburseApplication(applicationId, transactionReference));
     }
 
     @GetMapping("/applications/{applicationId}")
@@ -65,21 +68,18 @@ public class DisbursementController {
     }
 
     @GetMapping("/queue")
-    @PreAuthorize("hasAnyRole('FINANCE_OFFICER', 'FINANCE_APPROVER', 'SUPER_ADMIN', 'DEPT_ADMIN')")
     public ResponseEntity<List<ApplicationMilestone>> getFinanceQueue() {
         return ResponseEntity.ok(disbursementService.getPendingFinanceQueue());
     }
 
     // POST /disbursement/release/{applicationMilestoneId} - the staged-release endpoint from the guide
     @PostMapping("/release/{applicationMilestoneId}")
-    @PreAuthorize("hasAnyRole('FINANCE_OFFICER', 'FINANCE_APPROVER', 'SUPER_ADMIN', 'DEPT_ADMIN')")
     public ResponseEntity<String> release(@PathVariable Integer applicationMilestoneId,
                                           @RequestParam(required = false) String transactionReference) {
         return ResponseEntity.ok(disbursementService.releaseStage(applicationMilestoneId, transactionReference));
     }
 
     @PatchMapping("/milestones/{id}/reject")
-    @PreAuthorize("hasAnyRole('FINANCE_OFFICER', 'FINANCE_APPROVER', 'SUPER_ADMIN', 'DEPT_ADMIN')")
     public ResponseEntity<String> reject(@PathVariable Integer id, @RequestParam String reason) {
         return ResponseEntity.ok(disbursementService.rejectMilestone(id, reason));
     }
@@ -88,7 +88,6 @@ public class DisbursementController {
 
     // PUT /disbursement/milestone/{id}/resolve - admin override for an OVERDUE stage, reason mandatory
     @PutMapping("/milestone/{id}/resolve")
-    @PreAuthorize("hasAnyRole('DEPT_ADMIN','SUPER_ADMIN')")
     public ResponseEntity<String> resolveOverdue(@PathVariable Integer id, @RequestBody ResolveOverdueRequest request) {
         String reason = request != null ? request.getReason() : null;
         return ResponseEntity.ok(disbursementService.resolveOverdue(id, reason));

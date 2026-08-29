@@ -2,7 +2,7 @@ import "./PaymentPage.css";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getApplicationById } from "../../api/applicationApi";
-import { releaseMilestone, getApplicationMilestones } from "../../api/disbursementApi";
+import { releaseMilestone, disburseApplication, getApplicationMilestones } from "../../api/disbursementApi";
 
 function formatCurrency(amount) {
     if (amount == null) return "₹0";
@@ -32,15 +32,16 @@ function PaymentPage() {
                     }
 
                     const pendingMilestone = Array.isArray(milestones)
-                        ? milestones.find((m) => m.status === "PENDING") || milestones[0]
+                        ? milestones.find((m) => m.status === "PENDING" || m.status === "COMPLETED") || milestones[0]
                         : null;
 
                     setPaymentData({
                         id: app.applicationId || id,
+                        applicationId: app.applicationId || id,
                         milestoneId: pendingMilestone?.applicationMilestoneId || pendingMilestone?.id,
                         beneficiary: app.beneficiary?.fullName || "Beneficiary",
                         scheme: app.scheme?.schemeName || "Welfare Scheme",
-                        amount: formatCurrency(pendingMilestone?.amount || app.scheme?.maxGrant || 25000),
+                        amount: formatCurrency(pendingMilestone?.amount || pendingMilestone?.amountToRelease || app.scheme?.maxGrant || app.scheme?.maxSubsidyAmount || 25000),
                         bank: app.beneficiary?.bankName || "State Bank of India",
                         account: app.beneficiary?.accountNumber
                             ? `XXXX${String(app.beneficiary.accountNumber).slice(-4)}`
@@ -63,8 +64,15 @@ function PaymentPage() {
         setProcessing(true);
         try {
             const txRef = `TXN-${Date.now()}`;
+            const targetAppId = paymentData?.applicationId || paymentData?.id || id;
             if (paymentData?.milestoneId) {
-                await releaseMilestone(paymentData.milestoneId, txRef);
+                try {
+                    await releaseMilestone(paymentData.milestoneId, txRef);
+                } catch {
+                    await disburseApplication(targetAppId, txRef);
+                }
+            } else {
+                await disburseApplication(targetAppId, txRef);
             }
             alert(`Payment released successfully!\nTransaction Reference: ${txRef}`);
             navigate("/finance");

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./VerificationDashboard.css";
-import { getApplications } from "../../api/applicationApi";
+import { getApplications, getAllApplications } from "../../api/applicationApi";
 import { verifyApprove, verifyReturn, verifyReject } from "../../api/verificationApi";
 import { getDocumentsByApplication, verifyDocument, rejectDocument } from "../../api/documentApi";
 
@@ -16,6 +16,37 @@ function formatDate(date) {
             year: "numeric",
         });
 }
+
+const PENDING_STATUSES = [
+    "PENDING_VERIFICATION",
+    "FORWARDED",
+    "SUBMITTED",
+    "PENDING_FIELD_REVIEW",
+    "PENDING_FRONT_DESK",
+    "UNDER_VERIFICATION",
+    "RESUBMITTED",
+    "PENDING",
+];
+
+const APPROVED_STATUSES = [
+    "VERIFICATION_APPROVED",
+    "APPROVED",
+    "DISBURSED",
+    "STAGE_RELEASED",
+    "PENDING_FINANCE",
+];
+
+const RETURNED_STATUSES = [
+    "RETURNED",
+    "FIELD_RETURNED",
+    "VERIFY_RETURNED",
+];
+
+const REJECTED_STATUSES = [
+    "REJECTED",
+    "FIELD_REJECTED",
+    "VERIFY_REJECTED",
+];
 
 function VerificationDashboard() {
     const navigate = useNavigate();
@@ -38,7 +69,22 @@ function VerificationDashboard() {
         try {
             setLoading(true);
             setError("");
-            const data = await getApplications();
+            let data = [];
+            try {
+                data = await getApplications();
+            } catch (err) {
+                console.warn("getApplications note:", err);
+            }
+            if (!Array.isArray(data) || data.length === 0) {
+                try {
+                    const allData = await getAllApplications();
+                    if (Array.isArray(allData) && allData.length > 0) {
+                        data = allData;
+                    }
+                } catch (allErr) {
+                    console.warn("getAllApplications note:", allErr);
+                }
+            }
             setApplications(Array.isArray(data) ? data : []);
         } catch (err) {
             setError(err.response?.data?.message || err.message || "Failed to load applications.");
@@ -107,6 +153,7 @@ function VerificationDashboard() {
             await verifyApprove(appId, modalRemarks || "Approved by Verification Officer");
             setSelectedApplication(null);
             setModalRemarks("");
+            alert("Application verified and approved successfully! Forwarded to Finance.");
             await loadData();
         } catch (err) {
             alert(err.response?.data?.message || err.response?.data || err.message || "Approval failed");
@@ -129,8 +176,10 @@ function VerificationDashboard() {
         try {
             if (actionType === "Returned") {
                 await verifyReturn(appId, reason);
+                alert("Application returned to beneficiary for correction.");
             } else if (actionType === "Rejected") {
                 await verifyReject(appId, reason);
+                alert("Application rejected.");
             }
             setSelectedApplication(null);
             setReason("");
@@ -154,16 +203,36 @@ function VerificationDashboard() {
         const appSchemeName = app.scheme?.schemeName || app.scheme || "";
         const matchesScheme = !schemeFilter || appSchemeName === schemeFilter;
 
-        const appStatus = app.status || "";
-        const matchesStatus =
-            !statusFilter ||
-            (statusFilter === "Pending Verification" && (appStatus === "PENDING_VERIFICATION" || appStatus === "Forwarded" || appStatus === "SUBMITTED")) ||
-            (statusFilter === "Approved" && (appStatus === "VERIFICATION_APPROVED" || appStatus === "APPROVED" || appStatus === "DISBURSED")) ||
-            (statusFilter === "Returned" && appStatus === "RETURNED") ||
-            (statusFilter === "Rejected" && appStatus === "REJECTED");
+        const appStatus = String(app.status || "").toUpperCase();
+        let matchesStatus = true;
+        if (statusFilter === "Pending Verification") {
+            matchesStatus = PENDING_STATUSES.includes(appStatus);
+        } else if (statusFilter === "Approved") {
+            matchesStatus = APPROVED_STATUSES.includes(appStatus);
+        } else if (statusFilter === "Returned") {
+            matchesStatus = RETURNED_STATUSES.includes(appStatus);
+        } else if (statusFilter === "Rejected") {
+            matchesStatus = REJECTED_STATUSES.includes(appStatus);
+        }
 
         return matchesSearch && matchesScheme && matchesStatus;
     });
+
+    const pendingCount = applications.filter((a) =>
+        PENDING_STATUSES.includes(String(a.status || "").toUpperCase())
+    ).length;
+
+    const approvedCount = applications.filter((a) =>
+        APPROVED_STATUSES.includes(String(a.status || "").toUpperCase())
+    ).length;
+
+    const returnedCount = applications.filter((a) =>
+        RETURNED_STATUSES.includes(String(a.status || "").toUpperCase())
+    ).length;
+
+    const rejectedCount = applications.filter((a) =>
+        REJECTED_STATUSES.includes(String(a.status || "").toUpperCase())
+    ).length;
 
     return (
         <div className="verification-dashboard">
@@ -178,37 +247,25 @@ function VerificationDashboard() {
 
             {/* Dashboard Cards */}
             <div className="dashboard-cards">
-                <div className="card">
+                <div className="card" onClick={() => setStatusFilter("")} style={{ cursor: "pointer" }}>
                     <h3>Total Applications</h3>
                     <p>{applications.length}</p>
                 </div>
-                <div className="card">
+                <div className="card" onClick={() => setStatusFilter("Pending Verification")} style={{ cursor: "pointer" }}>
                     <h3>Pending Verification</h3>
-                    <p>
-                        {
-                            applications.filter(
-                                (a) => a.status === "PENDING_VERIFICATION" || a.status === "Forwarded" || a.status === "SUBMITTED"
-                            ).length
-                        }
-                    </p>
+                    <p>{pendingCount}</p>
                 </div>
-                <div className="card">
+                <div className="card" onClick={() => setStatusFilter("Approved")} style={{ cursor: "pointer" }}>
                     <h3>Approved</h3>
-                    <p>
-                        {
-                            applications.filter(
-                                (a) => a.status === "VERIFICATION_APPROVED" || a.status === "APPROVED" || a.status === "DISBURSED"
-                            ).length
-                        }
-                    </p>
+                    <p>{approvedCount}</p>
                 </div>
-                <div className="card">
+                <div className="card" onClick={() => setStatusFilter("Returned")} style={{ cursor: "pointer" }}>
                     <h3>Returned</h3>
-                    <p>{applications.filter((a) => a.status === "RETURNED").length}</p>
+                    <p>{returnedCount}</p>
                 </div>
-                <div className="card">
+                <div className="card" onClick={() => setStatusFilter("Rejected")} style={{ cursor: "pointer" }}>
                     <h3>Rejected</h3>
-                    <p>{applications.filter((a) => a.status === "REJECTED").length}</p>
+                    <p>{rejectedCount}</p>
                 </div>
             </div>
 

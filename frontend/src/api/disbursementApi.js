@@ -18,6 +18,19 @@ export async function releaseMilestone(applicationMilestoneId, transactionRefere
     return response.data;
 }
 
+export async function disburseApplication(applicationId, transactionReference) {
+    const response = await axiosClient.post(
+        `/disbursement/applications/${applicationId}/disburse`,
+        null,
+        {
+            params: {
+                ...(transactionReference && { transactionReference }),
+            },
+        }
+    );
+    return response.data;
+}
+
 export async function rejectMilestone(milestoneId, reason) {
     const response = await axiosClient.patch(
         `/disbursement/milestones/${milestoneId}/reject`,

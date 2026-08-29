@@ -65,16 +65,21 @@ function formatStatus(status) {
 }
 
 function buildTimeline(application) {
-    const currentStatus = application.status || "SUBMITTED";
+    const currentStatus = String(application.status || "SUBMITTED").toUpperCase();
     const currentRank = STATUS_RANK[currentStatus] ?? 0;
     const isReturnedOrRejected = ["RETURNED", "REJECTED"].includes(currentStatus);
+    // Only mark ALL nodes complete when fully DISBURSED.
+    // STAGE_RELEASED means some (not all) milestones are released — Finance is still in progress.
+    const isDisbursed = currentStatus === "DISBURSED";
 
     return STAGES.map((stage, index) => {
         let status = "Pending";
 
-        if (index < currentRank) status = "Completed";
-        if (index === currentRank && !isReturnedOrRejected) status = "In Progress";
-        if (currentStatus === "DISBURSED") status = "Completed";
+        if (isDisbursed || index < currentRank) {
+            status = "Completed";
+        } else if (index === currentRank && !isReturnedOrRejected) {
+            status = "In Progress";
+        }
 
         return {
             title: stage.title,
@@ -82,7 +87,7 @@ function buildTimeline(application) {
             date: index === 0
                 ? formatDate(application.submittedAt)
                 : status === "Completed" || status === "In Progress"
-                    ? formatDate(application.lastUpdated)
+                    ? formatDate(application.lastUpdated || application.submittedAt)
                     : "-",
         };
     });

@@ -14,13 +14,29 @@ import { getUserNotifications, markNotificationAsRead } from "../../api/userApi"
 const filters = ["All", "Unread", "Payments", "Reminders", "Warnings"];
 
 const notificationMeta = {
+    "DISBURSEMENT": {
+        icon: WalletCards,
+        className: "payment",
+    },
     "Payment Released": {
         icon: WalletCards,
         className: "payment",
     },
+    "APPLICATION": {
+        icon: CheckCircle2,
+        className: "success",
+    },
+    "VERIFICATION": {
+        icon: CheckCircle2,
+        className: "success",
+    },
     "Proof Submitted Successfully": {
         icon: CheckCircle2,
         className: "success",
+    },
+    "REGISTRATION": {
+        icon: Bell,
+        className: "reminder",
     },
     "Milestone Reminder": {
         icon: Bell,
@@ -29,6 +45,14 @@ const notificationMeta = {
     "Overdue Warning": {
         icon: TriangleAlert,
         className: "warning",
+    },
+    "WARNING": {
+        icon: TriangleAlert,
+        className: "warning",
+    },
+    "REJECTED": {
+        icon: XCircle,
+        className: "rejected",
     },
     "Proof Rejected": {
         icon: XCircle,
@@ -42,11 +66,11 @@ const defaultNotificationMeta = {
 };
 
 const formatTimestamp = (createdAt) => {
-    if (!createdAt) return "Date unavailable";
+    if (!createdAt) return "Just now";
 
     const date = new Date(createdAt);
     return Number.isNaN(date.getTime())
-        ? "Date unavailable"
+        ? "Just now"
         : new Intl.DateTimeFormat("en-IN", {
             day: "2-digit",
             month: "short",
@@ -57,11 +81,11 @@ const formatTimestamp = (createdAt) => {
 };
 
 const mapNotification = (notification) => ({
-    id: notification.id,
-    type: notification.type,
-    title: notification.title,
-    message: notification.message,
-    read: notification.isRead,
+    id: notification.id || notification.notificationId,
+    type: notification.type || "APPLICATION",
+    title: notification.title || "Portal Notification",
+    message: notification.message || "",
+    read: notification.isRead || notification.read || false,
     timestamp: formatTimestamp(notification.createdAt),
 });
 
@@ -106,12 +130,20 @@ function Notifications() {
             const matchesSearch = !query ||
                 notification.title.toLowerCase().includes(query) ||
                 notification.message.toLowerCase().includes(query);
+            
+            const t = String(notification.type || "").toUpperCase();
+            const title = String(notification.title || "").toLowerCase();
+
+            const isPayment = t === "DISBURSEMENT" || t === "PAYMENT RELEASED" || title.includes("disburs") || title.includes("grant") || title.includes("payment");
+            const isReminder = t === "REGISTRATION" || t === "MILESTONE REMINDER" || t === "REMINDER";
+            const isWarning = t === "WARNING" || t === "OVERDUE WARNING" || t === "REJECTED" || title.includes("returned") || title.includes("action required");
+
             const matchesFilter =
                 activeFilter === "All" ||
                 (activeFilter === "Unread" && !notification.read) ||
-                (activeFilter === "Payments" && notification.type === "Payment Released") ||
-                (activeFilter === "Reminders" && notification.type === "Milestone Reminder") ||
-                (activeFilter === "Warnings" && notification.type === "Overdue Warning");
+                (activeFilter === "Payments" && isPayment) ||
+                (activeFilter === "Reminders" && isReminder) ||
+                (activeFilter === "Warnings" && isWarning);
 
             return matchesSearch && matchesFilter;
         });

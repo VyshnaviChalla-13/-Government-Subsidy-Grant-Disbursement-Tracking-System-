@@ -20,27 +20,41 @@ function formatDate(date) {
 function getStageDetails(status, remarks) {
     const s = String(status || "").toUpperCase();
 
-    if (s === "STAGE_RELEASED" || s === "DISBURSED") {
+    if (s === "DISBURSED") {
         return {
-            stageName: "Grant Milestone Disbursed",
+            stageName: "Grant Disbursed",
             stepIndex: 5,
-            badgeClass: "bg-info text-dark",
+            badgeClass: "bg-success text-white",
             boxClass: "disbursed",
-            icon: "bi-cash-coin",
-            desc: "Grant milestone funds have been processed and disbursed to your bank account.",
+            icon: "bi-check-circle-fill",
+            desc: "Grant funds have been successfully verified, sanctioned, and disbursed directly to your bank account via Direct Benefit Transfer (DBT).",
             progressPercent: "100%",
+        };
+    }
+
+    if (s === "STAGE_RELEASED") {
+        return {
+            stageName: "Partially Disbursed",
+            stepIndex: 5,
+            badgeClass: "bg-info text-white",
+            boxClass: "disbursed",
+            icon: "bi-cash-stack",
+            desc: "Some milestone instalments have been released. Remaining milestone payments are being processed by the Finance Officer.",
+            progressPercent: "90%",
+            isPartialDisbursement: true,
         };
     }
 
     if (s === "APPROVED" || s === "PENDING_FINANCE") {
         return {
-            stageName: "At Finance Officer",
-            stepIndex: 4,
+            stageName: "Finance Sanctioned",
+            stepIndex: 5,
             badgeClass: "bg-success",
             boxClass: "finance",
             icon: "bi-wallet2",
-            desc: "Application verified & sanctioned. Finance officer is preparing milestone release.",
-            progressPercent: "75%",
+            desc: "Application verified & sanctioned. Finance Officer is processing DBT fund release.",
+            progressPercent: "85%",
+            isFinanceSanctioned: true,
         };
     }
 
@@ -416,9 +430,9 @@ function Dashboard() {
                                 const stage = getStageDetails(app.status, app.remarks);
                                 const schemeName = app.scheme?.schemeName || "Government Scheme";
                                 const deptName = app.scheme?.department?.departmentName || "General Welfare";
-                                const maxAmount = app.scheme?.maxSubsidyAmount
-                                    ? `₹${Number(app.scheme.maxSubsidyAmount).toLocaleString("en-IN")}`
-                                    : "Grant Amount";
+                                const actualGrant = app.scheme?.maxGrant || app.scheme?.maxSubsidyAmount || app.scheme?.totalBudget || 25000;
+                                const maxAmount = `₹${Number(actualGrant).toLocaleString("en-IN")}`;
+                                const isDisbursed = ["DISBURSED", "STAGE_RELEASED"].includes(String(app.status || "").toUpperCase());
                                 const appliedDate = formatDate(app.submittedAt);
                                 const appId = app.applicationId;
 
@@ -444,7 +458,9 @@ function Dashboard() {
                                             </div>
 
                                             <div className="d-flex align-items-center gap-2">
-                                                <span className="scheme-grant-badge">Max Grant: {maxAmount}</span>
+                                                <span className={`scheme-grant-badge ${isDisbursed ? "bg-success text-white border-0" : ""}`}>
+                                                    {isDisbursed ? `Disbursed: ${maxAmount}` : `Sanctioned Grant: ${maxAmount}`}
+                                                </span>
                                                 <span className={`badge ${stage.badgeClass} px-3 py-2`} style={{ borderRadius: "20px" }}>
                                                     {stage.stageName}
                                                 </span>
@@ -463,10 +479,16 @@ function Dashboard() {
                                         {/* 5-Step Visual Stepper */}
                                         <div className="stepper-container">
                                             <div className="stepper-progress-bar">
+                                                <div
+                                                    className="stepper-progress-fill"
+                                                    style={{ width: stage.progressPercent }}
+                                                ></div>
                                                 {WORKFLOW_STEPS.map((step, idx) => {
                                                     const stepNum = idx + 1;
-                                                    const isCompleted = stepNum < stage.stepIndex;
-                                                    const isActive = stepNum === stage.stepIndex;
+                                                    // Only mark all done when fully DISBURSED — not for APPROVED/STAGE_RELEASED
+                                                    const isAllDone = stage.stepIndex === 5 && !stage.isFinanceSanctioned && !stage.isPartialDisbursement;
+                                                    const isCompleted = isAllDone || stepNum < stage.stepIndex;
+                                                    const isActive = !isAllDone && stepNum === stage.stepIndex;
                                                     const isReturnedNode = stage.isReturned && isActive;
 
                                                     let nodeClass = "";

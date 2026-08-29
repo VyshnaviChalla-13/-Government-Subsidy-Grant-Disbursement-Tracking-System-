@@ -43,6 +43,9 @@ public class ApplicationService {
     @Autowired
     private OfficerRepository officerRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     private String currentPrincipalMobile() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null ? auth.getName() : null;
@@ -52,10 +55,11 @@ public class ApplicationService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null) return false;
         for (String role : roles) {
-            String target = "ROLE_" + role;
+            String target = "ROLE_" + role.toUpperCase();
+            String cleanRole = role.toUpperCase();
             boolean match = auth.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
-                    .anyMatch(a -> a.equals(target));
+                    .anyMatch(a -> a.equalsIgnoreCase(target) || a.equalsIgnoreCase(cleanRole));
             if (match) return true;
         }
         return false;
@@ -117,10 +121,25 @@ public class ApplicationService {
             application.setEligibilityStatus("ELIGIBLE");
         }
 
-        // Always keep in SUBMITTED state for Field Officer review
+        // Always keep in SUBMITTED state for Field/Verification Officer review
         application.setStatus(STATUS_SUBMITTED);
 
         Application saved = applicationRepository.saveAndFlush(application);
+
+        try {
+            if (notificationService != null && saved.getBeneficiary() != null) {
+                String sName = saved.getScheme() != null ? saved.getScheme().getSchemeName() : "Welfare Scheme";
+                notificationService.createNotification(
+                        saved.getBeneficiary().getUserId(),
+                        "Application Submitted Successfully",
+                        "Your application (" + saved.getApplicationNumber() + ") for " + sName + " has been submitted and is under Front Desk review.",
+                        "APPLICATION",
+                        saved.getApplicationId()
+                );
+            }
+        } catch (Exception ex) {
+            System.err.println("Notification trigger note: " + ex.getMessage());
+        }
 
         return "Application submitted successfully with ID: " + saved.getApplicationNumber();
     }
@@ -130,26 +149,37 @@ public class ApplicationService {
     private DisbursementService disbursementService;
 
     public List<Application> getVisibleApplications() {
-        if (currentUserHasAnyRole("SUPER_ADMIN", "DEPT_ADMIN")) {
+        if (currentUserHasAnyRole("SUPER_ADMIN", "DEPT_ADMIN", "ADMIN", "SUPERADMIN", "DEPTADMIN")) {
             return applicationRepository.findAll();
         }
-        if (currentUserHasAnyRole("FRONT_DESK_OFFICER")) {
-            return applicationRepository.findByStatusIn(List.of(
-                    STATUS_SUBMITTED, STATUS_RESUBMITTED, "PENDING_FIELD_REVIEW", "PENDING_FRONT_DESK",
-                    STATUS_RETURNED, STATUS_REJECTED
-            ));
+        if (currentUserHasAnyRole("VERIFICATION_OFFICER", "DISTRICT_OFFICER", "OFFICER", "ROLE_OFFICER", "VERIFICATION", "DISTRICT")) {
+            return applicationRepository.findAll();
         }
-        if (currentUserHasAnyRole("VERIFICATION_OFFICER")) {
-            return applicationRepository.findByStatusIn(List.of(
-                    STATUS_PENDING_VERIFICATION, "FIELD_APPROVED", "UNDER_VERIFICATION"
-            ));
+        if (currentUserHasAnyRole("FRONT_DESK_OFFICER", "FIELD_OFFICER", "FRONT_DESK", "FIELD")) {
+            return applicationRepository.findAll();
         }
-        if (currentUserHasAnyRole("FINANCE_OFFICER")) {
+        if (currentUserHasAnyRole("FINANCE_OFFICER", "FINANCE_APPROVER", "FINANCE")) {
             return applicationRepository.findByStatusIn(List.of(
                     STATUS_VERIFICATION_APPROVED, "PENDING_FINANCE", "APPROVED", "STAGE_RELEASED", "DISBURSED"
             ));
         }
+
+        // Also check if current authenticated user has an officer record or officer role in database
         String mobile = currentPrincipalMobile();
+        if (mobile != null) {
+            User currentUser = userRepository.findBymobileNumber(mobile).orElse(null);
+            if (currentUser != null) {
+                String uRole = currentUser.getRole() != null ? currentUser.getRole().toUpperCase() : "";
+                if (uRole.contains("ADMIN") || uRole.contains("OFFICER") || uRole.contains("VERIF") || uRole.contains("DISTRICT") || uRole.contains("FIELD") || uRole.contains("FRONT")) {
+                    return applicationRepository.findAll();
+                }
+                boolean isOfficer = officerRepository.findByUser_UserId(currentUser.getUserId()).isPresent();
+                if (isOfficer) {
+                    return applicationRepository.findAll();
+                }
+            }
+        }
+
         return applicationRepository.findByBeneficiary_MobileNumber(mobile);
     }
 
@@ -175,6 +205,19 @@ public class ApplicationService {
         application.setCustomFields(customFields);
         application.setStatus(STATUS_RESUBMITTED);
         applicationRepository.save(application);
+
+        try {
+            if (notificationService != null && application.getBeneficiary() != null) {
+                notificationService.createNotification(
+                        application.getBeneficiary().getUserId(),
+                        "Application Resubmitted",
+                        "Your updated application details have been re-submitted for officer verification.",
+                        "APPLICATION",
+                        application.getApplicationId()
+                );
+            }
+        } catch (Exception ignored) {}
+
         return "Application resubmitted successfully";
     }
 
@@ -193,6 +236,18 @@ public class ApplicationService {
         application.setRemarks(remarks);
         applicationRepository.save(application);
 
+        try {
+            if (notificationService != null && application.getBeneficiary() != null) {
+                notificationService.createNotification(
+                        application.getBeneficiary().getUserId(),
+                        "Front Desk Review Cleared",
+                        "Your application has passed front desk review and is now with the Verification Officer.",
+                        "VERIFICATION",
+                        application.getApplicationId()
+                );
+            }
+        } catch (Exception ignored) {}
+
         return "Application approved by Field Officer and forwarded to District Officer for verification";
     }
 
@@ -209,6 +264,18 @@ public class ApplicationService {
         application.setStatus(STATUS_RETURNED);
         application.setRemarks(remarks);
         applicationRepository.save(application);
+
+        try {
+            if (notificationService != null && application.getBeneficiary() != null) {
+                notificationService.createNotification(
+                        application.getBeneficiary().getUserId(),
+                        "Action Required: Application Returned",
+                        "Your application was returned for correction: " + remarks,
+                        "WARNING",
+                        application.getApplicationId()
+                );
+            }
+        } catch (Exception ignored) {}
 
         return "Application returned to beneficiary for corrections";
     }
@@ -227,22 +294,36 @@ public class ApplicationService {
         application.setRejectionReason(remarks);
         applicationRepository.save(application);
 
+        try {
+            if (notificationService != null && application.getBeneficiary() != null) {
+                notificationService.createNotification(
+                        application.getBeneficiary().getUserId(),
+                        "Application Status Update",
+                        "Your application could not be approved: " + remarks,
+                        "REJECTED",
+                        application.getApplicationId()
+                );
+            }
+        } catch (Exception ignored) {}
+
         return "Application rejected by Field Officer";
     }
 
     // ---------------------------------------------------------------
-    // Verification Officer stage: PENDING_VERIFICATION -> ...
+    // Verification Officer stage: PENDING_VERIFICATION / SUBMITTED -> ...
     // ---------------------------------------------------------------
 
     public String verifyApprove(Integer id, String remarks) {
         Application application = applicationRepository.findById(id).orElse(null);
         if (application == null) return "Application not found";
-        if (!STATUS_PENDING_VERIFICATION.equalsIgnoreCase(application.getStatus()) && !"FIELD_APPROVED".equalsIgnoreCase(application.getStatus())) {
-            return "Application is not awaiting verification (current status: " + application.getStatus() + ")";
+        
+        String st = application.getStatus();
+        if (STATUS_REJECTED.equalsIgnoreCase(st) || "DISBURSED".equalsIgnoreCase(st)) {
+            return "Application cannot be approved from status: " + st;
         }
 
         application.setStatus(STATUS_VERIFICATION_APPROVED);
-        application.setRemarks(remarks);
+        application.setRemarks(remarks != null && !remarks.isBlank() ? remarks : "Approved by Verification Officer");
         applicationRepository.save(application);
 
         try {
@@ -253,15 +334,24 @@ public class ApplicationService {
             // Milestone plan might not be configured yet or already initialized
         }
 
-        return "Application approved by District Officer and forwarded to Finance Officer for disbursement";
+        try {
+            if (notificationService != null && application.getBeneficiary() != null) {
+                notificationService.createNotification(
+                        application.getBeneficiary().getUserId(),
+                        "Verification Approved",
+                        "Your application has been verified and approved by the Verification Officer. Sent to Finance for grant disbursement.",
+                        "VERIFICATION",
+                        application.getApplicationId()
+                );
+            }
+        } catch (Exception ignored) {}
+
+        return "Application approved by Verification Officer and forwarded to Finance Officer for disbursement";
     }
 
     public String verifyReturn(Integer id, String remarks) {
         Application application = applicationRepository.findById(id).orElse(null);
         if (application == null) return "Application not found";
-        if (!STATUS_PENDING_VERIFICATION.equalsIgnoreCase(application.getStatus())) {
-            return "Application is not awaiting verification (current status: " + application.getStatus() + ")";
-        }
         if (remarks == null || remarks.isBlank()) {
             return "Remarks are mandatory when returning an application";
         }
@@ -270,15 +360,24 @@ public class ApplicationService {
         application.setRemarks(remarks);
         applicationRepository.save(application);
 
+        try {
+            if (notificationService != null && application.getBeneficiary() != null) {
+                notificationService.createNotification(
+                        application.getBeneficiary().getUserId(),
+                        "Action Required: Application Returned",
+                        "Officer verification note: " + remarks + ". Please correct and resubmit.",
+                        "WARNING",
+                        application.getApplicationId()
+                );
+            }
+        } catch (Exception ignored) {}
+
         return "Application returned to beneficiary for corrections";
     }
 
     public String verifyReject(Integer id, String remarks) {
         Application application = applicationRepository.findById(id).orElse(null);
         if (application == null) return "Application not found";
-        if (!STATUS_PENDING_VERIFICATION.equalsIgnoreCase(application.getStatus())) {
-            return "Application is not awaiting verification (current status: " + application.getStatus() + ")";
-        }
         if (remarks == null || remarks.isBlank()) {
             return "A rejection reason is mandatory";
         }
@@ -286,6 +385,18 @@ public class ApplicationService {
         application.setStatus(STATUS_REJECTED);
         application.setRejectionReason(remarks);
         applicationRepository.save(application);
+
+        try {
+            if (notificationService != null && application.getBeneficiary() != null) {
+                notificationService.createNotification(
+                        application.getBeneficiary().getUserId(),
+                        "Application Rejected",
+                        "Your application was not approved during verification: " + remarks,
+                        "REJECTED",
+                        application.getApplicationId()
+                );
+            }
+        } catch (Exception ignored) {}
 
         return "Application rejected by Verification Officer";
     }

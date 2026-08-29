@@ -31,7 +31,9 @@ function formatDate(date) {
 }
 
 function getDisplayStatus(status) {
-    if (["APPROVED", "DISBURSED"].includes(status)) return "Approved";
+    if (status === "DISBURSED") return "Disbursed";
+    if (status === "STAGE_RELEASED") return "Stage Released";
+    if (["APPROVED", "VERIFICATION_APPROVED"].includes(status)) return "Approved";
     if (["RETURNED", "REJECTED"].includes(status)) return "Returned";
     return "Under Verification";
 }
@@ -198,7 +200,7 @@ function MyApplications() {
                                             View Timeline
                                             <ArrowRight size={16} aria-hidden="true" />
                                         </button>
-                                        {app.statusCode === "APPROVED" && (
+                                        {["APPROVED", "DISBURSED", "STAGE_RELEASED", "VERIFICATION_APPROVED"].includes(app.statusCode) && (
                                             <button className="application-timeline-btn" onClick={() => navigate(`/beneficiary/disbursement?applicationId=${app.applicationId || app.id}`)}>
                                                 <CheckCircle2 size={17} aria-hidden="true" />
                                                 Track Disbursement

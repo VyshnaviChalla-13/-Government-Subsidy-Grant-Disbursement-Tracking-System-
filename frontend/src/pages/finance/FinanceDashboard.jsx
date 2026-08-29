@@ -1,7 +1,7 @@
 import "./FinanceDashboard.css";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getFinanceQueue, releaseMilestone, rejectMilestone } from "../../api/disbursementApi";
+import { getFinanceQueue, releaseMilestone, rejectMilestone, disburseApplication } from "../../api/disbursementApi";
 import { getApplications } from "../../api/applicationApi";
 
 function formatCurrency(amount) {
@@ -58,8 +58,8 @@ function FinanceDashboard() {
                             applicationId: app.applicationId || app.id,
                             beneficiary: app.beneficiary?.fullName || "Applicant",
                             scheme: app.scheme?.schemeName || "Welfare Scheme",
-                            amount: formatCurrency(app.scheme?.maxGrant || 0),
-                            rawAmount: app.scheme?.maxGrant || 0,
+                            amount: formatCurrency(app.scheme?.maxGrant || app.scheme?.maxSubsidyAmount || 0),
+                            rawAmount: app.scheme?.maxGrant || app.scheme?.maxSubsidyAmount || 0,
                             status: app.status === "DISBURSED" ? "Completed" : "Pending",
                             milestoneName: "Sanctioned Grant",
                             bank: app.beneficiary?.bankName || "Not Provided",
@@ -90,8 +90,15 @@ function FinanceDashboard() {
         setProcessing(true);
         try {
             const txRef = `TXN-${Date.now()}`;
+            const targetAppId = target.applicationId || target.id;
             if (target.milestoneId) {
-                await releaseMilestone(target.milestoneId, txRef);
+                try {
+                    await releaseMilestone(target.milestoneId, txRef);
+                } catch {
+                    await disburseApplication(targetAppId, txRef);
+                }
+            } else {
+                await disburseApplication(targetAppId, txRef);
             }
             alert(`Payment released successfully! Reference: ${txRef}`);
             setSelectedPayment(null);
