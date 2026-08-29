@@ -1,0 +1,22 @@
+$kind: http-request
+name: application submit
+description: ""
+url: http://localhost:8080/api/application/submit
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \   \"income\":\"300000\",\r
+
+    \   \"year\":3,\r
+
+    \   \"degree\":\"yes\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfQURNSU4iLCJpYXQiOjE3ODQ5MTY1MjUsImV4cCI6MTc4NTAwMjkyNX0.HAEJM2U7Ean8cDwqSSizu3bk_-fx_AEY8LTCwoCMHPBOE1xsez5F4MaGmQuo7jof
+examples: .resources/application submit.resources/examples
+order: 1784915335801

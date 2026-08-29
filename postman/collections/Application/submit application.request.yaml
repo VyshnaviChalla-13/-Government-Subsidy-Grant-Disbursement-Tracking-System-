@@ -1,0 +1,16 @@
+$kind: http-request
+name: submit application
+description: ""
+url: http://localhost:8080/applications/submit?beneficiaryId=1&schemeId=3
+method: POST
+queryParams:
+  beneficiaryId: "1"
+  schemeId: "3"
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI4NDg4ODg4ODg4Iiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTc4NTU4MDUyNSwiZXhwIjoxNzg1NjY2OTI1fQ.hiAjxGtyp4taMFSt3Irz3lHLJjLVidLj5hMGAAF4Eg9NsAgndRBlGuecDIUfi9ao
+order: 4503598755410436

@@ -1,0 +1,17 @@
+$kind: http-request
+name: http://localhost:8080/verifications/3/review
+description: ""
+url: http://localhost:8080/verifications/3/review?stage=FIELD&action=APPROVE&remarks=Looksgood
+method: POST
+queryParams:
+  stage: FIELD
+  action: APPROVE
+  remarks: Looksgood
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5MDAwMDAwMDAzIiwicm9sZSI6IlJPTEVfRElTVFJJQ1RfT0ZGSUNFUiIsImlhdCI6MTc4NTU5MDc0MCwiZXhwIjoxNzg1Njc3MTQwfQ.rCu1yspiJIdSQ9b-KSK00lHpTiBwXUstLPuJTlW90dP-6e-iPbfWb2CuoSI8FOih
+order: 4460829231448279

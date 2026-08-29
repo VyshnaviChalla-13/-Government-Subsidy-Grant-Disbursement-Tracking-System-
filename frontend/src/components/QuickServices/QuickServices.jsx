@@ -1,31 +1,55 @@
 import "../../styles/quickServices.css";
+import { useNavigate } from "react-router-dom";
 
 function QuickServices() {
+
+    const navigate = useNavigate();
 
     const services = [
 
         {
-            icon:"bi bi-file-earmark-text",
-            title:"Apply Scheme",
-            description:"Apply for government welfare schemes."
+            id: 1,
+            icon: "bi bi-file-earmark-text-fill",
+            title: "Apply for Scheme",
+            description: "Fill application form and apply online.",
+            color: "blue",
+            route: "/login"
         },
 
         {
-            icon:"bi bi-search",
-            title:"Track Application",
-            description:"Track your submitted applications."
+            id: 2,
+            icon: "bi bi-search",
+            title: "Track Application",
+            description: "Track your application status in real-time.",
+            color: "green",
+            route: "/track"
         },
 
         {
-            icon:"bi bi-check-circle",
-            title:"Check Eligibility",
-            description:"Find schemes you are eligible for."
+            id: 3,
+            icon: "bi bi-person-check-fill",
+            title: "Check Eligibility",
+            description: "Check eligibility criteria for schemes.",
+            color: "purple",
+            route: "/eligibility"
         },
 
         {
-            icon:"bi bi-person",
-            title:"Citizen Login",
-            description:"Login to your account securely."
+            id: 4,
+            icon: "bi bi-folder2-open",
+            title: "Required Documents",
+            description: "View required documents for application.",
+            color: "orange",
+            route: "/documents"
+        },
+
+        {
+            id: 5,
+            icon: "bi bi-headset",
+            title: "Help & Support",
+            description: "Get assistance and support.",
+            color: "cyan",
+            route: "/support"
         }
 
     ];
@@ -36,43 +60,59 @@ function QuickServices() {
 
             <div className="container">
 
-                <h2 className="text-center mb-5">
+                {/* Section Heading */}
 
-                    Quick Services
+                <div className="section-title">
 
-                </h2>
+                    <div className="title-line"></div>
 
-                <div className="row">
+                    <h2>Quick Access Services</h2>
 
-                    {
+                    <div className="title-line"></div>
 
-                        services.map((service,index)=>(
+                </div>
 
-                            <div className="col-lg-3 col-md-6 mb-4" key={index}>
+                {/* Cards */}
 
-                                <div className="service-box">
+                <div className="row g-4">
 
-                                    <i className={service.icon}></i>
+                    {services.map((service) => (
 
-                                    <h4>
+                        <div
+                            className="col-lg col-md-6"
+                            key={service.id}
+                        >
 
-                                        {service.title}
+                            <div
+                                className={`service-box ${service.color}`}
+                                onClick={() => navigate(service.route)}
+                            >
 
-                                    </h4>
+                                <div className="service-top">
 
-                                    <p>
+                                    <div className={`icon-box ${service.color}`}>
 
-                                        {service.description}
+                                        <i className={service.icon}></i>
 
-                                    </p>
+                                    </div>
+
+                                    <div className={`arrow-box ${service.color}`}>
+
+                                        <i className="bi bi-arrow-right"></i>
+
+                                    </div>
 
                                 </div>
 
+                                <h4>{service.title}</h4>
+
+                                <p>{service.description}</p>
+
                             </div>
 
-                        ))
+                        </div>
 
-                    }
+                    ))}
 
                 </div>
 

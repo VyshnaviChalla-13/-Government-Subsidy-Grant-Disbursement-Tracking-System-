@@ -1,0 +1,24 @@
+$kind: http-request
+name: Application Submtted
+description: ""
+url: http://localhost:8080/applications/submit?beneficiaryId=1&schemeId=3
+method: POST
+queryParams:
+  beneficiaryId: "1"
+  schemeId: "3"
+body:
+  type: json
+  content: "{\r
+
+    \    \"landSize\": \"5 acres\",\r
+
+    \    \"income\": \"50000\",\r
+
+    \    \"occupation\": \"Farmer\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI4NDg4ODg4ODg4Iiwicm9sZSI6IlJPTEVfVVNFUiIsImlhdCI6MTc4NDkxODAxMCwiZXhwIjoxNzg1MDA0NDEwfQ.JPdqgfFvoYeb1uitDMm9AU-se--GQ39NVfGkQXIyuJkDd9qVrQjZDAX5N8XROfgk
+order: 11133005289844

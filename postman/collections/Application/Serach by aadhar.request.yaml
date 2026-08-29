@@ -1,0 +1,12 @@
+$kind: http-request
+name: Serach by aadhar
+description: ""
+url: http://localhost:8080/applications/search?keyword=123456789012
+method: GET
+queryParams:
+  keyword: "123456789012"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfQURNSU4iLCJpYXQiOjE3ODQ5MTY1MjUsImV4cCI6MTc4NTAwMjkyNX0.HAEJM2U7Ean8cDwqSSizu3bk_-fx_AEY8LTCwoCMHPBOE1xsez5F4MaGmQuo7jof
+order: 4487797795113196

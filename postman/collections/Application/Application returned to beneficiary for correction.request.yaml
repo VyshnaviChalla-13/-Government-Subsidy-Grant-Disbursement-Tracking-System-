@@ -1,0 +1,15 @@
+$kind: http-request
+name: Application returned to beneficiary for correction
+description: ""
+url: http://localhost:8080/applications/2/field-return?remarks=Missing document
+method: PATCH
+queryParams:
+  remarks: Missing document
+body:
+  type: json
+  content: ""
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5MDAwMDAwMDAxIiwicm9sZSI6IlJPTEVfRlJPTlRfREVTS19PRkZJQ0VSIiwiaWF0IjoxNzg1NTg4MTEyLCJleHAiOjE3ODU2NzQ1MTJ9.jgcmV30Rc_7pyV_rVyvLyz2WANIVJJg2ZOD0DwnQYgKhlIyQnWTUMIStivKdiP7c
+order: 4503599627215087

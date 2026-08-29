@@ -1,0 +1,354 @@
+.superadmin-dashboard {
+    min-height: 100vh;
+    background: #f5f7fb;
+    padding: 40px 6%;
+    color: #1f2937;
+}
+
+
+/* ================= HEADER ================= */
+
+.superadmin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 35px;
+}
+
+.superadmin-subtitle {
+    margin: 0 0 8px;
+    color: #2563eb;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.superadmin-header h1 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 750;
+    color: #111827;
+}
+
+.superadmin-description {
+    margin: 10px 0 0;
+    color: #6b7280;
+    font-size: 15px;
+}
+
+.superadmin-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #ffffff;
+    padding: 12px 18px;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+    min-width: 220px;
+}
+
+.superadmin-profile-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+}
+
+.superadmin-profile strong {
+    display: block;
+    font-size: 14px;
+}
+
+.superadmin-profile span {
+    display: block;
+    margin-top: 3px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+
+/* ================= STATISTICS ================= */
+
+.superadmin-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.superadmin-stat-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+    transition: 0.25s ease;
+}
+
+.superadmin-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.09);
+}
+
+.superadmin-stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 13px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 23px;
+    font-weight: 700;
+}
+
+.superadmin-stat-card.blue .superadmin-stat-icon {
+    background: #e8f0ff;
+    color: #2563eb;
+}
+
+.superadmin-stat-card.green .superadmin-stat-icon {
+    background: #e7f8ef;
+    color: #16a34a;
+}
+
+.superadmin-stat-card.purple .superadmin-stat-icon {
+    background: #f0eaff;
+    color: #7c3aed;
+}
+
+.superadmin-stat-card.orange .superadmin-stat-icon {
+    background: #fff2df;
+    color: #ea580c;
+}
+
+.superadmin-stat-card h2 {
+    margin: 0;
+    font-size: 25px;
+    color: #111827;
+}
+
+.superadmin-stat-card p {
+    margin: 4px 0;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.superadmin-stat-card span {
+    color: #9ca3af;
+    font-size: 12px;
+}
+
+
+/* ================= SECTION HEADINGS ================= */
+
+.superadmin-section-heading {
+    margin-bottom: 20px;
+}
+
+.superadmin-section-heading h2 {
+    margin: 0;
+    font-size: 21px;
+    color: #111827;
+}
+
+.superadmin-section-heading p {
+    margin: 6px 0 0;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+
+/* ================= QUICK ACTIONS ================= */
+
+.superadmin-actions {
+    margin-bottom: 40px;
+}
+
+.superadmin-action-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.superadmin-action {
+    border: none;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+    border-radius: 15px;
+    background: #ffffff;
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+    transition: 0.25s ease;
+}
+
+.superadmin-action:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+}
+
+.superadmin-action-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 22px;
+}
+
+.superadmin-action.departments .superadmin-action-icon {
+    background: #e8f0ff;
+}
+
+.superadmin-action.users .superadmin-action-icon {
+    background: #e7f8ef;
+}
+
+.superadmin-action.reports .superadmin-action-icon {
+    background: #fff2df;
+}
+
+.superadmin-action div {
+    flex: 1;
+}
+
+.superadmin-action strong {
+    display: block;
+    font-size: 15px;
+    color: #111827;
+}
+
+.superadmin-action small {
+    display: block;
+    margin-top: 5px;
+    color: #6b7280;
+    font-size: 12px;
+}
+
+.superadmin-arrow {
+    font-size: 22px;
+    color: #9ca3af;
+}
+
+
+/* ================= SYSTEM OVERVIEW ================= */
+
+.superadmin-overview {
+    background: #ffffff;
+    border-radius: 17px;
+    padding: 25px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+}
+
+.superadmin-table-wrapper {
+    overflow-x: auto;
+}
+
+.superadmin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.superadmin-table th {
+    background: #f8fafc;
+    color: #6b7280;
+    text-align: left;
+    font-size: 12px;
+    padding: 14px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.superadmin-table td {
+    padding: 16px 14px;
+    border-bottom: 1px solid #f0f1f3;
+    font-size: 13px;
+}
+
+.superadmin-table tbody tr:hover {
+    background: #fafbff;
+}
+
+.superadmin-active-badge {
+    display: inline-block;
+    padding: 5px 11px;
+    border-radius: 20px;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.superadmin-view-btn {
+    border: none;
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 7px 14px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.superadmin-view-btn:hover {
+    background: #dbeafe;
+}
+
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1000px) {
+
+    .superadmin-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .superadmin-action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .superadmin-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .superadmin-dashboard {
+        padding: 25px 4%;
+    }
+
+    .superadmin-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .superadmin-header h1 {
+        font-size: 24px;
+    }
+
+    .superadmin-profile {
+        width: 100%;
+    }
+
+    .superadmin-overview {
+        padding: 18px;
+    }
+
+}

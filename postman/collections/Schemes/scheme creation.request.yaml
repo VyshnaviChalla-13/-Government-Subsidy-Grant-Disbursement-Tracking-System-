@@ -1,0 +1,37 @@
+$kind: http-request
+name: scheme creation
+description: ""
+url: http://localhost:8080/superadmin/schemes
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"department\": { \"departmentId\": 2 },\r
+
+    \  \"user\": { \"userId\": 24 },\r
+
+    \  \"schemeName\": \"Farmer Assistance Scheme\",\r
+
+    \  \"description\": \"Financial aid for small farmers\",\r
+
+    \  \"totalBudget\": 5000000,\r
+
+    \  \"minGrant\": 10000,\r
+
+    \  \"maxGrant\": 50000,\r
+
+    \  \"applicationStartDate\": \"2026-01-01\",\r
+
+    \  \"applicationEndDate\": \"2026-12-31\",\r
+
+    \  \"eligibilityScore\": 60,\r
+
+    \  \"status\": \"ACTIVE\"\r
+
+    }"
+auth:
+  type: bearer
+  credentials:
+    token: eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiI5OTk5OTk5OTk5Iiwicm9sZSI6IlJPTEVfU1VQRVJfQURNSU4iLCJpYXQiOjE3ODU1NzY2NDIsImV4cCI6MTc4NTY2MzA0Mn0.4JTuv7qVbJdEFO8K-ImP0QZhqqqQP9p9hUz4JItmAAVz_OQ9_2zG6vXmHQGup7Mr
+order: 1056097424048122
