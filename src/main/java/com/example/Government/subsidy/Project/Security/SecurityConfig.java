@@ -57,17 +57,18 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/users/register",
                                 "/users/login",
-                                "/otp/**",
-                                "/departmentadmin/schemes/all"
+                                "/otp/**"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/departmentadmin/schemes/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/departmentadmin/schemes/**", "/schemes/**").permitAll()
 
-                        // Admin scoped endpoints
+                        // Admin scoped modification endpoints
                         .requestMatchers("/superadmin/**").hasAnyRole("SUPER_ADMIN", "DEPT_ADMIN", "ADMIN", "SUPERADMIN", "DEPTADMIN")
-                        .requestMatchers("/departmentadmin/**", "/schemes/**").hasAnyRole("DEPT_ADMIN", "SUPER_ADMIN", "ADMIN", "DEPTADMIN", "SUPERADMIN")
+                        .requestMatchers(HttpMethod.POST, "/departmentadmin/schemes/**", "/schemes/**").hasAnyRole("DEPT_ADMIN", "SUPER_ADMIN", "ADMIN", "DEPTADMIN", "SUPERADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/departmentadmin/schemes/**", "/schemes/**").hasAnyRole("DEPT_ADMIN", "SUPER_ADMIN", "ADMIN", "DEPTADMIN", "SUPERADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/departmentadmin/schemes/**", "/schemes/**").hasAnyRole("DEPT_ADMIN", "SUPER_ADMIN", "ADMIN", "DEPTADMIN", "SUPERADMIN")
 
-                        // Authenticated application and beneficiary/officer workflows
-                        .requestMatchers("/applications/**", "/documents/**", "/notifications/**", "/disbursement/**", "/reports/**", "/audit-logs/**", "/dashboard/**").authenticated()
+                        // Authenticated application, document, user and workflow endpoints
+                        .requestMatchers("/applications/**", "/documents/**", "/users/**", "/notifications/**", "/disbursement/**", "/reports/**", "/audit-logs/**", "/dashboard/**").authenticated()
 
                         .anyRequest().authenticated()
                 )

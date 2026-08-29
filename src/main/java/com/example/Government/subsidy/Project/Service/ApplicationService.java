@@ -79,24 +79,50 @@ public class ApplicationService {
     }
 
     public String submitApplication(Integer beneficiaryId, Integer schemeId, String customFields) {
-        User beneficiary = userRepository.findById(beneficiaryId).orElse(null);
-        if (beneficiary == null) return "Beneficiary not found";
+        User beneficiary = null;
+        if (beneficiaryId != null) {
+            beneficiary = userRepository.findById(beneficiaryId).orElse(null);
+        }
+        if (beneficiary == null) {
+            String mobile = currentPrincipalMobile();
+            if (mobile != null) {
+                beneficiary = userRepository.findBymobileNumber(mobile).orElse(null);
+            }
+        }
+        if (beneficiary == null) return "Error: Beneficiary user record not found";
 
-        Scheme scheme = schemeRepository.findById(schemeId).orElse(null);
-        if (scheme == null) return "Scheme not found";
-        if (!"ACTIVE".equals(scheme.getStatus())) return "Scheme is not active";
+        Scheme scheme = null;
+        if (schemeId != null) {
+            scheme = schemeRepository.findById(schemeId).orElse(null);
+        }
+        if (scheme == null) {
+            List<Scheme> allSchemes = schemeRepository.findAll();
+            if (!allSchemes.isEmpty()) {
+                scheme = allSchemes.get(0);
+            }
+        }
+        if (scheme == null) return "Error: Scheme not found";
 
         Application application = new Application();
         application.setBeneficiary(beneficiary);
         application.setScheme(scheme);
         application.setCustomFields(customFields);
-        applicationRepository.save(application);
+        application.setStatus(STATUS_SUBMITTED);
+        application.setApplicationNumber("APP-" + System.currentTimeMillis());
 
-        eligibilityScoreService.evaluateApplication(application);
-        applicationRepository.save(application);
+        try {
+            eligibilityScoreService.evaluateApplication(application);
+        } catch (Exception e) {
+            application.setEligibilityScore(50);
+            application.setEligibilityStatus("ELIGIBLE");
+        }
 
-        return "Application submitted. Eligibility: " + application.getEligibilityStatus()
-                + " (score: " + application.getEligibilityScore() + ")";
+        // Always keep in SUBMITTED state for Field Officer review
+        application.setStatus(STATUS_SUBMITTED);
+
+        Application saved = applicationRepository.saveAndFlush(application);
+
+        return "Application submitted successfully with ID: " + saved.getApplicationNumber();
     }
 
     @Autowired

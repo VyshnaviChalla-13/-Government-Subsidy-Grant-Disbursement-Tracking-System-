@@ -210,6 +210,7 @@ function ApplyScheme() {
 
         setIsSubmitting(true);
         try {
+            const token = localStorage.getItem("token");
             const storedUser = JSON.parse(localStorage.getItem("user") || "null");
             const beneficiaryId =
                 storedUser?.userId ??
@@ -217,8 +218,10 @@ function ApplyScheme() {
                 localStorage.getItem("userId");
             const schemeId = scheme?.schemeId || location.state?.schemeId || 1;
 
-            if (!beneficiaryId) {
-                throw new Error("Unable to identify the beneficiary. Please sign in again.");
+            if (!token || !beneficiaryId) {
+                alert("Please log in to submit your scheme application.");
+                navigate("/login", { state: { fromApply: true, schemeId } });
+                return;
             }
 
             const documentNames = Object.fromEntries(
@@ -232,8 +235,16 @@ function ApplyScheme() {
             });
 
             setSubmissionSuccess(true);
+            setTimeout(() => {
+                navigate("/beneficiary/my-applications");
+            }, 1800);
         } catch (err) {
-            setSubmissionError(err.response?.data || err.message || "Unable to submit your application.");
+            const errorMsg =
+                err.response?.data?.message ||
+                (typeof err.response?.data === "string" ? err.response.data : null) ||
+                err.message ||
+                "Unable to submit your application. Please verify your details.";
+            setSubmissionError(errorMsg);
         } finally {
             setIsSubmitting(false);
         }

@@ -18,11 +18,16 @@ public class ApplicationController {
     private ApplicationService applicationService;
 
     @PostMapping("/submit")
-    public String submitApplication(@RequestParam Integer beneficiaryId,
-                                    @RequestParam Integer schemeId,
-                                    @RequestBody(required = false) Map<String, Object> customFields) {
+    public org.springframework.http.ResponseEntity<?> submitApplication(
+            @RequestParam(required = false) Integer beneficiaryId,
+            @RequestParam(required = false) Integer schemeId,
+            @RequestBody(required = false) Map<String, Object> customFields) {
         String json = customFields != null ? customFields.toString() : null;
-        return applicationService.submitApplication(beneficiaryId, schemeId, json);
+        String result = applicationService.submitApplication(beneficiaryId, schemeId, json);
+        if (result != null && result.startsWith("Error")) {
+            return org.springframework.http.ResponseEntity.badRequest().body(Map.of("message", result));
+        }
+        return org.springframework.http.ResponseEntity.ok(Map.of("message", result != null ? result : "Application submitted successfully"));
     }
 
     @GetMapping
