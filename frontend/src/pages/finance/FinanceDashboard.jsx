@@ -257,8 +257,13 @@ function FinanceDashboard() {
 
             {selectedPayment && (
                 <div className="modal-overlay">
-                    <div className="modal">
-                        <h2>Payment Details</h2>
+                    <div
+                        className="finance-payment-modal"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="finance-payment-details-title"
+                    >
+                        <h2 id="finance-payment-details-title">Payment Details</h2>
 
                         <div className="details-grid">
                             <div>

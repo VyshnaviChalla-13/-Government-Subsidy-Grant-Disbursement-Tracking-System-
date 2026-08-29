@@ -142,7 +142,7 @@
     z-index: 1000;
 }
 
-.modal {
+.finance-payment-modal {
     background: white;
     width: 700px;
     max-width: 90%;
@@ -151,7 +151,7 @@
     box-shadow: 0 5px 20px rgba(0,0,0,0.3);
 }
 
-.modal h2 {
+.finance-payment-modal h2 {
     text-align: center;
     color: #1e3a8a;
     margin-bottom: 25px;
