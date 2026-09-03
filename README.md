@@ -1,4 +1,4 @@
-# Government-Subsidy-Grant-Disbursement-Tracking-System
+# Development of Digital Subsidy & Grant Administration Platform
 
 ## Overview
 
